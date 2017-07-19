@@ -10,8 +10,7 @@ export default (): IPlugin => {
                 const serverConfig = options.serverConfigs;
 
                 const validateUser = (decoded, request: Hapi.Request, cb) => {
-                    request.plugins['hapi-auth-jwt2'].id = decoded.id;
-                    // console.log('this is the id', request.userId);
+                    server.app.userId = decoded.id;
                     return cb(null, true);
                 };
 
