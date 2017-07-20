@@ -40,5 +40,9 @@ export default class UserController {
     public getFavouriteCards(request: Hapi.Request, reply: Hapi.Base_Reply) {
         // empty
     }
+
+    public upload(request: Hapi.Request, reply: Hapi.Base_Reply) {
+        // empty
+    }
 }
 

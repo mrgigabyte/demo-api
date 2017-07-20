@@ -39,7 +39,7 @@ export default function (server: Hapi.Server, serverConfigs: IServerConfiguratio
                     }
                 }
             },
-            tags: ['api'],
+            tags: ['api','cards'],
         }
     });
 
@@ -60,7 +60,28 @@ export default function (server: Hapi.Server, serverConfigs: IServerConfiguratio
                     }
                 }
             },
-            tags: ['api'],
+            tags: ['api','cards'],
+        }
+    });
+
+     server.route({
+        method: 'GET',
+        path: '/cards/upload',
+        handler: cardController.upload,
+        // auth: 'jwt',        
+        config: {
+            description: 'Uploading a card',
+            response: {},
+            plugins: {
+                'hapi-swagger': {
+                    responses: {
+                        '200': {
+                            'description': 'Successfully returned the favourite cards if any.'
+                        }
+                    }
+                }
+            },
+            tags: ['api','admin'],
         }
     });
 }

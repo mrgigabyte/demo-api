@@ -24,4 +24,22 @@ export default class UserController {
     public archived(request: Hapi.Request, reply: Hapi.Base_Reply) {
         // empty
     }
+     public getStories(request: Hapi.Request, reply: Hapi.Base_Reply) {
+        // empty
+    }
+
+    public saveStory(request: Hapi.Request, reply: Hapi.Base_Reply) {
+        // empty
+    }
+     public updateStory(request: Hapi.Request, reply: Hapi.Base_Reply) {
+        // empty
+    }
+
+    public pushLive(request: Hapi.Request, reply: Hapi.Base_Reply) {
+        // empty
+    }
+     public preview(request: Hapi.Request, reply: Hapi.Base_Reply) {
+        // empty
+    }
+
 }

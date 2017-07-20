@@ -43,5 +43,15 @@ export default class UserController {
     public profileDelete(request: Hapi.Request, reply: Hapi.Base_Reply) {
         // empty
     }
+    public emailNotif(request: Hapi.Request, reply: Hapi.Base_Reply) {
+        // empty
+    }
+    public adminLogin(request: Hapi.Request, reply: Hapi.Base_Reply) {
+        // empty
+    }
+
+    public adminReset(request: Hapi.Request, reply: Hapi.Base_Reply) {
+        // empty
+    }
 
 }

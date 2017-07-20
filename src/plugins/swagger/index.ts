@@ -16,6 +16,7 @@ export default (): IPlugin => {
                                 description: 'API powering the the abstr_ct platform :)',
                                 version: '0.1'
                             },
+                            grouping: 'tags',
                             securityDefinitions: {
                                 'jwt': {
                                     'type': 'apikey',
@@ -25,13 +26,18 @@ export default (): IPlugin => {
                             },
                             tags: [
                                 {
-                                    'name': 'users'
+                                    'name': 'user'
                                 },
                                 {
-                                    'name': 'stories'
+                                    'name': 'stories',
+                                   
                                 },
                                 {
                                     'name': 'cards'
+                                },
+                                {
+                                    'name':'admin',
+                                    'description':'Endpoints for the admin panel.'
                                 }
                             ],
                             documentationPage: true,
