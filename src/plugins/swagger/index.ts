@@ -29,17 +29,16 @@ export default (): IPlugin => {
                                     'name': 'user'
                                 },
                                 {
-                                    'name': 'stories',
+                                    'name': 'stories'
                                    
+                                },
+                                {
+                                    'name': 'cards'
                                 },
                                 {
                                     'name':'admin',
                                     'description':'Endpoints for the admin panel.',
                                 },
-                                {
-                                    'name': 'cards',
-                                    'description': 'endpoints related to card objects'
-                                }
                             ],
                             documentationPage: true,
                             documentationPath: '/docs'
