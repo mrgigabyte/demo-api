@@ -35,7 +35,8 @@ export default (): IPlugin => {
                                 {
                                     'name':'admin',
                                     'description':'Endpoints for the admin panel.',
-                                }
+                                },
+                                {
                                     'name': 'cards',
                                     'description': 'endpoints related to card objects'
                                 }
