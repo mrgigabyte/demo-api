@@ -12,31 +12,28 @@ export default (): IPlugin => {
                         register: require('hapi-swagger'),
                         options: {
                             info: {
-                                title: 'update me!',
-                                description: 'update me aswell',
+                                title: 'abstr_ct API',
+                                description: 'API powering the the abstr_ct platform :)',
                                 version: '0.1'
                             },
                             securityDefinitions: {
                                 'jwt': {
-                                    'type': 'apiKey',
+                                    'type': 'apikey',
                                     'name': 'Authorization',
                                     'in': 'header'
                                 }
                             },
-                            // tags: [
-                            //     {
-                            //         'name': 'api',
-                            //     },
-                            //     {
-                            //         'name': 'courses',
-                            //     },
-                            //     {
-                            //         'name': 'assignments',
-                            //     },
-                            //     {
-                            //       'name': 'reports',
-                            //     }
-                            // ],
+                            tags: [
+                                {
+                                    'name': 'users'
+                                },
+                                {
+                                    'name': 'stories'
+                                },
+                                {
+                                    'name': 'cards'
+                                }
+                            ],
                             documentationPage: true,
                             documentationPath: '/docs'
                         }

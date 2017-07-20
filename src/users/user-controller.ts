@@ -17,20 +17,31 @@ export default class UserController {
         this.configs = configs;
     }
 
-    public try(request: Hapi.Request, reply: Hapi.Base_Reply) {
-        // console.log(this.database);
-        const a = this.database.user.build({
-            email: "vidur@navvv",
-            name: "vidur singla",
-            profilePicture: "dasas",
-            googleUserId: 1234,
-            facilitator: 1
-        });
-        a.save().then((res) => {
-            console.log('very good');
-            return reply(res);
-        }).catch((err) => {
-            console.log(err);
-        });
+    public login(request: Hapi.Request, reply: Hapi.Base_Reply) {
+        // empty
     }
+
+    public reset(request: Hapi.Request, reply: Hapi.Base_Reply) {
+        // empty
+    }
+
+     public signUp(request: Hapi.Request, reply: Hapi.Base_Reply) {
+        // empty
+    }
+
+    public profileGet(request: Hapi.Request, reply: Hapi.Base_Reply) {
+        // empty
+    }
+     public pushNotif(request: Hapi.Request, reply: Hapi.Base_Reply) {
+        // empty
+    }
+
+    public profileUpdate(request: Hapi.Request, reply: Hapi.Base_Reply) {
+        // empty
+    }
+
+    public profileDelete(request: Hapi.Request, reply: Hapi.Base_Reply) {
+        // empty
+    }
+
 }

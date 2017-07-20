@@ -1,10 +1,10 @@
 {
     "database": {
         "client": "mysql",
-        "database": "",
+        "database": "davinci",
         "host": "",
-        "user": "root",
-        "password": "",
+        "user": "nandan",
+        "password": "MG?_+$3u4@NG.",
         "requestTimeout": 90000,
         "connectionTimeout": 30000,
         "acquireConnectionTimeout": 30000,

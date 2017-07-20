@@ -3,6 +3,8 @@ import { IPlugin } from "./plugins/interfaces";
 import { IServerConfigurations } from "./configurations";
 
 import * as Users from "./users";
+import * as Stories from "./stories";
+import * as Cards from "./cards";
 
 export function init(configs: IServerConfigurations, database: any): Promise<Hapi.Server> {
     return new Promise<Hapi.Server>(resolve => {
@@ -38,6 +40,8 @@ export function init(configs: IServerConfigurations, database: any): Promise<Hap
         // Register all the routes once all plugins have been initialized
         Promise.all(pluginPromises).then(() => {
             Users.init(server,  configs, database);
+            Stories.init(server,configs, database);
+            Cards.init(server,configs, database);
             resolve(server);
         });
 
