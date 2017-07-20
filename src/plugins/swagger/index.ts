@@ -23,20 +23,21 @@ export default (): IPlugin => {
                                     'in': 'header'
                                 }
                             },
-                            // tags: [
-                            //     {
-                            //         'name': 'api',
-                            //     },
-                            //     {
-                            //         'name': 'courses',
-                            //     },
-                            //     {
-                            //         'name': 'assignments',
-                            //     },
-                            //     {
-                            //       'name': 'reports',
-                            //     }
-                            // ],
+                            tags: [
+                                {
+                                    'name': 'cards',
+                                    'description': 'endpoints related to card objects'
+                                },
+                                {
+                                    'name': 'courses',
+                                },
+                                {
+                                    'name': 'assignments',
+                                },
+                                {
+                                  'name': 'reports',
+                                }
+                            ],
                             documentationPage: true,
                             documentationPath: '/docs'
                         }
