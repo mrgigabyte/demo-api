@@ -12,22 +12,20 @@ export default function (server: Hapi.Server, serverConfigs: IServerConfiguratio
     server.bind(userController);
 
     server.route({
-        method: 'GET',
-        path: '/try',
-        handler: userController.try
-    });
-    
-    server.route({
         method: 'POST',
-        path: '/users/auth/google',
+        path: '/login',
+        handler: userController.login,
         config: {
-            description: 'Get a JWT for a user using his short lived google access token.',
+            description: 'allows the user to login by validating the credentials passed',
             validate: {
                 payload: Joi.object({
-                    idToken: Joi.string().required()
-                             .description("Short lived access token provided by google web-sign in.")
-                             .default("aaa.bbb.ccc")
-                })
+                    userId: Joi.string().required()
+                             .description("Valid userid of the user")
+                             .default("abc123"),
+                    password: Joi.string().required()
+                                .description('password of the user')
+                                .default('xxxxxxxxxx')
+                    })
             },
             response: {
                 schema: Joi.object({
@@ -53,8 +51,253 @@ export default function (server: Hapi.Server, serverConfigs: IServerConfiguratio
                 }
             },
             tags: ['api'],
-            // handler: 
         }
     });
 
+     server.route({
+        method: 'POST',
+        path: '/reset',
+        handler: userController.reset,
+        config: {
+            description: 'For resetting the password',
+            validate: {
+                payload: Joi.object({
+                    userId: Joi.string().required()
+                             .description("Valid userid of the user")
+                             .default("abc123"),
+                    password: Joi.string().required()
+                                .description('password of the user')
+                                .default('xxxxxxxxxx')
+                    })
+            },
+            response: {
+                schema: Joi.object({
+                    "user": userSchema,
+                    "jwt": Joi.string().required()
+                           .default("xxx.yyy.zzz")
+                           .description("Will authenticate all the future requests.")
+                })
+            },
+            plugins: {
+                'hapi-swagger': {
+                    responses: {
+                        '200': {
+                            'description': 'User already existed and successfully authenticated.'
+                        },
+                        '201': {
+                            'description': 'New user created and successfully authenticated.'
+                        },
+                        '401': {
+                            'description': 'Auth failiure. Wrong ID token.'
+                        }
+                    }
+                }
+            },
+            tags: ['api'],
+        }
+    });
+
+     server.route({
+        method: 'POST',
+        path: '/signup',
+        handler: userController.singup,
+        config: {
+            description: 'FOr sign up',
+            validate: {
+                payload: Joi.object({
+                    userId: Joi.string().required()
+                             .description("Valid userid of the user")
+                             .default("abc123"),
+                    password: Joi.string().required()
+                                .description('password of the user')
+                                .default('xxxxxxxxxx')
+                    })
+            },
+            response: {
+                schema: Joi.object({
+                    "user": userSchema,
+                    "jwt": Joi.string().required()
+                           .default("xxx.yyy.zzz")
+                           .description("Will authenticate all the future requests.")
+                })
+            },
+            plugins: {
+                'hapi-swagger': {
+                    responses: {
+                        '200': {
+                            'description': 'User already existed and successfully authenticated.'
+                        },
+                        '201': {
+                            'description': 'New user created and successfully authenticated.'
+                        },
+                        '401': {
+                            'description': 'Auth failiure. Wrong ID token.'
+                        }
+                    }
+                }
+            },
+            tags: ['api'],
+        }
+    });
+
+     server.route({
+        method: 'GET',
+        path: '/user/profile',
+        handler: userController.profileGet,
+        config: {description: 'Gives details of the user'},
+        response: {
+                // schema: Joi.object({
+                //     "user": userSchema,
+                //     "jwt": Joi.string().required()
+                //            .default("xxx.yyy.zzz")
+                //            .description("Will authenticate all the future requests.")
+                // })
+            },
+       plugins: {
+                'hapi-swagger': {
+                    responses: {
+                        '200': {
+                            'description': 'User already existed and successfully authenticated.'
+                        },
+                        '201': {
+                            'description': 'New user created and successfully authenticated.'
+                        },
+                        '401': {
+                            'description': 'Auth failiure. Wrong ID token.'
+                        }
+                    }
+                }
+            },
+            tags: ['api'],
+        });
+
+     server.route({
+        method: 'PUT',
+        path: '/user/pushnotif',
+        handler: userController.pushNotif,
+        config: {
+            description: 'setting push notifications (in the hamburger menu)',
+            validate: {
+                payload: Joi.object({
+                    userId: Joi.string().required()
+                             .description("Valid userid of the user")
+                             .default("abc123"),
+                    password: Joi.string().required()
+                                .description('password of the user')
+                                .default('xxxxxxxxxx')
+                    })
+            },
+            response: {
+                // schema: Joi.object({
+                //     "user": userSchema,
+                //     "jwt": Joi.string().required()
+                //            .default("xxx.yyy.zzz")
+                //            .description("Will authenticate all the future requests.")
+                // })
+            },
+            plugins: {
+                'hapi-swagger': {
+                    responses: {
+                        '200': {
+                            'description': 'User already existed and successfully authenticated.'
+                        },
+                        '201': {
+                            'description': 'New user created and successfully authenticated.'
+                        },
+                        '401': {
+                            'description': 'Auth failiure. Wrong ID token.'
+                        }
+                    }
+                }
+            },
+            tags: ['api'],
+        }
+    });
+     server.route({
+        method: 'PUT',
+        path: '/user/profile',
+        handler: userController.profileUpdate,
+        config: {
+            description: 'FOr updating the user profile',
+            validate: {
+                payload: Joi.object({
+                    userId: Joi.string().required()
+                             .description("Valid userid of the user")
+                             .default("abc123"),
+                    password: Joi.string().required()
+                                .description('password of the user')
+                                .default('xxxxxxxxxx')
+                    })
+            },
+            response: {
+                // schema: Joi.object({
+                //     "user": userSchema,
+                //     "jwt": Joi.string().required()
+                //            .default("xxx.yyy.zzz")
+                //            .description("Will authenticate all the future requests.")
+                // })
+            },
+            plugins: {
+                'hapi-swagger': {
+                    responses: {
+                        '200': {
+                            'description': 'User already existed and successfully authenticated.'
+                        },
+                        '201': {
+                            'description': 'New user created and successfully authenticated.'
+                        },
+                        '401': {
+                            'description': 'Auth failiure. Wrong ID token.'
+                        }
+                    }
+                }
+            },
+            tags: ['api'],
+        }
+
+   });
+   
+    server.route({
+        method: 'DELETE',
+        path: '/user/profile',
+        handler: userController.profileDelete,
+        config: {
+            description: 'For deleting the user profile',
+            validate: {
+                payload: Joi.object({
+                    userId: Joi.string().required()
+                             .description("Valid userid of the user")
+                             .default("abc123"),
+                    password: Joi.string().required()
+                                .description('password of the user')
+                                .default('xxxxxxxxxx')
+                    })
+            },
+            response: {
+                // schema: Joi.object({
+                //     "user": userSchema,
+                //     "jwt": Joi.string().required()
+                //            .default("xxx.yyy.zzz")
+                //            .description("Will authenticate all the future requests.")
+                // })
+            },
+            plugins: {
+                'hapi-swagger': {
+                    responses: {
+                        '200': {
+                            'description': 'User already existed and successfully authenticated.'
+                        },
+                        '201': {
+                            'description': 'New user created and successfully authenticated.'
+                        },
+                        '401': {
+                            'description': 'Auth failiure. Wrong ID token.'
+                        }
+                    }
+                }
+            },
+            tags: ['api'],
+        }
+    });
+    
 }
