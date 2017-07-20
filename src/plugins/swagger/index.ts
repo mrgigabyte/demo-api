@@ -12,30 +12,32 @@ export default (): IPlugin => {
                         register: require('hapi-swagger'),
                         options: {
                             info: {
-                                title: 'update me!',
-                                description: 'update me aswell',
+                                title: 'abstr_ct API',
+                                description: 'API powering the the abstr_ct platform :)',
                                 version: '0.1'
                             },
+                            grouping: 'tags',
                             securityDefinitions: {
                                 'jwt': {
-                                    'type': 'apiKey',
+                                    'type': 'apikey',
                                     'name': 'Authorization',
                                     'in': 'header'
                                 }
                             },
                             tags: [
                                 {
+                                    'name': 'user'
+                                },
+                                {
+                                    'name': 'stories',
+                                   
+                                },
+                                {
+                                    'name':'admin',
+                                    'description':'Endpoints for the admin panel.',
+                                }
                                     'name': 'cards',
                                     'description': 'endpoints related to card objects'
-                                },
-                                {
-                                    'name': 'courses',
-                                },
-                                {
-                                    'name': 'assignments',
-                                },
-                                {
-                                  'name': 'reports',
                                 }
                             ],
                             documentationPage: true,

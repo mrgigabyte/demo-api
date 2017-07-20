@@ -42,5 +42,9 @@ export default class UserController {
         // empty
         return reply('dummy endpoint');        
     }
+
+    public upload(request: Hapi.Request, reply: Hapi.Base_Reply) {
+        // empty
+    }
 }
 

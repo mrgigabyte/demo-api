@@ -4,7 +4,7 @@ import { IServerConfigurations } from "../configurations";
 import * as Boom from "boom";
 
 import CardController from "./cards-controller";
-import { userSchema, noteSchema } from "./schemas";
+// import { userSchema, noteSchema } from "./schemas";
 
 export default function (server: Hapi.Server, serverConfigs: IServerConfigurations, database: any) {
 
@@ -41,7 +41,7 @@ export default function (server: Hapi.Server, serverConfigs: IServerConfiguratio
                     }
                 }
             },
-            tags: ['api', 'cards'],
+            tags: ['api','cards'],
         }
     });
 
@@ -62,7 +62,28 @@ export default function (server: Hapi.Server, serverConfigs: IServerConfiguratio
                     }
                 }
             },
-            tags: ['api', 'cards'],
+            tags: ['api','cards'],
+        }
+    });
+
+     server.route({
+        method: 'GET',
+        path: '/cards/upload',
+        handler: cardController.upload,
+        // auth: 'jwt',        
+        config: {
+            description: 'Uploading a card',
+            response: {},
+            plugins: {
+                'hapi-swagger': {
+                    responses: {
+                        '200': {
+                            'description': 'Successfully returned the favourite cards if any.'
+                        }
+                    }
+                }
+            },
+            tags: ['api','admin'],
         }
     });
 }

@@ -2,6 +2,7 @@ import * as Server from "./server";
 import * as Database from "./database";
 import * as Configs from "./configurations";
 
+
 console.log(`Running enviroment ${process.env.NODE_ENV || "dev"}`);
 
 //Init Database
