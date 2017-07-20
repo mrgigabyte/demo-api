@@ -12,8 +12,8 @@ export default (): IPlugin => {
                         register: require('hapi-swagger'),
                         options: {
                             info: {
-                                title: 'Galielo - SARAL API',
-                                description: 'API powering the the NavGurukul learning platform :)',
+                                title: 'update me!',
+                                description: 'update me aswell',
                                 version: '0.1'
                             },
                             securityDefinitions: {
@@ -23,20 +23,20 @@ export default (): IPlugin => {
                                     'in': 'header'
                                 }
                             },
-                            tags: [
-                                {
-                                    'name': 'users',
-                                },
-                                {
-                                    'name': 'courses',
-                                },
-                                {
-                                    'name': 'assignments',
-                                },
-                                {
-                                  'name': 'reports',
-                                }
-                            ],
+                            // tags: [
+                            //     {
+                            //         'name': 'api',
+                            //     },
+                            //     {
+                            //         'name': 'courses',
+                            //     },
+                            //     {
+                            //         'name': 'assignments',
+                            //     },
+                            //     {
+                            //       'name': 'reports',
+                            //     }
+                            // ],
                             documentationPage: true,
                             documentationPath: '/docs'
                         }

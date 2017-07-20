@@ -16,17 +16,6 @@ export default function (sequelize: Sequelize.Sequelize, DataTypes) {
             type: Sequelize.STRING(150),
             allowNull: false,
             defaultValue: ''
-        },
-        profilePicture: {
-            type: Sequelize.STRING(150),
-            defaultValue: null
-        },
-        googleUserId: {
-            type: Sequelize.STRING(30),
-            defaultValue: null
-        },
-        facilitator: {
-            type: Sequelize.INTEGER(1).ZEROFILL
         }
     }, {
             classMethods: {

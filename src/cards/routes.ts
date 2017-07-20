@@ -13,28 +13,28 @@ export default function (server: Hapi.Server, serverConfigs: IServerConfiguratio
 
     server.route({
         method: 'PUT',
-        path: '/card/{cardId}/favourite',
+        path: '/cards/{cardId}/favourite',
         handler: cardController.favCard,
         config: {
-            description: 'When the user wants to favourite a card',
-            auth: 'jwt',
+            description: 'Will be used by a user to Favourite/Un-faviourite a card',
+            // auth: 'jwt',
             validate: {
                 params: {
                     cardId: Joi.number().required(),
                 }
             },
-            response: { },
+            response: {},
             plugins: {
                 'hapi-swagger': {
                     responses: {
                         '200': {
-                            'description': 'User already existed and successfully authenticated.'
-                        },
-                        '201': {
-                            'description': 'New user created and successfully authenticated.'
+                            'description': 'Successfully changed the favourite state of card'
                         },
                         '401': {
-                            'description': 'Auth failiure. Wrong ID token.'
+                            'description': 'User un-authorised'
+                        },
+                        '404': {
+                            'description': 'Card not found'
                         }
                     }
                 }
@@ -43,29 +43,24 @@ export default function (server: Hapi.Server, serverConfigs: IServerConfiguratio
         }
     });
 
-     server.route({
+    server.route({
         method: 'GET',
-        path: '/card/favourite',
-        handler: cardController.favourite,
+        path: '/cards/favourite',
+        handler: cardController.getFavouriteCards,
+        // auth: 'jwt',        
         config: {
-            description: 'To get the list of all fav. cards'
-            },
-        response: {  },
-        plugins: {
+            description: 'GET all the cards marked as favourite by a user',
+            response: {},
+            plugins: {
                 'hapi-swagger': {
                     responses: {
                         '200': {
-                            'description': 'User already existed and successfully authenticated.'
-                        },
-                        '201': {
-                            'description': 'New user created and successfully authenticated.'
-                        },
-                        '401': {
-                            'description': 'Auth failiure. Wrong ID token.'
+                            'description': 'Successfully returned the favourite cards if any.'
                         }
                     }
                 }
             },
             tags: ['api'],
+        }
     });
 }
