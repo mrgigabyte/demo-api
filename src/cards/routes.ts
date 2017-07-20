@@ -20,10 +20,12 @@ export default function (server: Hapi.Server, serverConfigs: IServerConfiguratio
             // auth: 'jwt',
             validate: {
                 params: {
-                    cardId: Joi.number().required(),
+                    cardId: Joi.number()
+                        .required()
+                        .description('the card id'),
                 }
             },
-            response: {},
+            // response: {},
             plugins: {
                 'hapi-swagger': {
                     responses: {
@@ -50,7 +52,7 @@ export default function (server: Hapi.Server, serverConfigs: IServerConfiguratio
         // auth: 'jwt',        
         config: {
             description: 'GET all the cards marked as favourite by a user',
-            response: {},
+            // response: {},
             plugins: {
                 'hapi-swagger': {
                     responses: {

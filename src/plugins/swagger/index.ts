@@ -33,11 +33,11 @@ export default (): IPlugin => {
                                    
                                 },
                                 {
-                                    'name': 'cards'
-                                },
-                                {
                                     'name':'admin',
-                                    'description':'Endpoints for the admin panel.'
+                                    'description':'Endpoints for the admin panel.',
+                                }
+                                    'name': 'cards',
+                                    'description': 'endpoints related to card objects'
                                 }
                             ],
                             documentationPage: true,

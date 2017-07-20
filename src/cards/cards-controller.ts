@@ -35,10 +35,12 @@ export default class UserController {
 
     public favCard(request: Hapi.Request, reply: Hapi.Base_Reply) {
         // empty
+        return reply('dummy endpoint');
     }
 
     public getFavouriteCards(request: Hapi.Request, reply: Hapi.Base_Reply) {
         // empty
+        return reply('dummy endpoint');        
     }
 
     public upload(request: Hapi.Request, reply: Hapi.Base_Reply) {
