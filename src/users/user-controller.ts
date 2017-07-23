@@ -46,12 +46,5 @@ export default class UserController {
     public emailNotif(request: Hapi.Request, reply: Hapi.Base_Reply) {
         // empty
     }
-    public adminLogin(request: Hapi.Request, reply: Hapi.Base_Reply) {
-        // empty
-    }
-
-    public adminReset(request: Hapi.Request, reply: Hapi.Base_Reply) {
-        // empty
-    }
 
 }
