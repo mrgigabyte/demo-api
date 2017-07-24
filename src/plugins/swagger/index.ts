@@ -11,6 +11,20 @@ export default (): IPlugin => {
                     {
                         register: require('hapi-swagger'),
                         options: {
+                            documentationPage: true,
+                            // info: {
+                            //     'title': 'Test API Documentation',
+                            //     'description': 'This is a sample example of API documentation.',
+                            //     'version': Pack.version,
+                            //     'termsOfService': 'https://github.com/glennjones/hapi-swagger/',
+                            //     'contact': {
+                            //         'email': 'glennjonesnet@gmail.com'
+                            //     },
+                            //     'license': {
+                            //         'name': 'MIT',
+                            //         'url': 'https://raw.githubusercontent.com/glennjones/hapi-swagger/master/license.txt'
+                            //     }
+                            // },
                             info: {
                                 title: 'Abstract Api',
                                 description: 'API for abstract',
@@ -40,10 +54,11 @@ export default (): IPlugin => {
                                     'description': 'Endpoints for the admin panel.',
                                 },
                             ],
-                            documentationPage: true,
-                            documentationPath: '/docs'
+                            jsonEditor: true,
+                            validatorUrl: null,
                         }
                     }
+                    
                 ]
                     , (error) => {
                         if (error) {

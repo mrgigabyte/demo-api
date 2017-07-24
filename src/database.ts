@@ -10,7 +10,7 @@ interface DbConnection {
 }
 
 export function init(config: IDataConfiguration): any {
-    let sequelize = new Sequelize(config.database, config.user, config.password, {
+    let sequelize: Sequelize.Sequelize = new Sequelize(config.database, config.user, config.password, {
         host: config.host,
         dialect: config.client,
         pool: config.pool,
@@ -45,6 +45,6 @@ export function init(config: IDataConfiguration): any {
 
     db['sequelize'] = sequelize;
     db['Sequelize'] = Sequelize;
-
+    console.log(db);
     return db;
 }

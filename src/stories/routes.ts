@@ -13,10 +13,10 @@ export default function (server: Hapi.Server, serverConfigs: IServerConfiguratio
 
     server.route({
         method: 'GET',
-        path: '/stories/latest',
+        path: '/story/latest',
         handler: storyController.latest,
         config: {
-                    description: 'GET all the latest stories for the user',
+                    description: 'GET all the latest story for the user',
                     response: {
                         // schema: Joi.object({
                         //     "user": userSchema,
@@ -40,13 +40,46 @@ export default function (server: Hapi.Server, serverConfigs: IServerConfiguratio
                                     }
                                 }
                             },
-                    tags: ['api','stories']
+                    tags: ['api','story']
+                }
+        });
+
+        server.route({
+        method: 'GET',
+        path: '/story/{idOrSlug}',
+        handler: storyController.getStory,
+        config: {
+                    description: 'GET all the latest story for the user',
+                    response: {
+                        // schema: Joi.object({
+                        //     "user": userSchema,
+                        //     "jwt": Joi.string().required()
+                        //            .default("xxx.yyy.zzz")
+                        //            .description("Will authenticate all the future requests.")
+                        // })
+                    },
+                     plugins: {
+                                'hapi-swagger': {
+                                    responses: {
+                                        '200': {
+                                            'description': 'User already existed and successfully authenticated.'
+                                        },
+                                        '201': {
+                                            'description': 'New user created and successfully authenticated.'
+                                        },
+                                        '401': {
+                                            'description': 'Auth failiure. Wrong ID token.'
+                                        }
+                                    }
+                                }
+                            },
+                    tags: ['api','story']
                 }
         });
 
      server.route({
         method: 'GET',
-        path: '/stories/archived',
+        path: '/story/archived',
         handler: storyController.archived,
         config: {
                     description: 'GET all the archived stories',

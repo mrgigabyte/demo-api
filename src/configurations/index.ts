@@ -16,17 +16,6 @@ export interface IServerConfigurations {
     plugins: Array<string>;
     jwtSecret: string;
     jwtExpiration: string;
-    googleAuth: {
-        clientId: string;
-        clientSecret: string;
-    };
-    googleCloud: {
-        projectId: string;
-        keyFilename: string;
-        assignmentsBucket: string;
-    };
-    facilitatorEmails: Array<string>;
-    defaultBatchId: number;
 }
 
 export interface IDataConfiguration {

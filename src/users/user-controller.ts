@@ -10,7 +10,6 @@ export default class UserController {
 
     private configs: IServerConfigurations;
     private database: any;
-    private user: any;
 
     constructor(configs: IServerConfigurations, database: any) {
         this.database = database;
@@ -18,13 +17,14 @@ export default class UserController {
     }
 
     public login(request: Hapi.Request, reply: Hapi.Base_Reply) {
-        let token = Jwt.sign({ role: 'ADMIN'}, "secret", { expiresIn: "24h" });
+        let token = Jwt.sign({ role: 'SUPER-ADMIN', id: '123'}, this.configs.jwtSecret, { expiresIn: this.configs.jwtExpiration });
         return reply({
             "jwt": token
         });
     }
     
     public try(request: Hapi.Request, reply: Hapi.Base_Reply) {
+        console.log(request.auth.credentials.userId);
         return reply("hey");
         //empty
     }

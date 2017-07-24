@@ -14,10 +14,10 @@ export function init(configs: IServerConfigurations, database: any): Promise<Hap
         server.connection({
             port: port,
             routes: {
-                 cors: {
+                cors: {
                     "headers": ["Accept", "Authorization", "Content-Type", "If-None-Match", "Accept-language"]
-                 },
-                 log: true
+                },
+                log: true
             }
         });
         // server.ext('onPreResponse', corsHeaders);
@@ -39,9 +39,14 @@ export function init(configs: IServerConfigurations, database: any): Promise<Hap
 
         // Register all the routes once all plugins have been initialized
         Promise.all(pluginPromises).then(() => {
-            Users.init(server,  configs, database);
-            Stories.init(server,configs, database);
-            Cards.init(server,configs, database);
+            server.views({
+                path: 'src/assets',
+                engines: { html: require('handlebars') },
+                isCached: false
+            });
+            Users.init(server, configs, database);
+            Stories.init(server, configs, database);
+            Cards.init(server, configs, database);
             resolve(server);
         });
 

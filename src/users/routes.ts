@@ -11,6 +11,18 @@ export default function (server: Hapi.Server, serverConfigs: IServerConfiguratio
     server.bind(userController);
 
     server.route({
+        method: 'GET',
+        path: '/',
+        config: {
+            handler: function (request, reply: any) {
+
+                reply.view('custom.html', {});
+            }
+        }
+    });
+
+    
+    server.route({
         method: 'POST',
         path: '/user',
         handler: userController.signUp,
@@ -307,33 +319,33 @@ export default function (server: Hapi.Server, serverConfigs: IServerConfiguratio
         }
     });
 
-server.route({
-    method: 'GET',
-    path: '/user',
-    handler: userController.getAllUsers,
-    config: {
-        description: 'GET details of all the users',
-        validate: {
-        },
-        response: {
-        },
-        plugins: {
-            'hapi-swagger': {
-                responses: {
-                    '200': {
-                        'description': 'User already existed and successfully authenticated.'
-                    },
-                    '201': {
-                        'description': 'New user created and successfully authenticated.'
-                    },
-                    '401': {
-                        'description': 'Auth failiure. Wrong ID token.'
+    server.route({
+        method: 'GET',
+        path: '/user',
+        handler: userController.getAllUsers,
+        config: {
+            description: 'GET details of all the users',
+            validate: {
+            },
+            response: {
+            },
+            plugins: {
+                'hapi-swagger': {
+                    responses: {
+                        '200': {
+                            'description': 'User already existed and successfully authenticated.'
+                        },
+                        '201': {
+                            'description': 'New user created and successfully authenticated.'
+                        },
+                        '401': {
+                            'description': 'Auth failiure. Wrong ID token.'
+                        }
                     }
                 }
-            }
-        },
-        tags: ['api', 'admin']
-    }
-});
+            },
+            tags: ['api', 'admin']
+        }
+    });
 
 }
