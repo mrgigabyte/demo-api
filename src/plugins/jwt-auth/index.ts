@@ -11,7 +11,8 @@ export default (): IPlugin => {
 
                 const validateUser = (decoded, request: Hapi.Request, cb) => {
                     server.app.userId = decoded.id;
-                    return cb(null, true);
+                    console.log(decoded);
+                    return cb(null, true, {role:['SUPER-ADMIN']});
                 };
 
                 server.register({
@@ -39,3 +40,15 @@ export default (): IPlugin => {
         }
     };
 };
+
+
+// var validate = function (decoded, request, callback) {
+
+//     // do your checks to see if the person is valid
+//     if (!people[decoded.id]) {
+//       return callback(null, false);
+//     }
+//     else {
+//       return callback(null, true);
+//     }
+// };

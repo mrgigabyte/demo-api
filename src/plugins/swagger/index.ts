@@ -1,4 +1,4 @@
-import {IPlugin, IPluginInfo} from "../interfaces";
+import { IPlugin, IPluginInfo } from "../interfaces";
 import * as Hapi from "hapi";
 
 export default (): IPlugin => {
@@ -12,32 +12,32 @@ export default (): IPlugin => {
                         register: require('hapi-swagger'),
                         options: {
                             info: {
-                                title: 'abstr_ct API',
-                                description: 'API powering the the abstr_ct platform :)',
-                                version: '0.1'
+                                title: 'Abstract Api',
+                                description: 'API for abstract',
+                                version: '1.0.0'
                             },
-                            grouping: 'tags',
                             securityDefinitions: {
                                 'jwt': {
-                                    'type': 'apikey',
+                                    'type': 'apiKey',
                                     'name': 'Authorization',
                                     'in': 'header'
                                 }
                             },
+                            grouping: 'tags',
                             tags: [
                                 {
                                     'name': 'user'
                                 },
                                 {
                                     'name': 'stories'
-                                   
+
                                 },
                                 {
                                     'name': 'cards'
                                 },
                                 {
-                                    'name':'admin',
-                                    'description':'Endpoints for the admin panel.',
+                                    'name': 'admin',
+                                    'description': 'Endpoints for the admin panel.',
                                 },
                             ],
                             documentationPage: true,
@@ -51,7 +51,7 @@ export default (): IPlugin => {
                         }
                         resolve();
                     });
-                });
+            });
         },
         info: () => {
             return {

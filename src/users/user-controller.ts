@@ -18,21 +18,29 @@ export default class UserController {
     }
 
     public login(request: Hapi.Request, reply: Hapi.Base_Reply) {
-        // empty
+        let token = Jwt.sign({ role: 'ADMIN'}, "secret", { expiresIn: "24h" });
+        return reply({
+            "jwt": token
+        });
+    }
+    
+    public try(request: Hapi.Request, reply: Hapi.Base_Reply) {
+        return reply("hey");
+        //empty
     }
 
     public reset(request: Hapi.Request, reply: Hapi.Base_Reply) {
         // empty
     }
 
-     public signUp(request: Hapi.Request, reply: Hapi.Base_Reply) {
+    public signUp(request: Hapi.Request, reply: Hapi.Base_Reply) {
         // empty
     }
 
-    public profileGet(request: Hapi.Request, reply: Hapi.Base_Reply) {
+    public getUserInfo(request: Hapi.Request, reply: Hapi.Base_Reply) {
         // empty
     }
-     public pushNotif(request: Hapi.Request, reply: Hapi.Base_Reply) {
+    public pushNotif(request: Hapi.Request, reply: Hapi.Base_Reply) {
         // empty
     }
 
@@ -45,6 +53,10 @@ export default class UserController {
     }
     public emailNotif(request: Hapi.Request, reply: Hapi.Base_Reply) {
         // empty
+    }
+
+    public getAllUsers(request: Hapi.Request, reply: Hapi.Base_Reply) {
+        
     }
 
 }
