@@ -96,6 +96,9 @@ export default function (server: Hapi.Server, serverConfigs: IServerConfiguratio
             plugins: {
                 'hapi-swagger': {
                     responses: {
+                        '200': {
+                            'description': 'successfully returned a list of archived stories.'
+                        }
                     }
                 },
                 'hapiAuthorization': { roles: ['GOD', 'JESUS', 'ROMANS'] }
@@ -316,6 +319,9 @@ export default function (server: Hapi.Server, serverConfigs: IServerConfiguratio
             plugins: {
                 'hapi-swagger': {
                     responses: {
+                        '200': {
+                            'description': 'successfully deleted the story.'
+                        }
                     }
                 },
                 'hapiAuthorization': { roles: ['GOD', 'JESUS'] }
