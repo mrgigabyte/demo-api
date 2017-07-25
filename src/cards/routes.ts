@@ -17,18 +17,18 @@ export default function (server: Hapi.Server, serverConfigs: IServerConfiguratio
         handler: cardController.favourite,
         config: {
             description: 'Favourite/Un-faviourite a card',
+            notes: [`GOD, JESUS and ROMANS can access this endpoint`],
             auth: 'jwt',
             validate: {
                 params: {
                     cardId: Joi.number()
                         .required()
-                        .default("1")
                         .description('the card id'),
                 }
             },
             response: {
                 schema: Joi.object({
-                    "res": Joi.string().required()
+                    "res": Joi.boolean().required()
                 })
             },
             plugins: {
@@ -54,6 +54,7 @@ export default function (server: Hapi.Server, serverConfigs: IServerConfiguratio
         handler: cardController.getFavouriteCards,
         config: {
             description: 'GET all the cards marked as favourite by a user',
+            notes: [`GOD, JESUS and ROMANS can access this endpoint`],
             auth: 'jwt',
             response: {
                 schema: Joi.object({
@@ -79,20 +80,24 @@ export default function (server: Hapi.Server, serverConfigs: IServerConfiguratio
         path: '/card/upload',
         handler: cardController.uploadCard,
         config: {
-            description: 'Upload a new card from the file system which can be of type(image or video)',
+            description: 'Upload a new card from the file system.',
+            notes: [`You can upload an image(.png, .jpg, .gif) or a video(.mp4).  
+            After successfull upload it will return the uri of the uploaded card.  
+            GOD and JESUS can access this endpoint
+            `],
             auth: 'jwt',
-            // payload: {
-            //     output: 'stream',
-            //     parse: true,
-            //     maxBytes: 52428800,
-            //     allow: 'multipart/form-data',
-            // },
+            payload: {
+                output: 'stream',
+                parse: true,
+                maxBytes: 52428800,
+                allow: 'multipart/form-data',
+            },
             validate: {
-                // payload: {
-                //     file: Joi.any().required()
-                //         .meta({ swaggerType: 'file' })
-                //         .description('The file which needs to be uploaded.')
-                // }
+                payload: {
+                    file: Joi.any().required()
+                        .meta({ swaggerType: 'file' })
+                        .description('The file which needs to be uploaded.')
+                }
             },
             response: {
                 schema: Joi.object({
@@ -101,6 +106,7 @@ export default function (server: Hapi.Server, serverConfigs: IServerConfiguratio
             },
             plugins: {
                 'hapi-swagger': {
+                    payloadType: 'form',
                     responses: {
                         '200': {
                             'description': 'Successfully returned the uri.'
@@ -119,28 +125,30 @@ export default function (server: Hapi.Server, serverConfigs: IServerConfiguratio
         handler: cardController.addLink,
         config: {
             description: 'Add link to a card which can be of type basic or video.',
+            notes: [`GOD and JESUS can access this endpoint`],
             auth: 'jwt',
             validate: {
                 params: {
                     cardId: Joi.number()
                         .required()
-                        .default("1")
                         .description('the card id'),
                 },
                 payload: {
                     link: Joi.string().uri().required()
-                        .default("https://wwww.loremipsum.com")
                         .description('Link to be assosciated witht a card.')
                 }
             },
             response: {
                 schema: Joi.object({
-                    "res": Joi.string().required()
+                    "res": Joi.boolean().required()
                 })
             },
             plugins: {
                 'hapi-swagger': {
                     responses: {
+                        '200': {
+                            'description': 'Successfully added the link to the card.'
+                        }
                     }
                 },
                 'hapiAuthorization': { roles: ['GOD', 'JESUS'] }
@@ -155,24 +163,26 @@ export default function (server: Hapi.Server, serverConfigs: IServerConfiguratio
         handler: cardController.deleteCard,
         config: {
             description: 'Delete the card.',
-            notes: ['It will soft delete the card.'],
+            notes: ['It will soft delete the card.', 'GOD and JESUS can access this endpoint'],
             auth: 'jwt',
             validate: {
                 params: {
                     cardId: Joi.number()
                         .required()
-                        .default("1")
                         .description('the card id'),
                 },
             },
             response: {
                 schema: Joi.object({
-                    "res": Joi.string().required()
+                    "res": Joi.boolean().required()
                 })
             },
             plugins: {
                 'hapi-swagger': {
                     responses: {
+                        '200': {
+                            'description': 'Successfully deleted the card.'
+                        }
                     }
                 },
                 'hapiAuthorization': { roles: ['GOD', 'JESUS'] }

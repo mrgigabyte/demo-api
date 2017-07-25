@@ -62,7 +62,7 @@ export default class UserController {
 
     public favourite(request: Hapi.Request, reply: Hapi.Base_Reply) {
         return reply({
-            "res": "Card favourited/un-favourited successfully"
+            "res": true
         });
     }
 
@@ -74,19 +74,19 @@ export default class UserController {
 
     public uploadCard(request: Hapi.Request, reply: Hapi.Base_Reply) {
         return reply({
-            "res": "https://www.loremipsum.com"
+            "res": "https://wwww.lorempIpsum.com"
         });
     }
 
     public addLink(request: Hapi.Request, reply: Hapi.Base_Reply) {
         return reply({
-            "res": "link added successfully"
+            "res": true
         });
     }
 
     public deleteCard(request: Hapi.Request, reply: Hapi.Base_Reply) {
         return reply({
-            "res": "card deleted succsessfully"
+            "res": true
         });
     }
 }
