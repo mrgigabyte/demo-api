@@ -22,13 +22,13 @@ export default function (server: Hapi.Server, serverConfigs: IServerConfiguratio
                 payload: Joi.object({
                     name: Joi.string().required()
                         .description("Name of the user")
-                        .default("dummy"),
+                        .default("John Doe"),
                     password: Joi.string().required()
                         .description('Password of the user')
                         .default('xxxxxxxxxx'),
                     email: Joi.string().email().required()
                         .description('Email of the user')
-                        .default('dummy@dummy.com'),
+                        .default('john.doe@gmail.com'),
                     emailNotif: Joi.bool().required()
                         .description('Enable/Disable email notifications')
                         .default('false'),
@@ -46,8 +46,7 @@ export default function (server: Hapi.Server, serverConfigs: IServerConfiguratio
                             'description': 'New User Created Successfully'
                         }
                     }
-                },
-                'hapiAuthorization': { roles: ['GOD', 'JESUS', 'ROMANS'] }
+                }
             },
             tags: ['api', 'user'],
         }
@@ -64,7 +63,7 @@ export default function (server: Hapi.Server, serverConfigs: IServerConfiguratio
                 payload: Joi.object({
                     email: Joi.string().email().required()
                         .description("Email of the user")
-                        .default("abc123"),
+                        .default("john.doe@gmail.com"),
                     password: Joi.string().required()
                         .description('Password of the user')
                         .default('xxxxxxxxxx')
@@ -84,8 +83,7 @@ export default function (server: Hapi.Server, serverConfigs: IServerConfiguratio
                             'description': 'User already existed and successfully authenticated.'
                         }
                     }
-                },
-                'hapiAuthorization': { roles: ['GOD', 'JESUS', 'ROMANS'] }
+                }
             },
             tags: ['api', 'user'],
         }
@@ -110,7 +108,6 @@ export default function (server: Hapi.Server, serverConfigs: IServerConfiguratio
                 })
             },
             plugins: {
-                'hapiAuthorization': { roles: ['GOD', 'JESUS', 'ROMANS'] }
             },
             tags: ['api', 'user'],
         }
@@ -135,7 +132,6 @@ export default function (server: Hapi.Server, serverConfigs: IServerConfiguratio
                 })
             },
             plugins: {
-                'hapiAuthorization': { roles: ['GOD', 'JESUS', 'ROMANS'] }
             },
             tags: ['api', 'user'],
         }
@@ -206,11 +202,11 @@ export default function (server: Hapi.Server, serverConfigs: IServerConfiguratio
         handler: userController.pushNotif,
         config: {
             description: 'Enable/Disable push-notifications for a user',
-            notes: [`It will set whether to send push notifications or not  on the basis of payload data.
-                1) disable ----> disable notifications.
-                2) morning ----> send notifications in morning.
-                3) afternoon ----> send notifications in afternoon.
-                4) night ----> send notifications at night.
+            notes: [`It will set whether to send push notifications or not  on the basis of payload data.  
+                1. disable ---- disable notifications.  
+                2. morning ---- send notifications in morning.  
+                3. afternoon ---- send notifications in afternoon.  
+                4. night ---- send notifications at night.  
             `],
             auth: 'jwt',
             validate: {

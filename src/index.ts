@@ -19,7 +19,7 @@ database.sequelize.sync().then(() => {
         if (!module.parent) {
             server.start(() => {
                 console.log('Server running at:', server.info.uri);
-                // console.log('Docs at:', server.info.uri);
+                console.log('Docs at:', server.info.uri);
             });
             console.log("Running server from parent :)");
         } else {
