@@ -118,19 +118,38 @@
 
 <body>
     <section class="swagger-section">
-    <div id="header">
-    <div class="swagger-ui-wrap">
-        <a id="logo" href="http://swagger.io">swagger</a>
-        <form id="api_selector" onsubmit="return false">
-            <div class="input"><input placeholder="api_key" id="input_apiKey" style="" name="apiKey" type="text"></div>
-            <div class="input"><input placeholder="http://example.com/api" id="input_baseUrl" style="display:none" name="baseUrl" type="text"></div>
-            <!--
-            <div class='input'><a id="explore" href="#" data-sw-translate>Explore</a></div>
-            -->
-        </form>
-    </div>
-</div>
-<div id="message-bar" class="swagger-ui-wrap message-success" data-sw-translate=""></div>
+    	<div id="header">
+    		<div class="swagger-ui-wrap">
+        		<a id="logo" href="http://swagger.io">swagger</a>
+        		<form id="api_selector" onsubmit="return false">
+            		<div class="input"><input placeholder="api_key" id="input_apiKey" style="" name="apiKey" type="text"></div>
+            		<div class="input"><input placeholder="http://example.com/api" id="input_baseUrl" style="display:none" name="baseUrl" type="text"></div>
+            	</form>
+    		</div>
+		</div>
+		<div id="message-bar" class="swagger-ui-wrap message-success" data-sw-translate=""></div>
+		<div class="swagger-ui-wrap info-div">
+			<h2>How to begin?</h2>
+			<p>The API has 3 user roles namely: </p>
+			<ul>
+				<li><strong>GOD : </strong> With the most privileges</li>
+				<li><strong>JESUS : </strong> With less privileges than GOD</li>
+				<li><strong>ROMANS : </strong> With the least privileges</li>
+			</ul>
+			<br>
+			<p>Do a request to <code>/user/login</code> endpoint. This endpoint will return 3 jwts for each type of user privileges. 
+			Copy/paste the value of any one of these JWTS in the page header where it is written apiKey so that you can access routes that require authentication.</p>
+			<h2>Generic Error Codes</h2>
+			<ul>
+				<li><strong>401 : </strong>Authentication information missing in the request.</li>
+				<li><strong>400 : </strong>Error in request payload</li>
+				<li><strong>404 : </strong>Resource not found.</li>
+				<li><strong>500 : </strong>The request could not be fulfilled due to a server error.</li>
+				<li><strong>503 : </strong>Server taking too long to fulfill the request.</li>
+			</ul>
+			<br>
+			<br>
+		</div>
         <div id="swagger-ui-container" class="swagger-ui-wrap"></div>
     </section>
 </body>
