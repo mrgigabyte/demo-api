@@ -101,7 +101,13 @@ export default class UserController {
 
     public signup(request: Hapi.Request, reply: Hapi.Base_Reply) {
         return reply({
-            "res": "Successfully created a new user"
+            "res": true
+        });
+    }
+
+    public checkEmail(request: Hapi.Request, reply: Hapi.Base_Reply) {
+        return reply({
+            "res": true
         });
     }
 
@@ -111,20 +117,20 @@ export default class UserController {
         let token3 = Jwt.sign({ role: 'ROMANS', id: '123' }, this.configs.jwtSecret, { expiresIn: this.configs.jwtExpiration });
         return reply({
             "jwtGod": token1,
-            "jwtJESUS": token2,
+            "jwtJesus": token2,
             "jwtRomans": token3
         });
     }
 
     public requestResetPassword(request: Hapi.Request, reply: Hapi.Base_Reply) {
         return reply({
-            "res": "successfully sent the email containing the reset link"
+            "res": true
         });
     }
 
     public resetPassword(request: Hapi.Request, reply: Hapi.Base_Reply) {
         return reply({
-            "res": "successfully changed the password"
+            "res": true
         });
     }
 
@@ -143,19 +149,25 @@ export default class UserController {
 
     public deleteProfile(request: Hapi.Request, reply: Hapi.Base_Reply) {
         return reply({
-            "res": "successfully deleted the profile"
+            "res": true
         });
     }
 
     public pushNotif(request: Hapi.Request, reply: Hapi.Base_Reply) {
         return reply({
-            "res": "successfully changed the push notification setting"
+            "res": true
         });
     }
 
     public emailNotif(request: Hapi.Request, reply: Hapi.Base_Reply) {
         return reply({
-            "res": "successfully changed the email notification setting"
+            "res": true
+        });
+    }
+
+    public updateUserInfo(request: Hapi.Request, reply: Hapi.Base_Reply) {
+        return reply({
+            "res": true,
         });
     }
 

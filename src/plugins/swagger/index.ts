@@ -43,7 +43,6 @@ export default (): IPlugin => {
                                     'description': 'Endpoints for the admin panel.',
                                 },
                             ],
-                            jsonEditor: true,
                             validatorUrl: null,
                         }
                     }
