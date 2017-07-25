@@ -12,7 +12,7 @@ export default (): IPlugin => {
                 server.register({
                     register: require('hapi-authorization'),
                     options: {
-                        roles: false
+                        roles: ['GOD', 'JESUS', 'ROMANS']
                     }
                 }, (error) => {
                     if (error) {

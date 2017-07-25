@@ -28,6 +28,10 @@ export default class UserController {
         // empty
     }
 
+    public getStory(request: Hapi.Request, reply: Hapi.Base_Reply) {
+        // empty
+    }
+
     public saveStory(request: Hapi.Request, reply: Hapi.Base_Reply) {
         // empty
     }

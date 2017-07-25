@@ -11,7 +11,7 @@ export default (): IPlugin => {
                     {
                         register: require('hapi-swagger'),
                         options: {
-                            documentationPage: true,
+                            documentationPage: false,
                             // info: {
                             //     'title': 'Test API Documentation',
                             //     'description': 'This is a sample example of API documentation.',

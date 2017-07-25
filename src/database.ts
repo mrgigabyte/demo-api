@@ -45,6 +45,5 @@ export function init(config: IDataConfiguration): any {
 
     db['sequelize'] = sequelize;
     db['Sequelize'] = Sequelize;
-    console.log(db);
     return db;
 }

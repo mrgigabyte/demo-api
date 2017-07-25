@@ -5,6 +5,7 @@ import { IServerConfigurations } from "./configurations";
 import * as Users from "./users";
 import * as Stories from "./stories";
 import * as Cards from "./cards";
+import * as Documetation from "./documentation";
 
 export function init(configs: IServerConfigurations, database: any): Promise<Hapi.Server> {
     return new Promise<Hapi.Server>(resolve => {
@@ -47,6 +48,7 @@ export function init(configs: IServerConfigurations, database: any): Promise<Hap
             Users.init(server, configs, database);
             Stories.init(server, configs, database);
             Cards.init(server, configs, database);
+            Documetation.init(server, configs, database);
             resolve(server);
         });
 

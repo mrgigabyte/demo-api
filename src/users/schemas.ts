@@ -1,17 +1,10 @@
 import * as Joi from "joi";
 
-export const userSchema:Joi.ObjectSchema = Joi.object({
-    id: Joi.number(),
-    name: Joi.string(),
-    email: Joi.string().email(),
-    profilePicture: Joi.string().uri(),
-    googleUserId: Joi.string(),
-    facilitator: Joi.bool()
-});
-
-export const noteSchema:Joi.ObjectSchema = Joi.object({
+export const userSchema: Joi.ObjectSchema = Joi.object({
     id: Joi.number().required(),
-    text: Joi.string().required(),
-    createdAt: Joi.date().required(),
     name: Joi.string().required(),
+    email: Joi.string().email().required(),
+    emailNotif: Joi.boolean().required(),
+    pushNotif: Joi.string().required()
+        .valid(['disable', 'morning', 'afternoon', 'night'])
 });
