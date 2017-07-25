@@ -13,8 +13,8 @@ export default (): IPlugin => {
                         options: {
                             documentationPage: false,
                             info: {
-                                title: 'Abstract Api',
-                                description: 'API for abstract',
+                                title: 'Abstr_ct Api',
+                                description: 'API powering the abstr_ct app',
                                 version: '1.0.0'
                             },
                             securityDefinitions: {
