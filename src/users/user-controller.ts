@@ -210,8 +210,6 @@ export default class UserController {
         });
     }
 
-
-
     public getAllUsers(request: Hapi.Request, reply: Hapi.Base_Reply) {
         return reply({
             "data": this.dummyData

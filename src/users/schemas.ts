@@ -19,7 +19,6 @@ export const userSchema: Joi.ObjectSchema = Joi.object({
     joinedOn: Joi.date().required()
 });
 
-
 export const userAdminPannelSchema: Joi.ObjectSchema = userSchema.keys({
     status: Joi.string().required()
         .valid(['active', 'inactive', 'deleted']),

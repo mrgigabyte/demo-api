@@ -1,11 +1,15 @@
 import * as Joi from "joi";
 
-export const cardSchema:Joi.ObjectSchema = Joi.object({
-    id: Joi.number().required(),
+export const baseCardSchema: Joi.ObjectSchema = Joi.object({
     order: Joi.number().required(),
     cardData: Joi.string().uri().required(),
     cardType: Joi.string().valid(['image', 'video']).required(),
-    favourite: Joi.boolean().required(),
     link: Joi.string().uri(),
-    linkType: Joi.string().valid(['video', 'basic']).optional(),
+    linkType: Joi.string().valid(['video', 'basic'])
 });
+
+export const cardSchema: Joi.ObjectSchema = baseCardSchema.keys({
+    id: Joi.number().required(),
+    favourite: Joi.boolean().required(),
+});
+

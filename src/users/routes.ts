@@ -197,7 +197,6 @@ export default function (server: Hapi.Server, serverConfigs: IServerConfiguratio
         }
     });
 
-
     server.route({
         method: 'GET',
         path: '/user/{userId}',

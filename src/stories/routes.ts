@@ -4,7 +4,7 @@ import { IServerConfigurations } from "../configurations";
 import * as Boom from "boom";
 
 import StoryController from "./stories-controller";
-import { storySchema } from "./schemas";
+import { storySchema, baseStorySchema } from "./schemas";
 
 export default function (server: Hapi.Server, serverConfigs: IServerConfigurations, database: any) {
 
@@ -16,9 +16,11 @@ export default function (server: Hapi.Server, serverConfigs: IServerConfiguratio
         path: '/story/latest',
         handler: storyController.getLatest,
         config: {
-            description: 'GET latest stories for the user',
-            notes: ["This endpoint will return those stories that the user has not read from the recently `pushed live stories`.  "
-                + "This endpoint will never return more than 2 stories."],
+            description: 'Returns latest stories for the user',
+            notes: [`This endpoint will return at max 2 most recent unread sotries from chronologically sorted list of published stories.
+
+            'GOD', 'JESUS' and 'ROMANS' can access this endpoint.
+            `],
             auth: 'jwt',
             validate: {
             },
@@ -30,6 +32,9 @@ export default function (server: Hapi.Server, serverConfigs: IServerConfiguratio
             plugins: {
                 'hapi-swagger': {
                     responses: {
+                        '200': {
+                            'description': 'successfully returned a list of latest stories.'
+                        }
                     }
                 },
                 'hapiAuthorization': { roles: ['GOD', 'JESUS', 'ROMANS'] }
@@ -44,6 +49,7 @@ export default function (server: Hapi.Server, serverConfigs: IServerConfiguratio
         handler: storyController.markRead,
         config: {
             description: 'Marks a story as read when the user swipes through the last card of a story',
+            notes: [`'GOD', 'JESUS' and 'ROMANS' can access this endpoint.`],
             auth: 'jwt',
             validate: {
                 params: {
@@ -58,6 +64,9 @@ export default function (server: Hapi.Server, serverConfigs: IServerConfiguratio
             plugins: {
                 'hapi-swagger': {
                     responses: {
+                        '200': {
+                            'description': 'Read the complete story.'
+                        }
                     }
                 },
                 'hapiAuthorization': { roles: ['GOD', 'JESUS', 'ROMANS'] }
@@ -73,9 +82,11 @@ export default function (server: Hapi.Server, serverConfigs: IServerConfiguratio
         handler: storyController.getArchived,
         config: {
             description: 'GET all the archived stories',
-            notes: [`Archived stories are those stories which are:  
-            1. Read by the user.  
-            2. Not read by the user and are older than the latest stories.  `],
+            notes: [`A story will be archived on the basis of the following 2 conditions:     
+            1. A user has read(User has swiped through all the cards of a story) the story.  
+            2. Stories which are not read by the user and are not latest stories.  
+
+            GOD, JESUS and ROMANS can access this endpoint.`],
             auth: 'jwt',
             response: {
                 schema: Joi.object({
@@ -99,6 +110,7 @@ export default function (server: Hapi.Server, serverConfigs: IServerConfiguratio
         handler: storyController.getStoryByIdOrSlug,
         config: {
             description: 'GET story details by Id or Slug',
+            notes: [`GOD and JESUS can access this endpoint.`],
             auth: 'jwt',
             validate: {
                 params: {
@@ -113,6 +125,9 @@ export default function (server: Hapi.Server, serverConfigs: IServerConfiguratio
             plugins: {
                 'hapi-swagger': {
                     responses: {
+                        '200': {
+                            'description': 'Details of the story with id/slug in the payload found.'
+                        }
                     }
                 },
                 'hapiAuthorization': { roles: ['GOD', 'JESUS'] }
@@ -127,7 +142,11 @@ export default function (server: Hapi.Server, serverConfigs: IServerConfiguratio
         handler: storyController.getAllStories,
         config: {
             description: 'GET all the stories(published/drafts) created so far.',
-            notes: ['The stories that dont have a `publishedOn` key are draft stories.'],
+            notes: [`The stories can be of the following two types:  
+            1. draft : Stories that dont have a publishedOn key.  
+            2. published : Stories that have a publishedOn key.
+            
+            GOD and JESUS can access this endpoint.`],
             auth: 'jwt',
             response: {
                 schema: Joi.object({
@@ -137,6 +156,9 @@ export default function (server: Hapi.Server, serverConfigs: IServerConfiguratio
             plugins: {
                 'hapi-swagger': {
                     responses: {
+                        '200': {
+                            'description': 'List of all stories returned successfully'
+                        }
                     }
                 },
                 'hapiAuthorization': { roles: ['GOD', 'JESUS'] }
@@ -151,34 +173,22 @@ export default function (server: Hapi.Server, serverConfigs: IServerConfiguratio
         handler: storyController.newStory,
         config: {
             description: 'Creates a new story using the info sent in the payload.',
+            notes: [`GOD and JESUS can access this endpoint.`],
             auth: 'jwt',
             validate: {
-                payload: Joi.object({
-                    title: Joi.string()
-                        .required()
-                        .default('Lorem Ipsum Sit')
-                        .description('Story title'),
-                    by: Joi.string()
-                        .required()
-                        .default('John Does')
-                        .description('Story Author'),
-                    cards: Joi.array().items(Joi.object({
-                        order: Joi.number().required(),
-                        cardData: Joi.string().uri().required(),
-                        cardType: Joi.string().valid(['image', 'video']).required(),
-                        link: Joi.string().uri(),
-                        linkType: Joi.string().valid(['video', 'basic']),
-                    })),
-                })
+                payload: baseStorySchema
             },
             response: {
                 schema: Joi.object({
-                    "res": Joi.string().required()
+                    "res": Joi.boolean().required()
                 })
             },
             plugins: {
                 'hapi-swagger': {
                     responses: {
+                        '201': {
+                            'description': 'new story created successfully'
+                        }
                     }
                 },
                 'hapiAuthorization': { roles: ['GOD', 'JESUS'] }
@@ -193,37 +203,23 @@ export default function (server: Hapi.Server, serverConfigs: IServerConfiguratio
         handler: storyController.updateStory,
         config: {
             description: 'Update details of a previously published/draft story.',
+            notes: [`GOD and JESUS can access this endpoint.`],
             auth: 'jwt',
             validate: {
                 params: {
                     idOrSlug: Joi.any().required().description("Id/Slug of the story"),
                 },
-                payload: Joi.object({
-                    title: Joi.string()
-                        .required()
-                        .default('Lorem Ipsum Sit')
-                        .description('Story title'),
-                    by: Joi.string()
-                        .required()
-                        .default('John Does')
-                        .description('Story Author'),
-                    cards: Joi.array().items(Joi.object({
-                        order: Joi.number().required(),
-                        cardData: Joi.string().uri().required(),
-                        cardType: Joi.string().valid(['image', 'video']).required(),
-                        link: Joi.string().uri(),
-                        linkType: Joi.string().valid(['video', 'basic']),
-                    })),
-                })
+                payload: baseStorySchema
             },
             response: {
                 schema: Joi.object({
-                    "res": Joi.string().required()
+                    "res": Joi.boolean().required()
                 })
             },
             plugins: {
                 'hapi-swagger': {
                     responses: {
+                        '200': 'Successfully made the changes.'
                     }
                 },
                 'hapiAuthorization': { roles: ['GOD', 'JESUS'] }
@@ -237,7 +233,11 @@ export default function (server: Hapi.Server, serverConfigs: IServerConfiguratio
         path: '/story/{idOrSlug}/pushLive',
         handler: storyController.pushLive,
         config: {
-            description: "Makes the story live for all those users who haven't seen the story before",
+            description: "Makes a story live.",
+            notes: [`This endpoint will publish a story to the platform and 
+            will make it available to be read by the users who haven't read the story before.
+            
+            GOD and JESUS can access this endpoint.`],
             auth: 'jwt',
             validate: {
                 params: {
@@ -246,12 +246,15 @@ export default function (server: Hapi.Server, serverConfigs: IServerConfiguratio
             },
             response: {
                 schema: Joi.object({
-                    "res": Joi.string().required()
+                    "res": Joi.boolean().required()
                 })
             },
             plugins: {
                 'hapi-swagger': {
                     responses: {
+                        '200': {
+                            'description': 'successfully published the story.'
+                        }
                     }
                 },
                 'hapiAuthorization': { roles: ['GOD', 'JESUS'] }
@@ -265,7 +268,8 @@ export default function (server: Hapi.Server, serverConfigs: IServerConfiguratio
         path: '/story/{idOrSlug}/preview',
         handler: storyController.preview,
         config: {
-            description: 'Makes the story live only for `admin`.',
+            description: 'Makes the story live only for GOD and JESUS.',
+            notes: ['This will make a story live only for GOD and JESUS', 'GOD and JESUS can access this endpoint.'],
             auth: 'jwt',
             validate: {
                 params: {
@@ -274,12 +278,15 @@ export default function (server: Hapi.Server, serverConfigs: IServerConfiguratio
             },
             response: {
                 schema: Joi.object({
-                    "res": Joi.string().required()
+                    "res": Joi.boolean().required()
                 })
             },
             plugins: {
                 'hapi-swagger': {
                     responses: {
+                        '200': {
+                            'description': 'successfully made the story live only for GOD/JESUS.'
+                        }
                     }
                 },
                 'hapiAuthorization': { roles: ['GOD', 'JESUS'] }
@@ -294,7 +301,7 @@ export default function (server: Hapi.Server, serverConfigs: IServerConfiguratio
         handler: storyController.deleteStory,
         config: {
             description: 'Deletes the story.',
-            notes: ['It will soft delete a story.'],
+            notes: ['It will soft delete a story.', 'GOD and JESUS can access this endpoint.'],
             auth: 'jwt',
             validate: {
                 params: {
@@ -303,7 +310,7 @@ export default function (server: Hapi.Server, serverConfigs: IServerConfiguratio
             },
             response: {
                 schema: Joi.object({
-                    "res": Joi.string().required()
+                    "res": Joi.boolean().required()
                 })
             },
             plugins: {
