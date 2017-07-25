@@ -13,7 +13,7 @@ Made using hapi.js and uses mysql as database.
 * *npm run watch* (restart the application when files change)
 
 ## Documentation
-When the code is running, documentation is accessible at `localhost:5000/docs`.
+When the code is running, documentation is accessible at `localhost:5000`.
 
 ## Our Git Workflow
 
