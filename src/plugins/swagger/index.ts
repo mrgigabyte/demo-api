@@ -27,14 +27,16 @@ export default (): IPlugin => {
                             grouping: 'tags',
                             tags: [
                                 {
-                                    'name': 'user'
+                                    'name': 'user',
+                                    'description': 'User related enpoints for the app.',
                                 },
                                 {
-                                    'name': 'story'
-
+                                    'name': 'story',
+                                    'description': 'Story related enpoints for the app.',
                                 },
                                 {
-                                    'name': 'cards'
+                                    'name': 'card',
+                                    'description': 'Card related endpoints for the app.',                                    
                                 },
                                 {
                                     'name': 'admin',

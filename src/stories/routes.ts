@@ -234,7 +234,7 @@ export default function (server: Hapi.Server, serverConfigs: IServerConfiguratio
 
     server.route({
         method: 'POST',
-        path: '/stories/{idOrSlug}/pushLive',
+        path: '/story/{idOrSlug}/pushLive',
         handler: storyController.pushLive,
         config: {
             description: "Makes the story live for all those users who haven't seen the story before",

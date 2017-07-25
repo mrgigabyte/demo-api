@@ -9,11 +9,38 @@ export default class UserController {
 
     private configs: IServerConfigurations;
     private database: any;
-    private user: any;
+    private dummyCards: any;
 
     constructor(configs: IServerConfigurations, database: any) {
         this.database = database;
         this.configs = configs;
+        this.dummyCards = [
+            {
+                "id": 1,
+                "order": 1,
+                "cardType": "image",
+                "cardData": "https://wwww.loremipsum.com",
+                "link": "https://wwww.loremipsum.com",
+                "linkType": "video",
+                "favourite": "true"
+            },
+            {
+                "id": 2,
+                "order": 2,
+                "cardType": "image",
+                "cardData": "https://wwww.loremipsum.com",
+                "link": "https://wwww.loremipsum.com",
+                "linkType": "basic",
+                "favourite": "true"
+            },
+            {
+                "id": 3,
+                "order": 3,
+                "cardType": "video",
+                "cardData": "https://wwww.loremipsum.com",
+                "favourite": "true"
+            }
+        ];
     }
 
     // public try(request: Hapi.Request, reply: Hapi.Base_Reply) {
@@ -33,18 +60,34 @@ export default class UserController {
     //     });
     // }
 
-    public favCard(request: Hapi.Request, reply: Hapi.Base_Reply) {
-        // empty
-        return reply('dummy endpoint');
+    public favourite(request: Hapi.Request, reply: Hapi.Base_Reply) {
+        return reply({
+            "res": "Card favourited/un-favourited successfully"
+        });
     }
 
     public getFavouriteCards(request: Hapi.Request, reply: Hapi.Base_Reply) {
-        // empty
-        return reply('dummy endpoint');        
+        return reply({
+            "data": this.dummyCards
+        });
     }
 
-    public upload(request: Hapi.Request, reply: Hapi.Base_Reply) {
-        // empty
+    public uploadCard(request: Hapi.Request, reply: Hapi.Base_Reply) {
+        return reply({
+            "res": "https://www.loremipsum.com"
+        });
+    }
+
+    public addLink(request: Hapi.Request, reply: Hapi.Base_Reply) {
+        return reply({
+            "res": "link added successfully"
+        });
+    }
+
+    public deleteCard(request: Hapi.Request, reply: Hapi.Base_Reply) {
+        return reply({
+            "res": "card deleted succsessfully"
+        });
     }
 }
 

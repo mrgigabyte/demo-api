@@ -10,7 +10,6 @@ export default class UserController {
 
     private configs: IServerConfigurations;
     private database: any;
-    private user: any;
     private dummyStory1: any;
     private dummyStory2: any;
     private dummyStory3: any;    
@@ -30,7 +29,7 @@ export default class UserController {
                 "views": "1000",
                 "cards": [
                     {
-                        "id": 1,
+                        "id": 14,
                         "order": 1,
                         "cardType": "image",
                         "cardData": "https://wwww.loremipsum.com",
@@ -39,7 +38,7 @@ export default class UserController {
                         "favourite": "false"
                     },
                     {
-                        "id": 2,
+                        "id": 27,
                         "order": 2,
                         "cardType": "image",
                         "cardData": "https://wwww.loremipsum.com",
@@ -48,7 +47,7 @@ export default class UserController {
                         "favourite": "false"
                     },
                     {
-                        "id": 3,
+                        "id": 31,
                         "order": 3,
                         "cardType": "video",
                         "cardData": "https://wwww.loremipsum.com",
@@ -57,14 +56,14 @@ export default class UserController {
                         "favourite": "false"
                     },
                     {
-                        "id": 4,
+                        "id": 42,
                         "order": 4,
                         "cardType": "image",
                         "cardData": "https://wwww.loremipsum.com",
                         "favourite": "false"
                     },
                     {
-                        "id": 5,
+                        "id": 51,
                         "order": 5,
                         "cardType": "image",
                         "cardData": "https://wwww.loremipsum.com",
@@ -125,7 +124,7 @@ export default class UserController {
                 "views": "0",
                 "cards": [
                     {
-                        "id": 1,
+                        "id": 12,
                         "order": 1,
                         "cardType": "image",
                         "cardData": "https://wwww.loremipsum.com",
@@ -134,7 +133,7 @@ export default class UserController {
                         "favourite": "true"
                     },
                     {
-                        "id": 2,
+                        "id": 22,
                         "order": 2,
                         "cardType": "image",
                         "cardData": "https://wwww.loremipsum.com",
