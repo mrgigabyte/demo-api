@@ -22,79 +22,105 @@ export default class UserController {
                 "name": "Johnny Doe",
                 "email": "john.doe@gmail.com",
                 "emailNotif": "true",
-                "pushNotif": "morning"
+                "pushNotif": "morning",
+                "joinedOn": "2017-07-22T07:15:13.250Z",
+                "status": "active"
             }, {
                 "id": "2",
                 "name": "Johnny Doe",
                 "email": "john.doe@gmail.com",
                 "emailNotif": "true",
-                "pushNotif": "morning"
+                "pushNotif": "morning",
+                "joinedOn": "2017-07-22T07:15:13.250Z",
+                "status": "active"
             }, {
                 "id": "2",
                 "name": "Johnny Doe",
                 "email": "john.doe@gmail.com",
                 "emailNotif": "true",
-                "pushNotif": "morning"
+                "pushNotif": "morning",
+                "joinedOn": "2017-07-22T07:15:13.250Z",
+                "status": "active"
             }, {
                 "id": "2",
                 "name": "Johnny Doe",
                 "email": "john.doe@gmail.com",
                 "emailNotif": "true",
-                "pushNotif": "morning"
+                "pushNotif": "morning",
+                "joinedOn": "2017-07-22T07:15:13.250Z",
+                "status": "active"
             }, {
                 "id": "2",
                 "name": "Johnny Doe",
                 "email": "john.doe@gmail.com",
                 "emailNotif": "true",
-                "pushNotif": "morning"
+                "pushNotif": "morning",
+                "joinedOn": "2017-07-22T07:15:13.250Z",
+                "status": "active"
             }, {
                 "id": "2",
                 "name": "Johnny Doe",
                 "email": "john.doe@gmail.com",
                 "emailNotif": "true",
-                "pushNotif": "morning"
+                "pushNotif": "morning",
+                "joinedOn": "2017-07-22T07:15:13.250Z",
+                "status": "active"
             }, {
                 "id": "2",
                 "name": "Johnny Doe",
                 "email": "john.doe@gmail.com",
                 "emailNotif": "true",
-                "pushNotif": "morning"
+                "pushNotif": "morning",
+                "joinedOn": "2017-07-22T07:15:13.250Z",
+                "status": "active"
             }, {
                 "id": "2",
                 "name": "Johnny Doe",
                 "email": "john.doe@gmail.com",
                 "emailNotif": "true",
-                "pushNotif": "morning"
+                "pushNotif": "morning",
+                "joinedOn": "2017-07-22T07:15:13.250Z",
+                "status": "active"
             }, {
                 "id": "2",
                 "name": "Johnny Doe",
                 "email": "john.doe@gmail.com",
                 "emailNotif": "true",
-                "pushNotif": "morning"
+                "pushNotif": "morning",
+                "joinedOn": "2017-07-22T07:15:13.250Z",
+                "status": "active"
             }, {
                 "id": "2",
                 "name": "Johnny Doe",
                 "email": "john.doe@gmail.com",
                 "emailNotif": "true",
-                "pushNotif": "morning"
+                "pushNotif": "morning",
+                "joinedOn": "2017-07-22T07:15:13.250Z",
+                "status": "active"
             }, {
                 "id": "2",
                 "name": "Johnny Doe",
                 "email": "john.doe@gmail.com",
                 "emailNotif": "true",
-                "pushNotif": "morning"
+                "pushNotif": "morning",
+                "joinedOn": "2017-07-22T07:15:13.250Z",
+                "status": "active"
             }, {
                 "id": "2",
                 "name": "Johnny Doe",
                 "email": "john.doe@gmail.com",
                 "emailNotif": "true",
-                "pushNotif": "morning"
+                "pushNotif": "morning",
+                "joinedOn": "2017-07-22T07:15:13.250Z",
+                "status": "active"
             }, {
                 "id": "2",
                 "name": "Johnny Doe",
                 "email": "john.doe@gmail.com",
                 "emailNotif": "true",
-                "pushNotif": "morning"
+                "pushNotif": "morning",
+                "joinedOn": "2017-07-22T07:15:13.250Z",
+                "status": "active"
             }
         ];
     }
@@ -142,7 +168,8 @@ export default class UserController {
                 "name": "John Doe",
                 "email": "john.doe@gmail.com",
                 "emailNotif": "false",
-                "pushNotif": "morning"
+                "pushNotif": "morning",
+                "joinedOn": "2017-07-22T07:15:13.250Z"
             }
         });
     }

@@ -15,5 +15,14 @@ export const userSchema: Joi.ObjectSchema = Joi.object({
     email: Joi.string().email().required(),
     emailNotif: Joi.boolean().required(),
     pushNotif: Joi.string().required()
-        .valid(['disable', 'morning', 'afternoon', 'night'])
+        .valid(['disable', 'morning', 'afternoon', 'night']),
+    joinedOn: Joi.date().required()
 });
+
+
+export const userAdminPannelSchema: Joi.ObjectSchema = userSchema.keys({
+    status: Joi.string().required()
+        .valid(['active', 'inactive', 'deleted']),
+});
+
+

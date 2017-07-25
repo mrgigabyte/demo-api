@@ -4,7 +4,7 @@ import { IServerConfigurations } from "../configurations";
 import * as Boom from "boom";
 
 import UserController from "./user-controller";
-import { userSchema, userSchemaWithOptionalKeys } from "./schemas";
+import { userSchema, userSchemaWithOptionalKeys, userAdminPannelSchema } from "./schemas";
 
 export default function (server: Hapi.Server, serverConfigs: IServerConfigurations, database: any) {
 
@@ -396,7 +396,7 @@ export default function (server: Hapi.Server, serverConfigs: IServerConfiguratio
             },
             response: {
                 schema: Joi.object({
-                    "data": Joi.array().items(userSchema)
+                    "data": Joi.array().items(userAdminPannelSchema)
                 })
             },
             plugins: {
