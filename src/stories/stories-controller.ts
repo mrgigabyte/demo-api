@@ -11,39 +11,206 @@ export default class UserController {
     private configs: IServerConfigurations;
     private database: any;
     private user: any;
+    private dummyStory1: any;
+    private dummyStory2: any;
+    private dummyStory3: any;    
 
     constructor(configs: IServerConfigurations, database: any) {
         this.database = database;
         this.configs = configs;
+        this.dummyStory1 = {
+                "id": 1,
+                "title": "Lorem Ipsum",
+                "slug": "lorem-ipsum",
+                "by": "Steven Harrington",
+                "createdOn": "2017-07-22T07:15:13.250Z",
+                "publishedOn": "2017-07-25T07:15:13.250Z",
+                "read": "false",
+                "cardCount": 5,
+                "views": "1000",
+                "cards": [
+                    {
+                        "id": 1,
+                        "order": 1,
+                        "cardType": "image",
+                        "cardData": "https://wwww.loremipsum.com",
+                        "link": "https://wwww.loremipsum.com",
+                        "linkType": "video",
+                        "favourite": "false"
+                    },
+                    {
+                        "id": 2,
+                        "order": 2,
+                        "cardType": "image",
+                        "cardData": "https://wwww.loremipsum.com",
+                        "link": "https://wwww.loremipsum.com",
+                        "linkType": "basic",
+                        "favourite": "false"
+                    },
+                    {
+                        "id": 3,
+                        "order": 3,
+                        "cardType": "video",
+                        "cardData": "https://wwww.loremipsum.com",
+                        "link": "https://wwww.loremipsum.com",
+                        "linkType": "video",
+                        "favourite": "false"
+                    },
+                    {
+                        "id": 4,
+                        "order": 4,
+                        "cardType": "image",
+                        "cardData": "https://wwww.loremipsum.com",
+                        "favourite": "false"
+                    },
+                    {
+                        "id": 5,
+                        "order": 5,
+                        "cardType": "image",
+                        "cardData": "https://wwww.loremipsum.com",
+                        "link": "https://wwww.loremipsum.com",
+                        "linkType": "video",
+                        "favourite": "false"
+                    }
+                ]
+            };
+
+            this.dummyStory2 = {
+                "id": 3,
+                "title": "Lorem Ipsum and lorem Ipsum",
+                "slug": "lorem-ipsum-and-lorem-ipsum",
+                "by": "John Doe",
+                "createdOn": "2017-07-21T07:15:13.250Z",
+                "publishedOn": "2017-07-23T07:15:13.250Z",
+                "read": "false",
+                "cardCount": 3,
+                "views": "500",
+                "cards": [
+                    {
+                        "id": 1,
+                        "order": 1,
+                        "cardType": "image",
+                        "cardData": "https://wwww.loremipsum.com",
+                        "link": "https://wwww.loremipsum.com",
+                        "linkType": "video",
+                        "favourite": "true"
+                    },
+                    {
+                        "id": 2,
+                        "order": 2,
+                        "cardType": "image",
+                        "cardData": "https://wwww.loremipsum.com",
+                        "link": "https://wwww.loremipsum.com",
+                        "linkType": "basic",
+                        "favourite": "false"
+                    },
+                    {
+                        "id": 3,
+                        "order": 3,
+                        "cardType": "video",
+                        "cardData": "https://wwww.loremipsum.com",
+                        "favourite": "false"
+                    }
+                ]
+            };
+
+            this.dummyStory3 = {
+                "id": 3,
+                "title": "Lorem Ipsum and draft",
+                "slug": "lorem-ipsum-and-draft",
+                "by": "John Draft",
+                "createdOn": "2017-07-25T07:15:13.250Z",
+                "read": "false",
+                "cardCount": 2,
+                "views": "0",
+                "cards": [
+                    {
+                        "id": 1,
+                        "order": 1,
+                        "cardType": "image",
+                        "cardData": "https://wwww.loremipsum.com",
+                        "link": "https://wwww.loremipsum.com",
+                        "linkType": "video",
+                        "favourite": "true"
+                    },
+                    {
+                        "id": 2,
+                        "order": 2,
+                        "cardType": "image",
+                        "cardData": "https://wwww.loremipsum.com",
+                        "favourite": "false"
+                    }
+                ]
+            };
     }
 
-    public latest(request: Hapi.Request, reply: Hapi.Base_Reply) {
-        // empty
+    public getLatest(request: Hapi.Request, reply: Hapi.Base_Reply) {
+        return reply({
+            "data": [this.dummyStory1, this.dummyStory2]
+        });
     }
 
-    public archived(request: Hapi.Request, reply: Hapi.Base_Reply) {
-        // empty
-    }
-     public getStories(request: Hapi.Request, reply: Hapi.Base_Reply) {
-        // empty
+
+    public getStoryByIdOrSlug(request: Hapi.Request, reply: Hapi.Base_Reply) {
+        return reply({
+            "story": this.dummyStory1
+        });
     }
 
-    public getStory(request: Hapi.Request, reply: Hapi.Base_Reply) {
-        // empty
+    public markRead(request: Hapi.Request, reply: Hapi.Base_Reply) {
+        let tempStory = this.dummyStory1;
+        tempStory.read = true;
+        return reply({
+            "story": tempStory
+        });
     }
 
-    public saveStory(request: Hapi.Request, reply: Hapi.Base_Reply) {
-        // empty
+    public getArchived(request: Hapi.Request, reply: Hapi.Base_Reply) {
+        let tempStory1 = this.dummyStory1;
+        tempStory1.read = true;
+        let tempStory2 = this.dummyStory2;
+        tempStory2.read = true;
+        return reply({
+            "data": [tempStory1, tempStory2, this.dummyStory1, this.dummyStory2]
+        });
     }
-     public updateStory(request: Hapi.Request, reply: Hapi.Base_Reply) {
-        // empty
+
+    public getAllStories(request: Hapi.Request, reply: Hapi.Base_Reply) {
+        let tempStory1 = this.dummyStory1;
+        tempStory1.read = true;
+        let tempStory2 = this.dummyStory2;
+        tempStory2.read = true;
+        return reply({
+            "data": [tempStory1, tempStory2,this.dummyStory1, this.dummyStory3, this.dummyStory2]
+        });
+    }
+
+    public newStory(request: Hapi.Request, reply: Hapi.Base_Reply) {
+        return reply({
+            "res": "new story created successfully."
+        });
+    }
+
+    public updateStory(request: Hapi.Request, reply: Hapi.Base_Reply) {
+        return reply({
+            "res": "story edited successfully."
+        });
     }
 
     public pushLive(request: Hapi.Request, reply: Hapi.Base_Reply) {
-        // empty
+        return reply({
+            "res": "story pushed live successfully."
+        });
     }
-     public preview(request: Hapi.Request, reply: Hapi.Base_Reply) {
-        // empty
+    public preview(request: Hapi.Request, reply: Hapi.Base_Reply) {
+        return reply({
+            "res": "story pushed live successfully for the admin only."
+        });
     }
 
+    public deleteStory(request: Hapi.Request, reply: Hapi.Base_Reply) {
+        return reply({
+            "res": "story deleted successfully."
+        });
+    }
 }

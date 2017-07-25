@@ -4,7 +4,7 @@ import { IServerConfigurations } from "../configurations";
 import * as Boom from "boom";
 
 import StoryController from "./stories-controller";
-// import { userSchema, noteSchema } from "./schemas";
+import { storySchema } from "./schemas";
 
 export default function (server: Hapi.Server, serverConfigs: IServerConfigurations, database: any) {
 
@@ -14,31 +14,80 @@ export default function (server: Hapi.Server, serverConfigs: IServerConfiguratio
     server.route({
         method: 'GET',
         path: '/story/latest',
-        handler: storyController.latest,
+        handler: storyController.getLatest,
         config: {
-            description: 'GET all the latest story for the user',
+            description: 'GET latest stories for the user',
+            notes: ["This endpoint will return those stories that the user has not read from the recently `pushed live stories`.  "
+                + "This endpoint will never return more than 2 stories."],
+            auth: 'jwt',
+            validate: {
+            },
             response: {
-                // schema: Joi.object({
-                //     "user": userSchema,
-                //     "jwt": Joi.string().required()
-                //            .default("xxx.yyy.zzz")
-                //            .description("Will authenticate all the future requests.")
-                // })
+                schema: Joi.object({
+                    "data": Joi.array().items(storySchema)
+                })
             },
             plugins: {
                 'hapi-swagger': {
                     responses: {
-                        '200': {
-                            'description': 'User already existed and successfully authenticated.'
-                        },
-                        '201': {
-                            'description': 'New user created and successfully authenticated.'
-                        },
-                        '401': {
-                            'description': 'Auth failiure. Wrong ID token.'
-                        }
                     }
+                },
+                'hapiAuthorization': { roles: ['GOD', 'JESUS', 'ROMANS'] }
+            },
+            tags: ['api', 'story']
+        }
+    });
+
+    server.route({
+        method: 'POST',
+        path: '/story/{idOrSlug}/markRead',
+        handler: storyController.markRead,
+        config: {
+            description: 'Marks a story as read when the user swipes through the last card of a story',
+            auth: 'jwt',
+            validate: {
+                params: {
+                    idOrSlug: Joi.any().required().description("Id/Slug of the story"),
                 }
+            },
+            response: {
+                schema: Joi.object({
+                    "story": storySchema
+                })
+            },
+            plugins: {
+                'hapi-swagger': {
+                    responses: {
+                    }
+                },
+                'hapiAuthorization': { roles: ['GOD', 'JESUS', 'ROMANS'] }
+            },
+            tags: ['api', 'story']
+        }
+    });
+
+
+    server.route({
+        method: 'GET',
+        path: '/story/archived',
+        handler: storyController.getArchived,
+        config: {
+            description: 'GET all the archived stories',
+            notes: [`Archived stories are those stories which are:  
+            1. Read by the user.  
+            2. Not read by the user and are older than the latest stories.  `],
+            auth: 'jwt',
+            response: {
+                schema: Joi.object({
+                    "data": Joi.array().items(storySchema)
+                })
+            },
+            plugins: {
+                'hapi-swagger': {
+                    responses: {
+                    }
+                },
+                'hapiAuthorization': { roles: ['GOD', 'JESUS', 'ROMANS'] }
             },
             tags: ['api', 'story']
         }
@@ -47,97 +96,50 @@ export default function (server: Hapi.Server, serverConfigs: IServerConfiguratio
     server.route({
         method: 'GET',
         path: '/story/{idOrSlug}',
-        handler: storyController.getStory,
+        handler: storyController.getStoryByIdOrSlug,
         config: {
-            description: 'GET all the latest story for the user',
+            description: 'GET story details by Id or Slug',
+            auth: 'jwt',
+            validate: {
+                params: {
+                    idOrSlug: Joi.any().required().description("Id/Slug of the story"),
+                },
+            },
             response: {
-                // schema: Joi.object({
-                //     "user": userSchema,
-                //     "jwt": Joi.string().required()
-                //            .default("xxx.yyy.zzz")
-                //            .description("Will authenticate all the future requests.")
-                // })
+                schema: Joi.object({
+                    "story": storySchema
+                })
             },
             plugins: {
                 'hapi-swagger': {
                     responses: {
-                        '200': {
-                            'description': 'User already existed and successfully authenticated.'
-                        },
-                        '201': {
-                            'description': 'New user created and successfully authenticated.'
-                        },
-                        '401': {
-                            'description': 'Auth failiure. Wrong ID token.'
-                        }
                     }
-                }
+                },
+                'hapiAuthorization': { roles: ['GOD', 'JESUS'] }
             },
-            tags: ['api', 'story']
+            tags: ['api', 'admin']
         }
     });
 
     server.route({
         method: 'GET',
-        path: '/story/archived',
-        handler: storyController.archived,
+        path: '/story',
+        handler: storyController.getAllStories,
         config: {
-            description: 'GET all the archived stories',
+            description: 'GET all the stories(published/drafts) created so far.',
+            notes: ['The stories that dont have a `publishedOn` key are draft stories.'],
+            auth: 'jwt',
             response: {
-                // schema: Joi.object({
-                //     "user": userSchema,
-                //     "jwt": Joi.string().required()
-                //            .default("xxx.yyy.zzz")
-                //            .description("Will authenticate all the future requests.")
-                // })
+                schema: Joi.object({
+                    "data": Joi.array().items(storySchema)
+                })
             },
             plugins: {
                 'hapi-swagger': {
                     responses: {
-                        '200': {
-                            'description': 'User already existed and successfully authenticated.'
-                        },
-                        '201': {
-                            'description': 'New user created and successfully authenticated.'
-                        },
-                        '401': {
-                            'description': 'Auth failiure. Wrong ID token.'
-                        }
                     }
-                }
-            },
-            tags: ['api', 'stories']
-        }
-    });
-
-    server.route({
-        method: 'GET',
-        path: '/stories',
-        handler: storyController.getStories,
-        config: {
-            description: 'GET all the stories created so far',
-            response: {
-                // schema: Joi.object({
-                //     "user": userSchema,
-                //     "jwt": Joi.string().required()
-                //            .default("xxx.yyy.zzz")
-                //            .description("Will authenticate all the future requests.")
-                // })
-            },
-            plugins: {
-                'hapi-swagger': {
-                    responses: {
-                        '200': {
-                            'description': 'User already existed and successfully authenticated.'
-                        },
-                        '201': {
-                            'description': 'New user created and successfully authenticated.'
-                        },
-                        '401': {
-                            'description': 'Auth failiure. Wrong ID token.'
-                        }
-                    }
-                }
+                },
+                'hapiAuthorization': { roles: ['GOD', 'JESUS'] }
             },
             tags: ['api', 'admin']
         }
@@ -145,32 +147,41 @@ export default function (server: Hapi.Server, serverConfigs: IServerConfiguratio
 
     server.route({
         method: 'POST',
-        path: '/stories/save',
-        handler: storyController.saveStory,
+        path: '/story',
+        handler: storyController.newStory,
         config: {
-            description: 'SAVING the story (creates a new storyId)',
+            description: 'Creates a new story using the info sent in the payload.',
+            auth: 'jwt',
+            validate: {
+                payload: Joi.object({
+                    title: Joi.string()
+                        .required()
+                        .default('Lorem Ipsum Sit')
+                        .description('Story title'),
+                    by: Joi.string()
+                        .required()
+                        .default('John Does')
+                        .description('Story Author'),
+                    cards: Joi.array().items(Joi.object({
+                        order: Joi.number().required(),
+                        cardData: Joi.string().uri().required(),
+                        cardType: Joi.string().valid(['image', 'video']).required(),
+                        link: Joi.string().uri(),
+                        linkType: Joi.string().valid(['video', 'basic']),
+                    })),
+                })
+            },
             response: {
-                // schema: Joi.object({
-                //     "user": userSchema,
-                //     "jwt": Joi.string().required()
-                //            .default("xxx.yyy.zzz")
-                //            .description("Will authenticate all the future requests.")
-                // })
+                schema: Joi.object({
+                    "res": Joi.string().required()
+                })
             },
             plugins: {
                 'hapi-swagger': {
                     responses: {
-                        '200': {
-                            'description': 'User already existed and successfully authenticated.'
-                        },
-                        '201': {
-                            'description': 'New user created and successfully authenticated.'
-                        },
-                        '401': {
-                            'description': 'Auth failiure. Wrong ID token.'
-                        }
                     }
-                }
+                },
+                'hapiAuthorization': { roles: ['GOD', 'JESUS'] }
             },
             tags: ['api', 'admin']
         }
@@ -178,32 +189,44 @@ export default function (server: Hapi.Server, serverConfigs: IServerConfiguratio
 
     server.route({
         method: 'PUT',
-        path: '/stories/{storyId}',
+        path: '/story/{idOrSlug}',
         handler: storyController.updateStory,
         config: {
-            description: 'UPDATES the changes to the current story',
+            description: 'Update details of a previously published/draft story.',
+            auth: 'jwt',
+            validate: {
+                params: {
+                    idOrSlug: Joi.any().required().description("Id/Slug of the story"),
+                },
+                payload: Joi.object({
+                    title: Joi.string()
+                        .required()
+                        .default('Lorem Ipsum Sit')
+                        .description('Story title'),
+                    by: Joi.string()
+                        .required()
+                        .default('John Does')
+                        .description('Story Author'),
+                    cards: Joi.array().items(Joi.object({
+                        order: Joi.number().required(),
+                        cardData: Joi.string().uri().required(),
+                        cardType: Joi.string().valid(['image', 'video']).required(),
+                        link: Joi.string().uri(),
+                        linkType: Joi.string().valid(['video', 'basic']),
+                    })),
+                })
+            },
             response: {
-                // schema: Joi.object({
-                //     "user": userSchema,
-                //     "jwt": Joi.string().required()
-                //            .default("xxx.yyy.zzz")
-                //            .description("Will authenticate all the future requests.")
-                // })
+                schema: Joi.object({
+                    "res": Joi.string().required()
+                })
             },
             plugins: {
                 'hapi-swagger': {
                     responses: {
-                        '200': {
-                            'description': 'User already existed and successfully authenticated.'
-                        },
-                        '201': {
-                            'description': 'New user created and successfully authenticated.'
-                        },
-                        '401': {
-                            'description': 'Auth failiure. Wrong ID token.'
-                        }
                     }
-                }
+                },
+                'hapiAuthorization': { roles: ['GOD', 'JESUS'] }
             },
             tags: ['api', 'admin']
         }
@@ -211,32 +234,27 @@ export default function (server: Hapi.Server, serverConfigs: IServerConfiguratio
 
     server.route({
         method: 'POST',
-        path: '/stories/{storyId}/pushLive',
+        path: '/stories/{idOrSlug}/pushLive',
         handler: storyController.pushLive,
         config: {
-            description: 'PUSHES the new story created (makes it live for all)',
+            description: "Makes the story live for all those users who haven't seen the story before",
+            auth: 'jwt',
+            validate: {
+                params: {
+                    idOrSlug: Joi.any().required().description("Id/Slug of the story"),
+                },
+            },
             response: {
-                // schema: Joi.object({
-                //     "user": userSchema,
-                //     "jwt": Joi.string().required()
-                //            .default("xxx.yyy.zzz")
-                //            .description("Will authenticate all the future requests.")
-                // })
+                schema: Joi.object({
+                    "res": Joi.string().required()
+                })
             },
             plugins: {
                 'hapi-swagger': {
                     responses: {
-                        '200': {
-                            'description': 'User already existed and successfully authenticated.'
-                        },
-                        '201': {
-                            'description': 'New user created and successfully authenticated.'
-                        },
-                        '401': {
-                            'description': 'Auth failiure. Wrong ID token.'
-                        }
                     }
-                }
+                },
+                'hapiAuthorization': { roles: ['GOD', 'JESUS'] }
             },
             tags: ['api', 'admin']
         }
@@ -244,36 +262,58 @@ export default function (server: Hapi.Server, serverConfigs: IServerConfiguratio
 
     server.route({
         method: 'POST',
-        path: '/stories/{storyId}/preview',
+        path: '/story/{idOrSlug}/preview',
         handler: storyController.preview,
         config: {
-            description: 'PUSHES the new story created (for preview)',
+            description: 'Makes the story live only for `admin`.',
+            auth: 'jwt',
+            validate: {
+                params: {
+                    idOrSlug: Joi.any().required().description("Id/Slug of the story"),
+                },
+            },
             response: {
-                // schema: Joi.object({
-                //     "user": userSchema,
-                //     "jwt": Joi.string().required()
-                //            .default("xxx.yyy.zzz")
-                //            .description("Will authenticate all the future requests.")
-                // })
+                schema: Joi.object({
+                    "res": Joi.string().required()
+                })
             },
             plugins: {
                 'hapi-swagger': {
                     responses: {
-                        '200': {
-                            'description': 'User already existed and successfully authenticated.'
-                        },
-                        '201': {
-                            'description': 'New user created and successfully authenticated.'
-                        },
-                        '401': {
-                            'description': 'Auth failiure. Wrong ID token.'
-                        }
                     }
-                }
+                },
+                'hapiAuthorization': { roles: ['GOD', 'JESUS'] }
             },
             tags: ['api', 'admin']
         }
     });
 
-
+    server.route({
+        method: 'DELETE',
+        path: '/story/{idOrSlug}',
+        handler: storyController.deleteStory,
+        config: {
+            description: 'Deletes the story.',
+            notes: ['It will soft delete a story.'],
+            auth: 'jwt',
+            validate: {
+                params: {
+                    idOrSlug: Joi.any().required().description("Id/Slug of the story"),
+                },
+            },
+            response: {
+                schema: Joi.object({
+                    "res": Joi.string().required()
+                })
+            },
+            plugins: {
+                'hapi-swagger': {
+                    responses: {
+                    }
+                },
+                'hapiAuthorization': { roles: ['GOD', 'JESUS'] }
+            },
+            tags: ['api', 'admin']
+        }
+    });
 }

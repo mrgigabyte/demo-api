@@ -30,7 +30,7 @@ export default (): IPlugin => {
                                     'name': 'user'
                                 },
                                 {
-                                    'name': 'stories'
+                                    'name': 'story'
 
                                 },
                                 {
