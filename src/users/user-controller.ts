@@ -2,6 +2,7 @@ import * as Hapi from "hapi";
 import * as Boom from "boom";
 import * as Jwt from "jsonwebtoken";
 import * as GoogleAuth from "google-auth-library";
+import * as json2csv from "json2csv";
 
 import { IServerConfigurations } from "../configurations";
 
@@ -10,10 +11,92 @@ export default class UserController {
 
     private configs: IServerConfigurations;
     private database: any;
+    private dummyData: any;
 
     constructor(configs: IServerConfigurations, database: any) {
         this.database = database;
         this.configs = configs;
+        this.dummyData = [
+            {
+                "id": "2",
+                "name": "Johnny Doe",
+                "email": "john.doe@gmail.com",
+                "emailNotif": "true",
+                "pushNotif": "morning"
+            }, {
+                "id": "2",
+                "name": "Johnny Doe",
+                "email": "john.doe@gmail.com",
+                "emailNotif": "true",
+                "pushNotif": "morning"
+            }, {
+                "id": "2",
+                "name": "Johnny Doe",
+                "email": "john.doe@gmail.com",
+                "emailNotif": "true",
+                "pushNotif": "morning"
+            }, {
+                "id": "2",
+                "name": "Johnny Doe",
+                "email": "john.doe@gmail.com",
+                "emailNotif": "true",
+                "pushNotif": "morning"
+            }, {
+                "id": "2",
+                "name": "Johnny Doe",
+                "email": "john.doe@gmail.com",
+                "emailNotif": "true",
+                "pushNotif": "morning"
+            }, {
+                "id": "2",
+                "name": "Johnny Doe",
+                "email": "john.doe@gmail.com",
+                "emailNotif": "true",
+                "pushNotif": "morning"
+            }, {
+                "id": "2",
+                "name": "Johnny Doe",
+                "email": "john.doe@gmail.com",
+                "emailNotif": "true",
+                "pushNotif": "morning"
+            }, {
+                "id": "2",
+                "name": "Johnny Doe",
+                "email": "john.doe@gmail.com",
+                "emailNotif": "true",
+                "pushNotif": "morning"
+            }, {
+                "id": "2",
+                "name": "Johnny Doe",
+                "email": "john.doe@gmail.com",
+                "emailNotif": "true",
+                "pushNotif": "morning"
+            }, {
+                "id": "2",
+                "name": "Johnny Doe",
+                "email": "john.doe@gmail.com",
+                "emailNotif": "true",
+                "pushNotif": "morning"
+            }, {
+                "id": "2",
+                "name": "Johnny Doe",
+                "email": "john.doe@gmail.com",
+                "emailNotif": "true",
+                "pushNotif": "morning"
+            }, {
+                "id": "2",
+                "name": "Johnny Doe",
+                "email": "john.doe@gmail.com",
+                "emailNotif": "true",
+                "pushNotif": "morning"
+            }, {
+                "id": "2",
+                "name": "Johnny Doe",
+                "email": "john.doe@gmail.com",
+                "emailNotif": "true",
+                "pushNotif": "morning"
+            }
+        ];
     }
 
     public signup(request: Hapi.Request, reply: Hapi.Base_Reply) {
@@ -92,88 +175,17 @@ export default class UserController {
 
     public getAllUsers(request: Hapi.Request, reply: Hapi.Base_Reply) {
         return reply({
-            "data": [
-                {
-                    "id": "2",
-                    "name": "Johnny Doe",
-                    "email": "john.doe@gmail.com",
-                    "emailNotif": "true",
-                    "pushNotif": "morning"
-                }, {
-                    "id": "2",
-                    "name": "Johnny Doe",
-                    "email": "john.doe@gmail.com",
-                    "emailNotif": "true",
-                    "pushNotif": "morning"
-                }, {
-                    "id": "2",
-                    "name": "Johnny Doe",
-                    "email": "john.doe@gmail.com",
-                    "emailNotif": "true",
-                    "pushNotif": "morning"
-                }, {
-                    "id": "2",
-                    "name": "Johnny Doe",
-                    "email": "john.doe@gmail.com",
-                    "emailNotif": "true",
-                    "pushNotif": "morning"
-                }, {
-                    "id": "2",
-                    "name": "Johnny Doe",
-                    "email": "john.doe@gmail.com",
-                    "emailNotif": "true",
-                    "pushNotif": "morning"
-                }, {
-                    "id": "2",
-                    "name": "Johnny Doe",
-                    "email": "john.doe@gmail.com",
-                    "emailNotif": "true",
-                    "pushNotif": "morning"
-                }, {
-                    "id": "2",
-                    "name": "Johnny Doe",
-                    "email": "john.doe@gmail.com",
-                    "emailNotif": "true",
-                    "pushNotif": "morning"
-                }, {
-                    "id": "2",
-                    "name": "Johnny Doe",
-                    "email": "john.doe@gmail.com",
-                    "emailNotif": "true",
-                    "pushNotif": "morning"
-                }, {
-                    "id": "2",
-                    "name": "Johnny Doe",
-                    "email": "john.doe@gmail.com",
-                    "emailNotif": "true",
-                    "pushNotif": "morning"
-                }, {
-                    "id": "2",
-                    "name": "Johnny Doe",
-                    "email": "john.doe@gmail.com",
-                    "emailNotif": "true",
-                    "pushNotif": "morning"
-                }, {
-                    "id": "2",
-                    "name": "Johnny Doe",
-                    "email": "john.doe@gmail.com",
-                    "emailNotif": "true",
-                    "pushNotif": "morning"
-                }, {
-                    "id": "2",
-                    "name": "Johnny Doe",
-                    "email": "john.doe@gmail.com",
-                    "emailNotif": "true",
-                    "pushNotif": "morning"
-                }, {
-                    "id": "2",
-                    "name": "Johnny Doe",
-                    "email": "john.doe@gmail.com",
-                    "emailNotif": "true",
-                    "pushNotif": "morning"
-                }
-            ]
+            "data": this.dummyData
         });
+    }
+
+    public getAllUsersCsv(request: Hapi.Request, reply: Hapi.Base_Reply) {
+        let fields = ['id', 'name', 'email', 'emailNotif', 'pushNotif'];
+        let res = json2csv({data: this.dummyData, fields: fields});
+        console.log(res);        
+        return reply(res)
+                .header('Content-Type', 'application/octet-stream')
+                .header('content-disposition', 'attachment; filename=users.csv;');
     }
 
 }

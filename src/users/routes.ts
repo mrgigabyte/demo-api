@@ -273,7 +273,7 @@ export default function (server: Hapi.Server, serverConfigs: IServerConfiguratio
         handler: userController.getAllUsers,
         config: {
             description: 'GET details of all the users',
-            notes: ['It wil return the list of all users (with pagination).'],
+            notes: ['It will return the list of all users (with pagination).'],
             auth: 'jwt',
             validate: {
             },
@@ -281,6 +281,30 @@ export default function (server: Hapi.Server, serverConfigs: IServerConfiguratio
                 schema: Joi.object({
                     "data": Joi.array().items(userSchema)
                 })
+            },
+            plugins: {
+                'hapi-swagger': {
+                    responses: {
+
+                    }
+                },
+                'hapiAuthorization': { roles: ['GOD', 'JESUS'] }
+            },
+            tags: ['api', 'admin']
+        }
+    });
+
+    server.route({
+        method: 'GET',
+        path: '/user/CSV',
+        handler: userController.getAllUsersCsv,
+        config: {
+            description: 'GET details of all the users in a csv file',
+            notes: ['It will give a downloadable link to a csv file containing the list of all users.'],
+            auth: 'jwt',
+            validate: {
+            },
+            response: {
             },
             plugins: {
                 'hapi-swagger': {
