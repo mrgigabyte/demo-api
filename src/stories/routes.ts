@@ -17,10 +17,10 @@ export default function (server: Hapi.Server, serverConfigs: IServerConfiguratio
         handler: storyController.getLatest,
         config: {
             description: 'Returns latest stories for the user',
-            notes: [`This endpoint will return at max 2 most recent unread sotries from chronologically sorted list of published stories.
+            notes: `This endpoint will return at max 2 most recent unread sotries from chronologically sorted list of published stories.
 
-            'GOD', 'JESUS' and 'ROMANS' can access this endpoint.
-            `],
+            GOD, JESUS and ROMANS can access this endpoint.
+            `,
             auth: 'jwt',
             validate: {
             },
@@ -49,7 +49,8 @@ export default function (server: Hapi.Server, serverConfigs: IServerConfiguratio
         handler: storyController.markRead,
         config: {
             description: 'Marks a story as read when the user swipes through the last card of a story',
-            notes: [`'GOD', 'JESUS' and 'ROMANS' can access this endpoint.`],
+            notes: `
+            GOD, JESUS and ROMANS can access this endpoint.`,
             auth: 'jwt',
             validate: {
                 params: {
@@ -58,7 +59,7 @@ export default function (server: Hapi.Server, serverConfigs: IServerConfiguratio
             },
             response: {
                 schema: Joi.object({
-                    "story": storySchema
+                    "read": Joi.boolean().required()
                 })
             },
             plugins: {
@@ -82,11 +83,11 @@ export default function (server: Hapi.Server, serverConfigs: IServerConfiguratio
         handler: storyController.getArchived,
         config: {
             description: 'GET all the archived stories',
-            notes: [`A story will be archived on the basis of the following 2 conditions:     
+            notes: `A story will be archived on the basis of the following 2 conditions:     
             1. A user has read(User has swiped through all the cards of a story) the story.  
             2. Stories which are not read by the user and are not latest stories.  
 
-            GOD, JESUS and ROMANS can access this endpoint.`],
+            GOD, JESUS and ROMANS can access this endpoint.`,
             auth: 'jwt',
             response: {
                 schema: Joi.object({
@@ -113,7 +114,8 @@ export default function (server: Hapi.Server, serverConfigs: IServerConfiguratio
         handler: storyController.getStoryByIdOrSlug,
         config: {
             description: 'GET story details by Id or Slug',
-            notes: [`GOD and JESUS can access this endpoint.`],
+            notes: `
+            GOD and JESUS can access this endpoint.`,
             auth: 'jwt',
             validate: {
                 params: {
@@ -145,11 +147,11 @@ export default function (server: Hapi.Server, serverConfigs: IServerConfiguratio
         handler: storyController.getAllStories,
         config: {
             description: 'GET all the stories(published/drafts) created so far.',
-            notes: [`The stories can be of the following two types:  
+            notes: `The stories can be of the following two types:  
             1. draft : Stories that dont have a publishedOn key.  
             2. published : Stories that have a publishedOn key.
             
-            GOD and JESUS can access this endpoint.`],
+            GOD and JESUS can access this endpoint.`,
             auth: 'jwt',
             response: {
                 schema: Joi.object({
@@ -176,14 +178,15 @@ export default function (server: Hapi.Server, serverConfigs: IServerConfiguratio
         handler: storyController.newStory,
         config: {
             description: 'Creates a new story using the info sent in the payload.',
-            notes: [`GOD and JESUS can access this endpoint.`],
+            notes: `
+            GOD and JESUS can access this endpoint.`,
             auth: 'jwt',
             validate: {
                 payload: baseStorySchema
             },
             response: {
                 schema: Joi.object({
-                    "res": Joi.boolean().required()
+                    "success": Joi.boolean().required()
                 })
             },
             plugins: {
@@ -206,7 +209,8 @@ export default function (server: Hapi.Server, serverConfigs: IServerConfiguratio
         handler: storyController.updateStory,
         config: {
             description: 'Update details of a previously published/draft story.',
-            notes: [`GOD and JESUS can access this endpoint.`],
+            notes: `
+            GOD and JESUS can access this endpoint.`,
             auth: 'jwt',
             validate: {
                 params: {
@@ -216,7 +220,7 @@ export default function (server: Hapi.Server, serverConfigs: IServerConfiguratio
             },
             response: {
                 schema: Joi.object({
-                    "res": Joi.boolean().required()
+                    "updated": Joi.boolean().required()
                 })
             },
             plugins: {
@@ -237,10 +241,10 @@ export default function (server: Hapi.Server, serverConfigs: IServerConfiguratio
         handler: storyController.pushLive,
         config: {
             description: "Makes a story live.",
-            notes: [`This endpoint will publish a story to the platform and 
+            notes: `This endpoint will publish a story to the platform and 
             will make it available to be read by the users who haven't read the story before.
             
-            GOD and JESUS can access this endpoint.`],
+            GOD and JESUS can access this endpoint.`,
             auth: 'jwt',
             validate: {
                 params: {
@@ -249,7 +253,7 @@ export default function (server: Hapi.Server, serverConfigs: IServerConfiguratio
             },
             response: {
                 schema: Joi.object({
-                    "res": Joi.boolean().required()
+                    "pushed": Joi.boolean().required()
                 })
             },
             plugins: {
@@ -272,7 +276,9 @@ export default function (server: Hapi.Server, serverConfigs: IServerConfiguratio
         handler: storyController.preview,
         config: {
             description: 'Makes the story live only for GOD and JESUS.',
-            notes: ['This will make a story live only for GOD and JESUS', 'GOD and JESUS can access this endpoint.'],
+            notes: `This will make a story live only for GOD and JESUS.
+            
+            GOD and JESUS can access this endpoint.`,
             auth: 'jwt',
             validate: {
                 params: {
@@ -281,7 +287,7 @@ export default function (server: Hapi.Server, serverConfigs: IServerConfiguratio
             },
             response: {
                 schema: Joi.object({
-                    "res": Joi.boolean().required()
+                    "success": Joi.boolean().required()
                 })
             },
             plugins: {
@@ -304,7 +310,9 @@ export default function (server: Hapi.Server, serverConfigs: IServerConfiguratio
         handler: storyController.deleteStory,
         config: {
             description: 'Deletes the story.',
-            notes: ['It will soft delete a story.', 'GOD and JESUS can access this endpoint.'],
+            notes: `It will soft delete a story. 
+            
+            GOD and JESUS can access this endpoint.`,
             auth: 'jwt',
             validate: {
                 params: {
@@ -313,7 +321,7 @@ export default function (server: Hapi.Server, serverConfigs: IServerConfiguratio
             },
             response: {
                 schema: Joi.object({
-                    "res": Joi.boolean().required()
+                    "deleted": Joi.boolean().required()
                 })
             },
             plugins: {

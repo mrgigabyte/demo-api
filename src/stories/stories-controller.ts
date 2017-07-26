@@ -157,10 +157,8 @@ export default class UserController {
     }
 
     public markRead(request: Hapi.Request, reply: Hapi.Base_Reply) {
-        let tempStory = this.dummyStory1;
-        tempStory.read = true;
         return reply({
-            "story": tempStory
+            "read": true
         });
     }
 
@@ -186,30 +184,30 @@ export default class UserController {
 
     public newStory(request: Hapi.Request, reply: Hapi.Base_Reply) {
         return reply({
-            "res": true
+            "success": true
         });
     }
 
     public updateStory(request: Hapi.Request, reply: Hapi.Base_Reply) {
         return reply({
-            "res": true
+            "updated": true
         });
     }
 
     public pushLive(request: Hapi.Request, reply: Hapi.Base_Reply) {
         return reply({
-            "res": true
+            "pushed": true
         });
     }
     public preview(request: Hapi.Request, reply: Hapi.Base_Reply) {
         return reply({
-            "res": true
+            "success": true
         });
     }
 
     public deleteStory(request: Hapi.Request, reply: Hapi.Base_Reply) {
         return reply({
-            "res": true
+            "deleted": true
         });
     }
 }
