@@ -17,7 +17,8 @@ export default function (server: Hapi.Server, serverConfigs: IServerConfiguratio
         handler: cardController.favourite,
         config: {
             description: 'Favourite/Un-faviourite a card',
-            notes: [`GOD, JESUS and ROMANS can access this endpoint`],
+            notes: `
+            GOD, JESUS and ROMANS can access this endpoint`,
             auth: 'jwt',
             validate: {
                 params: {
@@ -28,7 +29,7 @@ export default function (server: Hapi.Server, serverConfigs: IServerConfiguratio
             },
             response: {
                 schema: Joi.object({
-                    "res": Joi.boolean().required()
+                    "success": Joi.boolean().required()
                 })
             },
             plugins: {
@@ -36,9 +37,6 @@ export default function (server: Hapi.Server, serverConfigs: IServerConfiguratio
                     responses: {
                         '200': {
                             'description': 'Successfully changed the favourite state of card'
-                        },
-                        '404': {
-                            'description': 'Card not found'
                         }
                     }
                 },
@@ -54,7 +52,8 @@ export default function (server: Hapi.Server, serverConfigs: IServerConfiguratio
         handler: cardController.getFavouriteCards,
         config: {
             description: 'GET all the cards marked as favourite by a user',
-            notes: [`GOD, JESUS and ROMANS can access this endpoint`],
+            notes: `
+            GOD, JESUS and ROMANS can access this endpoint`,
             auth: 'jwt',
             response: {
                 schema: Joi.object({
@@ -81,10 +80,11 @@ export default function (server: Hapi.Server, serverConfigs: IServerConfiguratio
         handler: cardController.uploadCard,
         config: {
             description: 'Upload a new card from the file system.',
-            notes: [`You can upload an image(.png, .jpg, .gif) or a video(.mp4).  
-            After successfull upload it will return the uri of the uploaded card.  
+            notes: `You can upload an image(.png, .jpg, .gif) or a video(.mp4).  
+            After successfull upload it will return the uri of the uploaded card.
+
             GOD and JESUS can access this endpoint
-            `],
+            `,
             auth: 'jwt',
             payload: {
                 output: 'stream',
@@ -101,7 +101,7 @@ export default function (server: Hapi.Server, serverConfigs: IServerConfiguratio
             },
             response: {
                 schema: Joi.object({
-                    "res": Joi.string().uri().required()
+                    "link": Joi.string().uri().required()
                 })
             },
             plugins: {
@@ -128,7 +128,8 @@ export default function (server: Hapi.Server, serverConfigs: IServerConfiguratio
         handler: cardController.addLink,
         config: {
             description: 'Add link to a card which can be of type basic or video.',
-            notes: [`GOD and JESUS can access this endpoint`],
+            notes: `
+            GOD and JESUS can access this endpoint`,
             auth: 'jwt',
             validate: {
                 params: {
@@ -143,7 +144,7 @@ export default function (server: Hapi.Server, serverConfigs: IServerConfiguratio
             },
             response: {
                 schema: Joi.object({
-                    "res": Joi.boolean().required()
+                    "added": Joi.boolean().required()
                 })
             },
             plugins: {
@@ -166,7 +167,9 @@ export default function (server: Hapi.Server, serverConfigs: IServerConfiguratio
         handler: cardController.deleteCard,
         config: {
             description: 'Delete the card.',
-            notes: ['It will soft delete the card.', 'GOD and JESUS can access this endpoint'],
+            notes: `It will soft delete the card.  
+            
+            GOD and JESUS can access this endpoint`,
             auth: 'jwt',
             validate: {
                 params: {
@@ -177,7 +180,7 @@ export default function (server: Hapi.Server, serverConfigs: IServerConfiguratio
             },
             response: {
                 schema: Joi.object({
-                    "res": Joi.boolean().required()
+                    "deleted": Joi.boolean().required()
                 })
             },
             plugins: {
