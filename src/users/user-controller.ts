@@ -127,13 +127,13 @@ export default class UserController {
 
     public signup(request: Hapi.Request, reply: Hapi.Base_Reply) {
         return reply({
-            "res": true
+            "success": true
         });
     }
 
     public checkEmail(request: Hapi.Request, reply: Hapi.Base_Reply) {
         return reply({
-            "res": true
+            "valid": true
         });
     }
 
@@ -150,13 +150,13 @@ export default class UserController {
 
     public requestResetPassword(request: Hapi.Request, reply: Hapi.Base_Reply) {
         return reply({
-            "res": true
+            "success": true
         });
     }
 
     public resetPassword(request: Hapi.Request, reply: Hapi.Base_Reply) {
         return reply({
-            "res": true
+            "reset": true
         });
     }
 
@@ -176,25 +176,25 @@ export default class UserController {
 
     public deleteProfile(request: Hapi.Request, reply: Hapi.Base_Reply) {
         return reply({
-            "res": true
+            "deleted": true
         });
     }
 
     public pushNotif(request: Hapi.Request, reply: Hapi.Base_Reply) {
         return reply({
-            "res": true
+            "changed": true
         });
     }
 
     public emailNotif(request: Hapi.Request, reply: Hapi.Base_Reply) {
         return reply({
-            "res": true
+            "changed": true
         });
     }
 
     public updateUserInfo(request: Hapi.Request, reply: Hapi.Base_Reply) {
         return reply({
-            "res": true,
+            "updated": true,
         });
     }
 
@@ -216,12 +216,19 @@ export default class UserController {
         });
     }
 
-    public getAllUsersCsv(request: Hapi.Request, reply: Hapi.Base_Reply) {
+    public generateCsvLink(request: Hapi.Request, reply: Hapi.Base_Reply) {
+        return reply({
+            "link": request.server.info.uri + "/user/downloadCsv?jwt=this-is-not-a-jwt-though" 
+        });
+    }
+
+    public downloadCsv(request: Hapi.Request, reply: Hapi.Base_Reply) {
+        console.log(request.query.jwt);
         let fields = ['id', 'name', 'email', 'emailNotif', 'pushNotif'];
         let res = json2csv({data: this.dummyData, fields: fields});
-        console.log(res);        
+        // console.log(res);        
         return reply(res)
-                .header('Content-Type', 'application/octet-stream')
+                .header('Content-Type', 'text/csv')
                 .header('content-disposition', 'attachment; filename=users.csv;');
     }
 

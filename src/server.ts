@@ -21,7 +21,6 @@ export function init(configs: IServerConfigurations, database: any): Promise<Hap
                 log: true
             }
         });
-        // server.ext('onPreResponse', corsHeaders);
 
         //  Setup Hapi Plugins
         const plugins: Array<string> = configs.plugins;
