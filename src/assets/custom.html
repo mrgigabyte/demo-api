@@ -132,20 +132,21 @@
 			<h2>How to begin?</h2>
 			<p>The API has 3 user roles namely: </p>
 			<ul>
-				<li><strong>GOD : </strong> With the most privileges</li>
+				<li><strong>GOD : </strong> With the highest privileges</li>
 				<li><strong>JESUS : </strong> With less privileges than GOD</li>
 				<li><strong>ROMANS : </strong> With the least privileges</li>
 			</ul>
 			<br>
 			<p>Do a request to <code>/user/login</code> endpoint. This endpoint will return 3 jwts for each type of user privileges. 
-			Copy/paste the value of any one of these JWTS in the page header where it is written apiKey so that you can access routes that require authentication.</p>
+			Copy/paste the value of any one of these JWTS in the page header where it is written api_key so that you can access routes that require authentication.
+			</p>
 			<h2>Generic Error Codes</h2>
 			<ul>
-				<li><strong>401 : </strong>Authentication information missing in the request.</li>
-				<li><strong>400 : </strong>Error in request payload</li>
-				<li><strong>404 : </strong>Resource not found.</li>
-				<li><strong>500 : </strong>The request could not be fulfilled due to a server error.</li>
-				<li><strong>503 : </strong>Server taking too long to fulfill the request.</li>
+				<li><strong>400 Bad Request : </strong>The request could not be understood by the server due to malformed syntax.</li>
+				<li><strong>401 Unauthorised: </strong>Missing/Wrong authentication information in the request.</li>
+				<li><strong>404 Not Found: </strong>The server has not found anything matching the request-uri.</li>
+				<li><strong>500 Internal Server Error: </strong>The request could not be fulfilled due to a server error.</li>
+				<li><strong>503 Service Unavailable: </strong>Server took too long to fulfill the request.</li>
 			</ul>
 			<br>
 			<br>

@@ -108,8 +108,11 @@ export default function (server: Hapi.Server, serverConfigs: IServerConfiguratio
                 'hapi-swagger': {
                     payloadType: 'form',
                     responses: {
-                        '200': {
-                            'description': 'Successfully returned the uri.'
+                        '201': {
+                            'description': 'Successfully uploaded the card and returned the uri.'
+                        },
+                        '403': {
+                            'description': 'file type not supported'
                         }
                     }
                 },
