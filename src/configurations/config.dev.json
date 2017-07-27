@@ -1,7 +1,7 @@
 {
     "database": {
         "client": "mysql",
-        "database": "davinci",
+        "database": "abstrct",
         "host": "",
         "user": "",
         "password": "",
@@ -25,7 +25,8 @@
         "plugins": [
             "logger",
             "jwt-auth",
-            "swagger"
+            "swagger",
+            "acl-auth"
         ]
     }
 }

@@ -25,7 +25,8 @@
         "plugins": [
             "logger",
             "jwt-auth",
-            "swagger"
+            "swagger",
+            "acl-auth"
         ]
     }
 }
