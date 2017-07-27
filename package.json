@@ -18,19 +18,18 @@
         "tsc-watch": "tsc -w",
         "build": "gulp build",
         "start": "node build/src/index.js",
-        "setup": "npm install & typings install",
+        "setup": "npm install",
         "watch": "nodemon --watch build/src build/src/index.js"
     },
     "dependencies": {
         "@types/boom": "4.3.5",
-        "@types/hapi": "16.1.6",
+        "@types/hapi": "16.1.7",
         "@types/joi": "10.4.0",
         "@types/node": "8.0.14",
         "@types/sequelize": "4.0.65",
         "@types/vision": "4.1.1",
         "ajv": "5.2.0",
         "bcryptjs": "2.4.3",
-        "bell": "8.5.0",
         "boom": "3.2.2",
         "caseless": "0.12.0",
         "colors": "^1.1.2",
@@ -41,7 +40,7 @@
         "good-console": "^5.3.2",
         "google-auth-library": "^0.10.0",
         "handlebars": "4.0.10",
-        "hapi": "16.0.0",
+        "hapi": "16.5.0",
         "hapi-auth-jwt2": "7.2.4",
         "hapi-authorization": "3.0.3",
         "hapi-cors-headers": "1.0.0",
@@ -51,7 +50,7 @@
         "http": "0.0.0",
         "inert": "3.2.1",
         "is-utf8": "0.2.1",
-        "joi": "8.4.2",
+        "joi": "^8.4.2",
         "json2csv": "3.10.0",
         "jsonwebtoken": "7.3.0",
         "mkdirp": "0.5.1",
@@ -70,7 +69,7 @@
     "devDependencies": {
         "@types/chai": "4.0.1",
         "@types/mocha": "2.2.41",
-        "chai": "^3.5.0",
+        "chai": "3.5.0",
         "gulp": "3.9.1",
         "gulp-env": "^0.4.0",
         "gulp-mocha": "^2.2.0",
@@ -81,7 +80,7 @@
         "mocha": "^3.0.0",
         "nodemon": "^1.10.2",
         "tslint": "^3.13.0",
-        "typescript": "^2.0.3"
+        "typescript": "2.4.2"
     },
     "engines": {
         "node": ">=4.1.1"
