@@ -3,12 +3,12 @@
         "exec_mode": "fork",
         "instances": 4,
         "script": "./build/src/index.js",
-        "name": "saral-node-app",
+        "name": "abstrct-demo-api",
         "interpreter": "node",
         "env": {
             "NODE_ENV": "prod"
         },
-        "out_file": "/logs/saral-node-app.log",
-        "error_file": "/logs/saral-node-app-err.log"
+        "out_file": "/logs/abstrct-node-app.log",
+        "error_file": "/logs/abstrct-node-app-err.log"
     }]
 }

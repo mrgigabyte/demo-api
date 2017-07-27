@@ -7,16 +7,16 @@ export default function (sequelize: Sequelize.Sequelize, DataTypes) {
             primaryKey: true,
             autoIncrement: true
         },
+        name: {
+            type: Sequelize.STRING(150),
+            allowNull: false,
+            defaultValue: ''
+        },
         email: {
             type: Sequelize.STRING(50),
             allowNull: false,
             defaultValue: ''
         },
-        name: {
-            type: Sequelize.STRING(150),
-            allowNull: false,
-            defaultValue: ''
-        }
     }, {
             classMethods: {
                 associate: function (models) { }
@@ -34,3 +34,20 @@ export default function (sequelize: Sequelize.Sequelize, DataTypes) {
 //     pushNotif: Joi.string().required()
 //         .valid(['disable', 'morning', 'afternoon', 'night']),
 //     joinedOn: Joi.date().required()
+
+// export const userSchema: Joi.ObjectSchema = Joi.object({
+//     id: Joi.number().required(),
+//     name: Joi.string().required(),
+//     email: Joi.string().email().required(),
+//     emailNotif: Joi.boolean().required(),
+//     pushNotif: Joi.string().required()
+//         .valid(['disable', 'morning', 'afternoon', 'night']),
+//     joinedOn: Joi.date().required()
+// });
+
+// export const userAdminPannelSchema: Joi.ObjectSchema = userSchema.keys({
+//     status: Joi.string().required()
+//         .valid(['active', 'inactive', 'deleted']),
+// });
+
+
