@@ -50,6 +50,5 @@ export function init(configs: IServerConfigurations, database: any): Promise<Hap
             Documetation.init(server, configs, database);
             resolve(server);
         });
-
     });
-};
+}
