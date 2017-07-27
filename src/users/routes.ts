@@ -19,7 +19,7 @@ export default function (server: Hapi.Server, serverConfigs: IServerConfiguratio
             description: 'Create a new account',
             notes: `Creates a new user account with the details passed in the payload.  
 
-                No Authentication header required to access this endpoint.`,
+                No authorisation header required to access this endpoint.`,
             validate: {
                 payload: Joi.object({
                     name: Joi.string().required()
@@ -59,7 +59,7 @@ export default function (server: Hapi.Server, serverConfigs: IServerConfiguratio
             description: 'Checks if a user with the given email already exists',
             notes: `This enpoint can be used to check whether a user with the given email already exists during the signup process.  
 
-                No authentication header required to access this endpoint.`,
+                No authorisation header required to access this endpoint.`,
             validate: {
                 payload: Joi.object({
                     email: Joi.string().email().required()
@@ -98,7 +98,7 @@ export default function (server: Hapi.Server, serverConfigs: IServerConfiguratio
             2. jwtJesus : jwt for JESUS
             3. jwtRomans : jwt for ROMANS
             
-            No authentication header required to access this endpoint.`],
+            No authorisation header required to access this endpoint.`],
             validate: {
                 payload: Joi.object({
                     email: Joi.string().email().required()
@@ -139,7 +139,7 @@ export default function (server: Hapi.Server, serverConfigs: IServerConfiguratio
             notes: [`The reset link will contain a unique code as query parameter, 
             this code will be used to check the credibility of the user when he makes a request with the new password.
             
-            No authentication header required to access this endpoint.
+            No authorisation header required to access this endpoint.
             `],
             validate: {
                 payload: Joi.object({
@@ -177,7 +177,7 @@ export default function (server: Hapi.Server, serverConfigs: IServerConfiguratio
             notes: `This endpoint will compare the value of unique code in the payload with
             the code at server side and will update the password if the values match.
             
-            No authentication header required to access this endpoint.`,
+            No authorisation header required to access this endpoint.`,
             validate: {
                 payload: Joi.object({
                     code: Joi.string().required()
@@ -460,7 +460,7 @@ export default function (server: Hapi.Server, serverConfigs: IServerConfiguratio
             notes: `This endpoint doesn't need any authentication headers.  
             It will verify the credibility of the link by checking the expiry time of the JWT.  
 
-            No authentication header required to access this endpoint.`,
+            No authorisation header required to access this endpoint.`,
             validate: {
                 query: {
                     jwt: Joi.string().required()
