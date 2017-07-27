@@ -27,6 +27,7 @@
         "@types/joi": "10.4.0",
         "@types/node": "8.0.14",
         "@types/sequelize": "4.0.65",
+        "@types/vision": "4.1.1",
         "ajv": "5.2.0",
         "bcryptjs": "2.4.3",
         "bell": "8.5.0",

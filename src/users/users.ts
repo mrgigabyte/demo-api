@@ -24,3 +24,13 @@ export default function (sequelize: Sequelize.Sequelize, DataTypes) {
         });
     return User;
 }
+
+
+
+//  id: Joi.number().required(),
+//     name: Joi.string().required(),
+//     email: Joi.string().email().required(),
+//     emailNotif: Joi.boolean().required(),
+//     pushNotif: Joi.string().required()
+//         .valid(['disable', 'morning', 'afternoon', 'night']),
+//     joinedOn: Joi.date().required()
