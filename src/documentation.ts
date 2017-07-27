@@ -5,7 +5,7 @@ export function init(server: Hapi.Server, configs: IServerConfigurations, databa
 
     server.route({
         method: 'GET',
-        path: '/',
+        path: '/docs',
         config: {
             handler: function (request, reply: any) {
                 reply.view('custom.html', {});

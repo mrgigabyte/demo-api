@@ -20,7 +20,7 @@ let database;
         if (!module.parent) {
             server.start(() => {
                 console.log('Server running at:', server.info.uri);
-                console.log('Docs at:', server.info.uri);
+                console.log('Documentaion available at:', server.info.uri + '/docs');
             });
             console.log("Running server from parent :)");
         } else {

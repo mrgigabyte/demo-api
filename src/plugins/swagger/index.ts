@@ -24,6 +24,7 @@ export default (): IPlugin => {
                                     'in': 'header'
                                 }
                             },
+                            basePath: "/api",
                             grouping: 'tags',
                             tags: [
                                 {
