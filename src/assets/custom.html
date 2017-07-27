@@ -137,9 +137,11 @@
 				<li><strong>ROMANS (User) : </strong> With the least privileges</li>
 			</ul>
 			<br>
-			<p>Do a request to <code>/user/login</code> endpoint with a valid email and password in the requests body. 
+			<p>You need to make a request to <code>/user/login</code> endpoint with a valid email and password in the requests body. 
 			This endpoint will return 3 jwts for each type of user privileges. 
-			Copy/paste the value of any one of these JWTS in the page header where it is written api_key so that you can access routes that require authentication.
+			Copy/paste the value of any one of these JWTS in the page header where it is written api_key so that you can access routes that require authentication.</p>
+			<br>
+			<p>You will need to save the value of JWT at front-end and will have to make requests with Authorisations header value as the saved JWT to gain access to routes that require authentication.
 			</p>
 			<h2>Generic Error Codes</h2>
 			<ul>
