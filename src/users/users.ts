@@ -16,17 +16,22 @@ export default function (sequelize: Sequelize.Sequelize, DataTypes) {
             type: Sequelize.STRING(50),
             allowNull: false,
             defaultValue: ''
-        },
+        }, 
     }, {
             classMethods: {
                 associate: function (models) { }
+            },
+            instanceMethods: {
+                sayId: function () {
+                    console.log(this.id);
+                }
             }
         });
     return User;
 }
 
 
-
+// this.__factory.associations['Tasks'].target.count({ where: { user_id: this.id } });
 //  id: Joi.number().required(),
 //     name: Joi.string().required(),
 //     email: Joi.string().email().required(),

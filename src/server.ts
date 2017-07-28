@@ -1,6 +1,6 @@
 import * as Hapi from "hapi";
 import { IPlugin } from "./plugins/interfaces";
-import { IServerConfigurations } from "./configurations";
+import { IServerConfigurations } from "./config";
 
 import * as Users from "./users";
 import * as Stories from "./stories";

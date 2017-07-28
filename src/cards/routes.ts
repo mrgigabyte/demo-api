@@ -1,6 +1,6 @@
 import * as Hapi from "hapi";
 import * as Joi from "joi";
-import { IServerConfigurations } from "../configurations";
+import { IServerConfigurations } from "../config";
 import * as Boom from "boom";
 
 import CardController from "./cards-controller";
@@ -10,6 +10,12 @@ export default function (server: Hapi.Server, serverConfigs: IServerConfiguratio
 
     const cardController = new CardController(serverConfigs, database);
     server.bind(cardController);
+
+    server.route({
+        method: 'GET',
+        path: '/try',
+        handler: cardController.try,
+    });
 
     server.route({
         method: 'POST',

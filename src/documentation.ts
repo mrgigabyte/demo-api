@@ -1,5 +1,5 @@
 import * as Hapi from "hapi";
-import { IServerConfigurations } from "./configurations";
+import { IServerConfigurations } from "./config";
 
 export function init(server: Hapi.Server, configs: IServerConfigurations, database: any) {
 

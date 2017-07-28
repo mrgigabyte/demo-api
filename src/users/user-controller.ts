@@ -4,7 +4,7 @@ import * as Jwt from "jsonwebtoken";
 import * as GoogleAuth from "google-auth-library";
 import * as json2csv from "json2csv";
 
-import { IServerConfigurations } from "../configurations";
+import { IServerConfigurations } from "../config";
 
 
 export default class UserController {

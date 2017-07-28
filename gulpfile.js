@@ -57,8 +57,8 @@ gulp.task('watch', shell.task([
      * Copy config files
      */
 gulp.task('configs', (cb) => {
-    return gulp.src("src/configurations/*.json")
-        .pipe(gulp.dest('./build/src/configurations'));
+    return gulp.src("src/config/*.json")
+        .pipe(gulp.dest('./build/src/config'));
 });
 
 /**

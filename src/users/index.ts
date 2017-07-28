@@ -1,6 +1,6 @@
 import * as Hapi from "hapi";
 import Routes from "./routes";
-import { IServerConfigurations } from "../configurations";
+import { IServerConfigurations } from "../config";
 import * as Users from './users';
 import * as Sequelize from 'sequelize';
 

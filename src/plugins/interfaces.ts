@@ -1,6 +1,6 @@
 import * as Hapi from "hapi";
 // import { KnexDB } from "../database";
-import { IServerConfigurations } from "../configurations";
+import { IServerConfigurations } from "../config";
 
 
 export interface IPluginOptions {

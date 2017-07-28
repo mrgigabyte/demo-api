@@ -1,4 +1,4 @@
-import { IDataConfiguration } from "./configurations";
+import { IDataConfiguration } from "./config";
 import * as fs from 'fs';
 import * as path from 'path';
 import * as Sequelize from 'sequelize';

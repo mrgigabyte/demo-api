@@ -3,7 +3,7 @@ import * as Boom from "boom";
 // import * as Jwt from "jsonwebtoken";
 // import * as GoogleAuth from "google-auth-library";
 
-import { IServerConfigurations } from "../configurations";
+import { IServerConfigurations } from "../config";
 
 
 export default class UserController {

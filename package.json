@@ -66,6 +66,7 @@
         "prompt": "^1.0.0",
         "qs": "6.5.0",
         "sequelize": "4.4.2",
+        "sequelize-cli": "2.7.0",
         "sigmund": "1.0.1",
         "tunnel-agent": "0.6.0",
         "vise": "2.0.2",

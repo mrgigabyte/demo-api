@@ -1,7 +1,7 @@
 import * as chai from "chai";
 // import UserController from "../../src/users/user-controller";
 // import { IUser } from "../../src/users/user";
-import * as Configs from "../../src/configurations";
+import * as Configs from "../../src/config";
 import * as Server from "../../src/server";
 import * as Database from "../../src/database";
 // import * as Utils from "../utils";

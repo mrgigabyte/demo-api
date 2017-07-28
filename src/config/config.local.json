@@ -1,0 +1,25 @@
+{
+    "dialect": "mysql",
+    "database": "database_development",
+    "host": "localhost",
+    "username": "root",
+    "password": "9949vidur",
+    "requestTimeout": 90000,
+    "connectionTimeout": 30000,
+    "acquireConnectionTimeout": 30000,
+    "pool": {
+        "min": 4,
+        "max": 10
+    },
+    "server": {
+        "port": 5000,
+        "jwtSecret": "random-secret-password",
+        "jwtExpiration": "1h",
+        "plugins": [
+            "logger",
+            "jwt-auth",
+            "swagger",
+            "acl-auth"
+        ]
+    }
+}

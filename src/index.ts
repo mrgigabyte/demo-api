@@ -1,31 +1,22 @@
 import * as Server from "./server";
 import * as Database from "./database";
-import * as Configs from "./configurations";
-
+import * as Configs from "./config";
+import * as database from './models';
 
 console.log(`Running enviroment ${process.env.NODE_ENV || "dev"}`);
 
-//Init Database
-const dbConfigs = Configs.getDatabaseConfig();
-let database;
-// const database = Database.init(dbConfigs);
+const serverConfigs = Configs.getServerConfigs();
 
-// database.sequelize.sync().then(() => {
-    // console.log(database);
-    const serverConfigs = Configs.getServerConfigs();
+//Starting Application Server
+const server = Server.init(serverConfigs, database).then((server) => {
 
-    //Starting Application Server
-    const server = Server.init(serverConfigs, database).then((server) => {
-
-        if (!module.parent) {
-            server.start(() => {
-                console.log('Server running at:', server.info.uri);
-                console.log('Documentaion available at:', server.info.uri + '/docs');
-            });
-            console.log("Running server from parent :)");
-        } else {
-            console.log("Not running the server because it is not run through parent module.");
-        }
-
-    // });
+    if (!module.parent) {
+        server.start(() => {
+            console.log('Server running at:', server.info.uri);
+            // console.log('Documentaion available at:', server.info.uri + '/docs');
+        });
+        console.log("Running server from parent :)");
+    } else {
+        console.log("Not running the server because it is not run through parent module.");
+    }
 });
