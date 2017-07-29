@@ -1,5 +1,6 @@
 import * as nconf from "nconf";
 import * as path from "path";
+import * as Sequelize from 'sequelize';
 
 //Read Configurations
 const configs = new nconf.Provider({
@@ -18,6 +19,13 @@ export interface IServerConfigurations {
     jwtExpiration: string;
 }
 
+
+export interface IDb {
+    sequelize: Sequelize.Sequelize;
+    Sequelize: Sequelize.SequelizeStatic;
+}
+
+
 export interface IDataConfiguration {
     client: string;
     database: string;
@@ -32,11 +40,6 @@ export interface IDataConfiguration {
         max: number;
     };
     models: Array<string>;
-}
-
-export function getDatabaseConfig(): IDataConfiguration {
-    console.log("Node Environment: ", process.env.NODE_ENV);
-    return configs.get("database");
 }
 
 export function getServerConfigs(): IServerConfigurations {

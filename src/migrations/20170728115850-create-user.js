@@ -12,15 +12,13 @@ module.exports = {
             name: {
                 type: Sequelize.STRING(150),
                 allowNull: false,
-                defaultValue: ''
             },
             email: {
                 type: Sequelize.STRING(50),
                 allowNull: false,
-                defaultValue: ''
             },
             password: {
-                type: Sequelize.STRING(15),
+                type: Sequelize.STRING(50),
                 allowNull: false,
             },
             status: {
@@ -28,13 +26,27 @@ module.exports = {
                 allowNull: false,
                 defaultValue: 'active'
             },
-            emailNotif: Sequelize.ENUM('enable', 'disable'),
-            pushNotif: Sequelize.ENUM('disable', 'morning', 'night', 'day'),
-            joinedOn: Sequelize.DATE,
-            deleteOn: Sequelize.DATE
-        }, {
-            classMethods: {
-                associate: function(models) {}
+            emailNotif: {
+                type: Sequelize.BOOLEAN,
+                allowNull: false,
+                defaultValue: false
+            },
+            pushNotif: {
+                type: Sequelize.ENUM('disable', 'morning', 'night', 'day'),
+                allowNull: false,
+                defaultValue: 'disable'
+            },
+            deleteOn: {
+                type: Sequelize.DATE,
+                allowNull: true
+            },
+            createdAt: {
+                allowNull: false,
+                type: Sequelize.DATE
+            },
+            updatedAt: {
+                allowNull: false,
+                type: Sequelize.DATE
             }
         });
         /*
@@ -47,7 +59,7 @@ module.exports = {
     },
 
     down: function(queryInterface, Sequelize) {
-            return queryInterface.dropTable('Users');
+            return queryInterface.dropTable('users');
         }
         /*
           Add reverting commands here.
