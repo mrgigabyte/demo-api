@@ -1,12 +1,11 @@
 import * as Server from "./server";
-import * as Database from "./database";
 import * as Configs from "./config";
-import * as database from './models';
+import database from './models';
 
 console.log(`Running enviroment ${process.env.NODE_ENV || "dev"}`);
 
 const serverConfigs = Configs.getServerConfigs();
-
+console.log(database);
 //Starting Application Server
 const server = Server.init(serverConfigs, database).then((server) => {
 

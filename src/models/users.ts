@@ -45,4 +45,4 @@ export default function (sequelize: Sequelize.Sequelize, DataTypes: Sequelize.Da
             }
         });
     return User;
-};
+}
