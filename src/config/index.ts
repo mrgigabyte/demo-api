@@ -19,12 +19,11 @@ export interface IServerConfigurations {
     jwtExpiration: string;
 }
 
-
 export interface IDb {
     sequelize: Sequelize.Sequelize;
     Sequelize: Sequelize.SequelizeStatic;
+    user: Sequelize.Model<any,any>;
 }
-
 
 export interface IDataConfiguration {
     client: string;

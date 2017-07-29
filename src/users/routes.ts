@@ -108,11 +108,10 @@ export default function (server: Hapi.Server, serverConfigs: IServerConfiguratio
                 })
             },
             response: {
-                // schema: Joi.object({
-                //     "jwt": Joi.string().required()
-                //         .default("xxx.yyy.zzz")
-                //         .description("Will authenticate all the future requests.")
-                // })
+                schema: Joi.object({
+                    "jwt": Joi.string().required()
+                        .description("The api_key that will be used to authenticate all the future requests.")
+                })
             },
             plugins: {
                 'hapi-swagger': {
@@ -183,7 +182,9 @@ export default function (server: Hapi.Server, serverConfigs: IServerConfiguratio
                     code: Joi.string().required()
                         .description("Unique Code"),
                     password: Joi.string().required()
-                        .description("New Password")
+                        .description("New Password"),
+                    email: Joi.string().email().required()
+                        .description("Your Email")
                 })
             },
             response: {

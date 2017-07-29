@@ -3,12 +3,15 @@ import * as chai from "chai";
 // import { IUser } from "../../src/users/user";
 import * as Configs from "../../src/config";
 import * as Server from "../../src/server";
+import * as Hapi from 'hapi';
 // import * as Database from "../../src/database";
 // import * as Utils from "../utils";
 
 const assert = chai.assert;
 const serverConfig = Configs.getServerConfigs();
-// const server = Server.init(serverConfig, database);
+// Server.init(serverConfig, database).then( (server) => {
+//     server.inject
+// };
 
 describe("UserController Tests", () => {
 

@@ -1,14 +1,14 @@
 import * as Server from "./server";
 import * as Configs from "./config";
 import database from './models';
+import * as Hapi from "hapi";
 
 console.log(`Running enviroment ${process.env.NODE_ENV || "dev"}`);
 
 const serverConfigs = Configs.getServerConfigs();
-console.log(database);
-//Starting Application Server
-const server = Server.init(serverConfigs, database).then((server) => {
 
+//Starting Application Server
+Server.init(serverConfigs, database).then((server: Hapi.Server) => {
     if (!module.parent) {
         server.start(() => {
             console.log('Server running at:', server.info.uri);

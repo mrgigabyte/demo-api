@@ -12,19 +12,32 @@ module.exports = {
             name: {
                 type: Sequelize.STRING(150),
                 allowNull: false,
+                validate: {
+                    notEmpty: true
+                }
             },
             email: {
                 type: Sequelize.STRING(50),
                 allowNull: false,
+                validate: {
+                    notEmpty: true,
+                    isEmail: true
+                }
             },
             password: {
                 type: Sequelize.STRING(50),
                 allowNull: false,
+                validate: {
+                    notEmpty: true
+                }
             },
             status: {
                 type: Sequelize.ENUM('active', 'inactive', 'deleted'),
                 allowNull: false,
-                defaultValue: 'active'
+                defaultValue: 'active',
+                validate: {
+                    notEmpty: true
+                }
             },
             emailNotif: {
                 type: Sequelize.BOOLEAN,
