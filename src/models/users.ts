@@ -31,7 +31,7 @@ export interface UserModel extends Sequelize.Model<UserInstance, UserAttribute> 
 }
 
 export default function (sequelize: Sequelize.Sequelize, DataTypes: Sequelize.DataTypes) {
-    let User: UserModel = sequelize.define<UserInstance, UserAttribute>('user',
+    let User = sequelize.define('user',
         {
             id: {
                 type: Sequelize.INTEGER(11),
@@ -131,10 +131,6 @@ export default function (sequelize: Sequelize.Sequelize, DataTypes: Sequelize.Da
                 },
             }
         });
-
-    User.prototype.something = function () {
-        console.log('chal jaa please');
-    };
 
     User.prototype.checkPassword = function (password): Boolean {
         return bcrypt.compareSync(password, this.password);

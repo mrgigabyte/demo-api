@@ -216,23 +216,16 @@ export default class UserController {
 
 
     public getUserInfo(request: Hapi.Request, reply: Hapi.Base_Reply) {
+        console.log(request.auth.credentials.userId);
         this.database.user.findOne({
-            attributes: ['id', 'name', 'email', 'emailNotif', 'pushNotif', 'joinedOn'],
+            attributes: ['id', 'name', 'email', 'emailNotif', 'pushNotif', ['createdAt', 'joinedOn']],
             where: {
                 id: request.auth.credentials.userId
             }
-        }).then((res) => {
-            console.log(res);
-        });
-        return reply({
-            "user": {
-                "id": "2",
-                "name": "John Doe",
-                "email": "john.doe@gmail.com",
-                "emailNotif": "false",
-                "pushNotif": "morning",
-                "joinedOn": "2017-07-22T07:15:13.250Z"
-            }
+        }).then((user) => {
+            return reply({
+                "user": user.get({ plain: true })
+            });
         });
     }
 
