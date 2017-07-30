@@ -93,10 +93,8 @@ export default function (server: Hapi.Server, serverConfigs: IServerConfiguratio
         handler: userController.login,
         config: {
             description: 'Returns a JWT for the user after a successfull login',
-            notes: [`This endpoint returns three tokens, each for diffrent user roles.  
-            1. jwtGod : jwt for GOD  
-            2. jwtJesus : jwt for JESUS
-            3. jwtRomans : jwt for ROMANS
+            notes: [`This endpoint will return a JWT, generated on the basis of user role that will 
+            be used as the value of authorisation for making requests to protected endpoints.
             
             No authorisation header required to access this endpoint.`],
             validate: {
