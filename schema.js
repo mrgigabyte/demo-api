@@ -57,8 +57,7 @@
     cardData,
     status, // active/deleted
     cardType, // image/video
-    link, // can be null
-    linkType // video/basic
+    link // can be null
 }
 
 /**
