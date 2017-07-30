@@ -216,6 +216,14 @@ export default class UserController {
 
 
     public getUserInfo(request: Hapi.Request, reply: Hapi.Base_Reply) {
+        this.database.user.findOne({
+            attributes: ['id', 'name', 'email', 'emailNotif', 'pushNotif', 'joinedOn'],
+            where: {
+                id: request.auth.credentials.userId
+            }
+        }).then((res) => {
+            console.log(res);
+        });
         return reply({
             "user": {
                 "id": "2",
@@ -229,6 +237,7 @@ export default class UserController {
     }
 
     public deleteProfile(request: Hapi.Request, reply: Hapi.Base_Reply) {
+
         return reply({
             "deleted": true
         });

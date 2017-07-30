@@ -141,7 +141,7 @@ export default function (sequelize: Sequelize.Sequelize, DataTypes: Sequelize.Da
     };
 
     User.prototype.generateJwt = function (config): String {
-        return Jwt.sign({ role: this.role, id: this.id }, config.jwtSecret, { expiresIn: config.jwtExpiration });
+        return Jwt.sign({ role: this.role.toUpperCase(), id: this.id }, config.jwtSecret, { expiresIn: config.jwtExpiration });
     };
 
     User.prototype.generateUniqueCode = function (): Promise<String> {
