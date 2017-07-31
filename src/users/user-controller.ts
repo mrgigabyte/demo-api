@@ -156,8 +156,7 @@ export default class UserController {
                 email: request.payload.email
             }
         }).then((user) => {
-            if (user) {if(user.getStatus !== 'deleted'){
-
+            if (user) {
                 if (user.checkPassword(request.payload.password)) {
                     return reply({
                         "jwt": user.generateJwt(this.configs)
@@ -165,21 +164,12 @@ export default class UserController {
                 } else {
                     reply(Boom.unauthorized('Password is incorrect.'));
                 }
-            }
-            else{
-                return reply(Boom.notFound('the user profile has been deleted'));
-            }
+
             } else {
                 reply(Boom.unauthorized('Email or Password is incorrect.'));
             }
         });
     }
-
-    // this.database.resetCode.findOne({
-    //         include: [{
-    //             model: this.database.user,
-    //             where: { userId: 37 }
-    //         }],
 
     public requestResetPassword(request: Hapi.Request, reply: Hapi.Base_Reply) {
         this.database.user.findOne({
@@ -262,80 +252,76 @@ export default class UserController {
     }
 
     public deleteProfile(request: Hapi.Request, reply: Hapi.Base_Reply) {
-       this.database.user.findOne({
-           where:{
-               id:request.auth.credentials.userId
+        this.database.user.findOne({
+            where: {
+                id: request.auth.credentials.userId
             }
-        }).then((user)=>{
-                if(user){
-                    user.deleteUserData()
-                        .then(() => {
-                            return reply({
-                                 deleted: true
-                             });
+        }).then((user) => {
+            if (user) {
+                user.deleteUserData()
+                    .then(() => {
+                        return reply({
+                            deleted: true
                         });
-                }
-                else{
-                  return reply(Boom.badRequest('User not found'));
-                }
-             });
+                    });
+            } else {
+                return reply(Boom.badRequest('User not found'));
+            }
+        });
     }
 
     public pushNotif(request: Hapi.Request, reply: Hapi.Base_Reply) {
-          this.database.user.findOne({
-           where:{
-               id:request.auth.credentials.userId
+        this.database.user.findOne({
+            where: {
+                id: request.auth.credentials.userId
             }
-        }).then((user)=>{
-                        if(user){
-                            user.pushNotification(request.payload.pushNotif)
-                                .then(() => {
-                                    return reply({
-                                                changed: true
-                                    });
-                                });
-                            }
-                         else{
-                            return reply(Boom.badRequest('User not found'));
-                           }
+        }).then((user) => {
+            if (user) {
+                user.pushNotification(request.payload.pushNotif)
+                    .then(() => {
+                        return reply({
+                            changed: true
                         });
+                    });
+            } else {
+                return reply(Boom.badRequest('User not found'));
+            }
+        });
     }
 
     public emailNotif(request: Hapi.Request, reply: Hapi.Base_Reply) {
-           this.database.user.findOne({
-           where:{
-               id:request.auth.credentials.userId
+        this.database.user.findOne({
+            where: {
+                id: request.auth.credentials.userId
             }
-        }).then((user)=>{
-                        if(user){
-                            user.emailNotification(request.payload.emailNotif)
-                                .then(() => {
-                                    return reply({
-                                                changed: true
-                                    });
-                                });
-                            }
-                         else{
-                             return reply(Boom.badRequest('User not found'));
-                           }
+        }).then((user) => {
+            if (user) {
+                user.emailNotification(request.payload.emailNotif)
+                    .then(() => {
+                        return reply({
+                            changed: true
                         });
+                    });
+            } else {
+                return reply(Boom.badRequest('User not found'));
+            }
+        });
     }
 
     public updateUserInfo(request: Hapi.Request, reply: Hapi.Base_Reply) {
-       this.database.user.findOne({
-           where:{
-               id:request.auth.credentials.userId
+        this.database.user.findOne({
+            where: {
+                id: request.auth.credentials.userId
             }
         }).then((user) => {
-            if(user){
+            if (user) {
                 user.updateUser(request.payload)
                     .then(() => {
-                                    return reply({
-                                                updated: true
-                                    });
-                                });
-            }
-            else{
+                        return reply({
+                            updated: true
+                        });
+                    });
+            } else {
                 return reply(Boom.badRequest('User not found'));
             }
         }).catch((err) => {
@@ -356,7 +342,7 @@ export default class UserController {
     }
 
     public getAllUsers(request: Hapi.Request, reply: Hapi.Base_Reply) {
-       this.database.user.findAll().then((user)=>{console.log(user); });
+        this.database.user.findAll().then((user) => { console.log(user); });
     }
 
     public generateCsvLink(request: Hapi.Request, reply: Hapi.Base_Reply) {
@@ -383,17 +369,17 @@ export default class UserController {
             });
         }).catch((err) => {
             this.database.user.findOne({
-            where:{
-               email: request.payload.email
-            }
-        }).then((user) => {
+                where: {
+                    email: request.payload.email
+                }
+            }).then((user) => {
                 user.promoteJesus(request.payload)
                     .then(() => {
-                                    return reply({
-                                                "success": true
-                                    });
-                                });
+                        return reply({
+                            "success": true
+                        });
+                    });
+            });
         });
-    });
-  }
+    }
 }
