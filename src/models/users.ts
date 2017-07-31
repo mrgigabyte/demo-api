@@ -95,10 +95,7 @@ export default function (sequelize: Sequelize.Sequelize, DataTypes: Sequelize.Da
             hooks: {
                 beforeCreate: (user: UserInstance, options) => {
                     user.password = bcrypt.hashSync(user.password, 8);
-                },
-                beforeUpdate: (user: UserInstance, options) => {
-                    user.password = bcrypt.hashSync(user.password, 8);
-                },
+                }
             }
         });
 
@@ -137,6 +134,7 @@ export default function (sequelize: Sequelize.Sequelize, DataTypes: Sequelize.Da
         return new Promise((resolve, reject) => {
             this.update({
                 password: password,
+
             }).then(() => {
                 resolve();
             }).catch((err) => {
@@ -144,6 +142,52 @@ export default function (sequelize: Sequelize.Sequelize, DataTypes: Sequelize.Da
             });
         });
     };
+
+
+    User.prototype.deleteUserData = function (): Promise<{}> {
+        return this.update({
+                status: 'deleted',
+                deleteOn: moment().toDate()
+            })
+    };
+
+    User.prototype.pushNotification = function(notifType): Promise<{}> {
+            return  this.update({
+                pushNotif: notifType
+            })
+    };
+
+     User.prototype.emailNotification = function(state): Promise<{}> {
+            return this.update({
+                emailNotif: state
+            })
+    };
+
+     User.prototype.updateUser = function(info): Promise<{}> {
+            return this.update({
+                name: info.name,
+                email:info.email,
+                password: User.hashPassword(info.password)
+            })
+    };
+
+    User.prototype.promoteJesus = function(info): Promise<{}>{
+       return  this.update({
+                   name: info.name,
+                    email:info.email,
+                    password: User.hashPassword(info.password),
+                    role: info.role
+            })
+    };
+
+    User.prototype.getStatus = function(){
+        return this.status;
+    };
+
+    User.hashPassword = function(password): String {
+        return bcrypt.hashSync(password, 8);
+    };
+
 
     return User;
 }
