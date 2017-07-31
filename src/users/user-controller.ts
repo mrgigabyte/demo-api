@@ -157,6 +157,7 @@ export default class UserController {
             }
         }).then((user) => {
             if (user) {
+<<<<<<< HEAD
                 if (user.checkPassword(request.payload.password)) {
                     return reply({
                         "jwt": user.generateJwt(this.configs)
@@ -165,6 +166,21 @@ export default class UserController {
                     reply(Boom.unauthorized('Password is incorrect.'));
                 }
 
+=======
+                if (user.getStatus !== 'deleted') {
+
+                    if (user.checkPassword(request.payload.password)) {
+                        return reply({
+                            "jwt": user.generateJwt(this.configs)
+                        });
+                    } else {
+                        reply(Boom.unauthorized('Password is incorrect.'));
+                    }
+                }
+                else {
+                    return reply(Boom.notFound('the user profile has been deleted'));
+                }
+>>>>>>> vidur/dev
             } else {
                 reply(Boom.unauthorized('Email or Password is incorrect.'));
             }
@@ -258,13 +274,15 @@ export default class UserController {
             }
         }).then((user) => {
             if (user) {
-                user.deleteUserData()
+                user.deleteUser()
                     .then(() => {
                         return reply({
                             deleted: true
                         });
                     });
+
             } else {
+
                 return reply(Boom.badRequest('User not found'));
             }
         });
@@ -283,7 +301,9 @@ export default class UserController {
                             changed: true
                         });
                     });
+
             } else {
+
                 return reply(Boom.badRequest('User not found'));
             }
         });
@@ -302,7 +322,9 @@ export default class UserController {
                             changed: true
                         });
                     });
+
             } else {
+
                 return reply(Boom.badRequest('User not found'));
             }
         });
@@ -321,7 +343,9 @@ export default class UserController {
                             updated: true
                         });
                     });
+
             } else {
+
                 return reply(Boom.badRequest('User not found'));
             }
         }).catch((err) => {
