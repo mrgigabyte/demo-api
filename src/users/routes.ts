@@ -211,8 +211,7 @@ export default function (server: Hapi.Server, serverConfigs: IServerConfiguratio
         config: {
             description: 'GET user information',
             notes: `  
-            GOD, JESUS and ROMANS can access this endpoint
-            Authorisation header is required to access this endpoint.`,
+            GOD, JESUS and ROMANS can access this endpoints`,
             auth: 'jwt',
             validate: {
                 params: {
@@ -246,8 +245,7 @@ export default function (server: Hapi.Server, serverConfigs: IServerConfiguratio
             description: 'UPDATE user info with the info sent in the payload.',
             notes: `This endpoint can Update name/email/password of a user with the key values sent in the payload.  
 
-            GOD, JESUS and ROMANS can access this endpoint
-            Authorisation header is required to access this endpoint.`,
+            GOD, JESUS and ROMANS can access this endpoint`,
             auth: 'jwt',
             validate: {
                 payload: userSchemaWithOptionalKeys,
@@ -282,8 +280,7 @@ export default function (server: Hapi.Server, serverConfigs: IServerConfiguratio
             description: 'DELETE the profile of the user with the given Id',
             notes: `It will soft delete a users profile  
 
-            GOD, JESUS and ROMANS can access this endpoint
-            Authorisation header is required to access this endpoint.`,
+            GOD, JESUS and ROMANS can access this endpoint`,
             auth: 'jwt',
             validate: {
                 params: {
@@ -322,8 +319,8 @@ export default function (server: Hapi.Server, serverConfigs: IServerConfiguratio
               3. afternoon : Notifications will sent at 2PM in the afternoon.
               4. night : Notifications will sent at 8PM in the night.   
 
-              GOD, JESUS and ROMANS can access this endpoint
-              Authorisation header is required to access this endpoint.`,
+              GOD, JESUS and ROMANS can access this endpoint 
+            `,
             auth: 'jwt',
             validate: {
                 params: {
@@ -361,8 +358,7 @@ export default function (server: Hapi.Server, serverConfigs: IServerConfiguratio
             description: 'Enable/Disable email-notifications for a user',
             notes: `Enable/disable email notifications on the basis of the emailNotif key in the payload.  
 
-            GOD, JESUS and ROMANS can access this endpoint
-            Authorisation header is required to access this endpoint.`,
+            GOD, JESUS and ROMANS can access this endpoint`,
             auth: 'jwt',
             validate: {
                 params: {
@@ -399,8 +395,7 @@ export default function (server: Hapi.Server, serverConfigs: IServerConfiguratio
             description: 'GET details of all the users',
             notes: `It will return the list of all users (with pagination).   
 
-            GOD and JESUS can access this endpoint.
-            Authorisation header is required to access this endpoint.`,
+            GOD and JESUS can access this endpoint.`,
             auth: 'jwt',
             validate: {
             },
@@ -475,8 +470,7 @@ export default function (server: Hapi.Server, serverConfigs: IServerConfiguratio
             notes: `It will give a downloadable link to a csv file containing the list of all users.  
             This link will have a jwt in its query parameters which will be used to verify the authenticity of the link.  
 
-            GOD and JESUS can access this endpoint
-            Authorisation header is required to access this endpoint.`,
+            GOD and JESUS can access this endpoint`,
             auth: 'jwt',
             response: {
                 schema: Joi.object({
