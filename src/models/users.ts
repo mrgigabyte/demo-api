@@ -135,69 +135,39 @@ export default function (sequelize: Sequelize.Sequelize, DataTypes: Sequelize.Da
 
 
     User.prototype.deleteUserData = function (): Promise<{}> {
-        return new Promise((resolve, reject) => {
-            this.update({
+        return this.update({
                 status: 'deleted',
                 deleteOn: moment().toDate()
-            }).then(() => {
-                resolve();
-            }).catch((err) => {
-                reject('failed to delete the account');
-            });
-        });
+            })
     };
 
     User.prototype.pushNotification = function(notifType): Promise<{}> {
-            return new Promise((resolve,reject)=>{
-                this.update({
+            return  this.update({
                 pushNotif: notifType
-            }).then(() => {
-                resolve();
-            }).catch((err) => {
-                reject('failed to update the push Notification');
-                 });
-            });
+            })
     };
 
      User.prototype.emailNotification = function(state): Promise<{}> {
-            return new Promise((resolve,reject)=>{
-                this.update({
+            return this.update({
                 emailNotif: state
-            }).then(() => {
-                resolve();
-            }).catch((err) => {
-                reject('failed to update the email Notification');
-                 });
-            });
+            })
     };
 
      User.prototype.updateUser = function(info): Promise<{}> {
-            return new Promise((resolve,reject)=>{
-                this.update({
+            return this.update({
                 name: info.name,
                 email:info.email,
                 password: User.hashPassword(info.password)
-            }).then(() => {
-                resolve();
-            }).catch((err) => {
-                reject('failed to update the user info');
-                 });
-            });
+            })
     };
 
     User.prototype.promoteJesus = function(info): Promise<{}>{
-        return new Promise ((resolve,reject)=>{
-            this.update({
+       return  this.update({
                    name: info.name,
                     email:info.email,
                     password: User.hashPassword(info.password),
                     role: info.role
-            }).then(() => {
-                    resolve();
-            }).catch((err) => {
-                    reject('failed to promote the user');
-            });
-        });
+            })
     };
 
     User.prototype.getStatus = function(){
