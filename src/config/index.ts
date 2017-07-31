@@ -23,6 +23,7 @@ export interface IDb {
     sequelize: Sequelize.Sequelize;
     Sequelize: Sequelize.SequelizeStatic;
     user: Sequelize.Model<any,any>;
+    resetCode: Sequelize.Model<any,any>;    
 }
 
 export interface IDataConfiguration {

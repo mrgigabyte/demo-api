@@ -1,7 +1,6 @@
 import * as Sequelize from 'sequelize';
 import * as bcrypt from 'bcryptjs';
 import * as Jwt from "jsonwebtoken";
-import * as shortid from 'shortid';
 import * as moment from 'moment';
 
 export interface UserAttribute {
@@ -91,37 +90,8 @@ export default function (sequelize: Sequelize.Sequelize, DataTypes: Sequelize.Da
             deleteOn: {
                 type: Sequelize.DATE,
                 allowNull: true
-            },
-            resetPasswordCode: {
-                type: Sequelize.STRING(30),
-                allowNull: true,
-                validate: {
-                    notEmpty: true
-                }
-            },
-            resetCodeExpiresOn: {
-                type: Sequelize.DATE,
-                allowNull: true,
-                validate: {
-                    notEmpty: true
-                }
             }
-
         }, {
-            classMethods: {
-                associate: (models) => { }
-            },
-            instanceMethods: {
-                hashPassword: function (password) {
-                    console.log('ab to chal jaa');
-                    bcrypt.hash(password, 8, (err, hash) => {
-                        return password;
-                    });
-                },
-                callMe: function () {
-                    console.log('hey');
-                }
-            },
             hooks: {
                 beforeCreate: (user: UserInstance, options) => {
                     user.password = bcrypt.hashSync(user.password, 8);
@@ -140,25 +110,7 @@ export default function (sequelize: Sequelize.Sequelize, DataTypes: Sequelize.Da
         return Jwt.sign({ role: this.role.toUpperCase(), id: this.id }, config.jwtSecret, { expiresIn: config.jwtExpiration });
     };
 
-    User.prototype.generateUniqueCode = function (): Promise<String> {
-        return new Promise((resolve, reject) => {
-            this.update({
-                resetPasswordCode: shortid.generate(),
-                resetCodeExpiresOn: moment().add(12, 'h').toDate()
-            }).then(() => {
-                console.log(moment().add(12, 'h').toDate());
-                resolve(this.resetPasswordCode);
-            }).catch((err) => {
-                console.log(err);
-                reject('cannot generate unique code');
-            });
-        });
-        // this.user.resetPasswordCode = shortid.generate();
-        // this.user.resetCodeExpiresOn = moment().add(12,'h').toDate();
-    };
-
     User.prototype.sendEmail = function (code): void {
-        // create a url and send email
         console.log(code);
     };
 
@@ -174,9 +126,13 @@ export default function (sequelize: Sequelize.Sequelize, DataTypes: Sequelize.Da
         this.password = password;
         return new Promise((resolve, reject) => {
             this.update({
+<<<<<<< HEAD
                 password: User.hashPassword(password),
                 resetPasswordCode: null,
                 resetCodeExpiresOn: null
+=======
+                password: password,
+>>>>>>> vidur/master
             }).then(() => {
                 resolve();
             }).catch((err) => {
@@ -185,6 +141,7 @@ export default function (sequelize: Sequelize.Sequelize, DataTypes: Sequelize.Da
         });
     };
 
+<<<<<<< HEAD
     User.prototype.deleteUserData = function (userId): Promise<{}> {
         this.userId = userId;
         return new Promise((resolve, reject) => {

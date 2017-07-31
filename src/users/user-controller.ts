@@ -175,6 +175,12 @@ export default class UserController {
         });
     }
 
+    // this.database.resetCode.findOne({
+    //         include: [{
+    //             model: this.database.user,
+    //             where: { userId: 37 }
+    //         }],
+
     public requestResetPassword(request: Hapi.Request, reply: Hapi.Base_Reply) {
         this.database.user.findOne({
             where: {
@@ -182,17 +188,27 @@ export default class UserController {
             }
         }).then((user) => {
             if (user) {
-                user.generateUniqueCode().then((code) => {
-                    user.sendEmail(code);
+                this.database.resetCode.findOne({
+                    where: {
+                        userId: user.id
+                    }
+                }).then((code) => {
+                    if (code) {
+                        return code.updateCode();
+                    } else {
+                        return this.database.resetCode.createCode(user.id);
+                    }
+                }).then((code) => {
+                    user.sendEmail(code.code);
                     return reply({
                         "success": true
                     });
-
                 });
             } else {
                 reply(Boom.badRequest('Email not registered on platform'));
             }
         });
+
     }
 
     public resetPassword(request: Hapi.Request, reply: Hapi.Base_Reply) {
@@ -202,17 +218,29 @@ export default class UserController {
             }
         }).then((user) => {
             if (user) {
-                if (user.checkUniqueCode(request.payload.code)) {
-                    user.updatePassword(request.payload.password).then(() => {
-                        return reply({
-                            reset: true
-                        });
-                    }).catch((reason) => {
-                        reply(Boom.badImplementation(reason));
-                    });
-                } else {
-                    reply(Boom.badRequest('Cannot verify the unique code'));
-                }
+                this.database.resetCode.findOne({
+                    where: {
+                        userId: user.id
+                    }
+                }).then((code) => {
+                    if (code) {
+                        if (code.checkUniqueCode(request.payload.code)) {
+                            user.updatePassword(request.payload.password).then(() => {
+                                code.markCodeInvalid().then(() => {
+                                    return reply({
+                                        reset: true
+                                    });
+                                });
+                            }).catch((reason) => {
+                                reply(Boom.badImplementation(reason));
+                            });
+                        } else {
+                            reply(Boom.badRequest('Unique code no longer valid'));
+                        }
+                    } else {
+                        reply(Boom.badRequest('User has not requested to reset his password'));
+                    }
+                });
             } else {
                 reply(Boom.badRequest('Email not registered on platform'));
             }
@@ -221,7 +249,6 @@ export default class UserController {
 
 
     public getUserInfo(request: Hapi.Request, reply: Hapi.Base_Reply) {
-        console.log(request.auth.credentials.userId);
         this.database.user.findOne({
             attributes: ['id', 'name', 'email', 'emailNotif', 'pushNotif', ['createdAt', 'joinedOn']],
             where: {

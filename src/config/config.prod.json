@@ -3,7 +3,7 @@
     "database": "davinci",
     "host": "localhost",
     "username": "root",
-    "password": "9949vidur",
+    "password": "random",
     "requestTimeout": 90000,
     "connectionTimeout": 30000,
     "acquireConnectionTimeout": 30000,
