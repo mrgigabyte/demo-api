@@ -185,10 +185,27 @@ export default function (sequelize: Sequelize.Sequelize, DataTypes: Sequelize.Da
         });
     };
 
+    User.getAllUsersData = function (): Promise<{}> {
+        return User.scope(null)
+            .findAll({
+                attributes: ['id', 'name', 'email', 'emailNotif', 'pushNotif', ['createdAt', 'joinedOn'], 'status']
+            })
+            .then((user) => {
+                let data = [];
+                user.forEach((element) => {
+                    data.push(element.get({ plain: true }));
+                });
+                return data;
+            });
+    };
 
     User.hashPassword = function (password): String {
         return bcrypt.hashSync(password, 8);
-    }
+    };
+
+    User.generateCSVJwt = function (config): String {
+        return Jwt.sign({ data: 'CSV' }, config.jwtCSV.jwtSecret, { expiresIn: config.jwtCSV.jwtExpiration });
+    };
 
     return User;
 }
