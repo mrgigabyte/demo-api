@@ -126,13 +126,8 @@ export default function (sequelize: Sequelize.Sequelize, DataTypes: Sequelize.Da
         this.password = password;
         return new Promise((resolve, reject) => {
             this.update({
-<<<<<<< HEAD
-                password: User.hashPassword(password),
-                resetPasswordCode: null,
-                resetCodeExpiresOn: null
-=======
                 password: password,
->>>>>>> vidur/master
+
             }).then(() => {
                 resolve();
             }).catch((err) => {
@@ -141,7 +136,6 @@ export default function (sequelize: Sequelize.Sequelize, DataTypes: Sequelize.Da
         });
     };
 
-<<<<<<< HEAD
     User.prototype.deleteUserData = function (userId): Promise<{}> {
         this.userId = userId;
         return new Promise((resolve, reject) => {
