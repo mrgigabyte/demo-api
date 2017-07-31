@@ -77,7 +77,7 @@ export default function (server: Hapi.Server, serverConfigs: IServerConfiguratio
                         '200': {
                             'description': 'The email has not been registered with the platform before.'
                         },
-                        '400': {
+                        '409': {
                             'description': 'User with the given email already exists'
                         }
                     }
@@ -154,9 +154,6 @@ export default function (server: Hapi.Server, serverConfigs: IServerConfiguratio
                     responses: {
                         '200': {
                             'description': 'Email with reset link sent successfully'
-                        },
-                        '400': {
-                            'description': 'Email not registered on platform'
                         }
                     }
                 }
@@ -199,6 +196,7 @@ export default function (server: Hapi.Server, serverConfigs: IServerConfiguratio
                         '400': {
                             'description': 'Cannot verify the unique code'
                         }
+
                     }
                 }
             },
@@ -213,7 +211,7 @@ export default function (server: Hapi.Server, serverConfigs: IServerConfiguratio
         config: {
             description: 'GET user information',
             notes: `  
-            GOD, JESUS and ROMANS can access this endpoint`,
+            GOD, JESUS and ROMANS can access this endpoints`,
             auth: 'jwt',
             validate: {
                 params: {
@@ -230,7 +228,7 @@ export default function (server: Hapi.Server, serverConfigs: IServerConfiguratio
                     responses: {
                         '200': {
                             'description': 'Successfully found info of the user with the given id.'
-                        },
+                        }
                     }
                 },
                 'hapiAuthorization': { roles: ['GOD', 'JESUS', 'ROMANS'] }

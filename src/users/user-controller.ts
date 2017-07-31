@@ -1,5 +1,6 @@
 import * as Hapi from "hapi";
 import * as Boom from "boom";
+import * as GoogleAuth from "google-auth-library";
 import * as json2csv from "json2csv";
 import { IServerConfigurations } from "../config";
 import { IDb } from "../config";
@@ -13,113 +14,6 @@ export default class UserController {
     constructor(configs: IServerConfigurations, database: IDb) {
         this.database = database;
         this.configs = configs;
-        this.dummyData = [
-            {
-                "id": "2",
-                "name": "Johnny Doe",
-                "email": "john.doe@gmail.com",
-                "emailNotif": "true",
-                "pushNotif": "morning",
-                "joinedOn": "2017-07-22T07:15:13.250Z",
-                "status": "active"
-            }, {
-                "id": "2",
-                "name": "Johnny Doe",
-                "email": "john.doe@gmail.com",
-                "emailNotif": "true",
-                "pushNotif": "morning",
-                "joinedOn": "2017-07-22T07:15:13.250Z",
-                "status": "active"
-            }, {
-                "id": "2",
-                "name": "Johnny Doe",
-                "email": "john.doe@gmail.com",
-                "emailNotif": "true",
-                "pushNotif": "morning",
-                "joinedOn": "2017-07-22T07:15:13.250Z",
-                "status": "active"
-            }, {
-                "id": "2",
-                "name": "Johnny Doe",
-                "email": "john.doe@gmail.com",
-                "emailNotif": "true",
-                "pushNotif": "morning",
-                "joinedOn": "2017-07-22T07:15:13.250Z",
-                "status": "active"
-            }, {
-                "id": "2",
-                "name": "Johnny Doe",
-                "email": "john.doe@gmail.com",
-                "emailNotif": "true",
-                "pushNotif": "morning",
-                "joinedOn": "2017-07-22T07:15:13.250Z",
-                "status": "active"
-            }, {
-                "id": "2",
-                "name": "Johnny Doe",
-                "email": "john.doe@gmail.com",
-                "emailNotif": "true",
-                "pushNotif": "morning",
-                "joinedOn": "2017-07-22T07:15:13.250Z",
-                "status": "active"
-            }, {
-                "id": "2",
-                "name": "Johnny Doe",
-                "email": "john.doe@gmail.com",
-                "emailNotif": "true",
-                "pushNotif": "morning",
-                "joinedOn": "2017-07-22T07:15:13.250Z",
-                "status": "active"
-            }, {
-                "id": "2",
-                "name": "Johnny Doe",
-                "email": "john.doe@gmail.com",
-                "emailNotif": "true",
-                "pushNotif": "morning",
-                "joinedOn": "2017-07-22T07:15:13.250Z",
-                "status": "active"
-            }, {
-                "id": "2",
-                "name": "Johnny Doe",
-                "email": "john.doe@gmail.com",
-                "emailNotif": "true",
-                "pushNotif": "morning",
-                "joinedOn": "2017-07-22T07:15:13.250Z",
-                "status": "active"
-            }, {
-                "id": "2",
-                "name": "Johnny Doe",
-                "email": "john.doe@gmail.com",
-                "emailNotif": "true",
-                "pushNotif": "morning",
-                "joinedOn": "2017-07-22T07:15:13.250Z",
-                "status": "active"
-            }, {
-                "id": "2",
-                "name": "Johnny Doe",
-                "email": "john.doe@gmail.com",
-                "emailNotif": "true",
-                "pushNotif": "morning",
-                "joinedOn": "2017-07-22T07:15:13.250Z",
-                "status": "active"
-            }, {
-                "id": "2",
-                "name": "Johnny Doe",
-                "email": "john.doe@gmail.com",
-                "emailNotif": "true",
-                "pushNotif": "morning",
-                "joinedOn": "2017-07-22T07:15:13.250Z",
-                "status": "active"
-            }, {
-                "id": "2",
-                "name": "Johnny Doe",
-                "email": "john.doe@gmail.com",
-                "emailNotif": "true",
-                "pushNotif": "morning",
-                "joinedOn": "2017-07-22T07:15:13.250Z",
-                "status": "active"
-            }
-        ];
     }
 
     public signup(request: Hapi.Request, reply: Hapi.Base_Reply) {
@@ -144,7 +38,7 @@ export default class UserController {
 
                 });
             } else {
-                reply(Boom.badRequest('User with the given email already exists'));
+                reply(Boom.conflict('User with the given email already exists'));
             }
         });
     }
@@ -156,30 +50,19 @@ export default class UserController {
             }
         }).then((user) => {
             if (user) {
-                if (user.getStatus !== 'deleted') {
+                if (user.checkPassword(request.payload.password)) {
+                    return reply({
+                        "jwt": user.generateJwt(this.configs)
+                    });
+                } else {
+                    reply(Boom.unauthorized('Password is incorrect.'));
+                }
 
-                    if (user.checkPassword(request.payload.password)) {
-                        return reply({
-                            "jwt": user.generateJwt(this.configs)
-                        });
-                    } else {
-                        reply(Boom.unauthorized('Password is incorrect.'));
-                    }
-                }
-                else {
-                    return reply(Boom.notFound('the user profile has been deleted'));
-                }
             } else {
                 reply(Boom.unauthorized('Email or Password is incorrect.'));
             }
         });
     }
-
-    // this.database.resetCode.findOne({
-    //         include: [{
-    //             model: this.database.user,
-    //             where: { userId: 37 }
-    //         }],
 
     public requestResetPassword(request: Hapi.Request, reply: Hapi.Base_Reply) {
         this.database.user.findOne({
@@ -205,7 +88,7 @@ export default class UserController {
                     });
                 });
             } else {
-                reply(Boom.badRequest('Email not registered on platform'));
+                reply(Boom.notFound('Email not registered on platform'));
             }
         });
 
@@ -242,11 +125,11 @@ export default class UserController {
                     }
                 });
             } else {
-                reply(Boom.badRequest('Email not registered on platform'));
+                reply(Boom.notFound('Email not registered on platform'));
             }
         });
     }
-    
+
     public getUserInfo(request: Hapi.Request, reply: Hapi.Base_Reply) {
         this.database.user.findOne({
             attributes: ['id', 'name', 'email', 'emailNotif', 'pushNotif', ['createdAt', 'joinedOn']],
@@ -254,9 +137,16 @@ export default class UserController {
                 id: request.auth.credentials.userId
             }
         }).then((user) => {
-            return reply({
-                "user": user.get({ plain: true })
-            });
+            if (user) {
+                return reply({
+                    "user": user.get({ plain: true })
+                });
+            } else {
+                reply(Boom.notFound('User not found'));
+            }
+        }).catch((err) => {
+            reply(Boom.expectationFailed('Expected this to work'));
+
         });
     }
 
@@ -273,9 +163,10 @@ export default class UserController {
                             deleted: true
                         });
                     });
-            }
-            else {
-                return reply(Boom.badRequest('User not found'));
+
+            } else {
+
+                return reply(Boom.notFound('User not found'));
             }
         });
     }
@@ -293,9 +184,10 @@ export default class UserController {
                             changed: true
                         });
                     });
-            }
-            else {
-                return reply(Boom.badRequest('User not found'));
+
+            } else {
+
+                return reply(Boom.notFound('User not found'));
             }
         });
     }
@@ -313,9 +205,10 @@ export default class UserController {
                             changed: true
                         });
                     });
-            }
-            else {
-                return reply(Boom.badRequest('User not found'));
+
+            } else {
+
+                return reply(Boom.notFound('User not found'));
             }
         });
     }
@@ -334,46 +227,56 @@ export default class UserController {
                             updated: true
                         });
                     });
-            }
-            else {
-                return reply(Boom.badRequest('User not found'));
+
+            } else {
+
+                return reply(Boom.notFound('User not found'));
             }
         }).catch((err) => {
-            console.log(err);
-            reply(Boom.conflict('failed to update the user info'));
-        });
-    }
+            reply(Boom.expectationFailed('Expected this to work'));
 
-    public profileUpdate(request: Hapi.Request, reply: Hapi.Base_Reply) {
-        return reply({
-            "user": {
-                "id": "2",
-                "name": "Johnny Doe",
-                "email": "john.doe@gmail.com",
-                "emailNotif": "true",
-                "pushNotif": "morning"
-            }
         });
     }
 
     public getAllUsers(request: Hapi.Request, reply: Hapi.Base_Reply) {
-        this.database.user.findAll().then((user) => { console.log(user); });
+        this.database.user.getAllUsersData()
+            .then((userdata) => {
+                console.log(userdata);
+                return reply(
+                    {
+                        "data": userdata
+                    }
+                );
+            }).catch((err) => {
+                console.log(err);
+                reply(Boom.notFound('No Data found'));
+            });
     }
 
     public generateCsvLink(request: Hapi.Request, reply: Hapi.Base_Reply) {
+        let jwttoken = this.database.user.generateCSVJwt(this.configs);
         return reply({
-            "link": request.server.info.uri + "/user/downloadCsv?jwt=this-is-not-a-jwt-though"
+            "link": request.server.info.uri + `/user/downloadCsv?jwt=` + jwttoken
         });
     }
 
     public downloadCsv(request: Hapi.Request, reply: Hapi.Base_Reply) {
-        console.log(request.query.jwt);
-        let fields = ['id', 'name', 'email', 'emailNotif', 'pushNotif'];
-        let res = json2csv({ data: this.dummyData, fields: fields });
-        // console.log(res);        
-        return reply(res)
-            .header('Content-Type', 'text/csv')
-            .header('content-disposition', 'attachment; filename=users.csv;');
+        try {
+            Jwt.verify(request.query.jwt, 'CSV');
+        }
+        catch (err) {
+            return reply(Boom.unauthorized('Invalid Token'));
+        }
+        this.database.user.getAllUsersData()
+            .then((userdata) => {
+                let fields = ['id', 'name', 'email', 'emailNotif', 'pushNotif'];
+                let res = json2csv({ data: userdata, fields: fields });
+                return reply(res)
+                    .header('Content-Type', 'text/csv')
+                    .header('content-disposition', 'attachment; filename=users.csv;');
+            }).catch((err) => {
+                reply(Boom.expectationFailed('Expected this to work'));
+            });
     }
 
     public createJesus(request: Hapi.Request, reply: Hapi.Base_Reply) {

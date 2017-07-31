@@ -147,15 +147,9 @@ export default function (sequelize: Sequelize.Sequelize, DataTypes: Sequelize.Da
 
     User.prototype.updatePassword = function (password): Promise<{}> {
         this.password = password;
-        return new Promise((resolve, reject) => {
-            this.update({
-                password: password,
+        return this.update({
+            password: password,
 
-            }).then(() => {
-                resolve();
-            }).catch((err) => {
-                reject('failed to update password');
-            });
         });
     };
 
@@ -165,6 +159,7 @@ export default function (sequelize: Sequelize.Sequelize, DataTypes: Sequelize.Da
             status: 'deleted',
             deleteOn: moment().toDate()
         });
+
     };
 
     User.prototype.pushNotification = function (notifType): Promise<{}> {
@@ -195,8 +190,26 @@ export default function (sequelize: Sequelize.Sequelize, DataTypes: Sequelize.Da
         });
     };
 
-    User.prototype.getStatus = function () {
-        return this.status;
+    User.getAllUsersData = function (): Promise<{}> {
+        return User.scope(null)
+            .findAll({
+                attributes: ['id', 'name', 'email', 'emailNotif', 'pushNotif', ['createdAt', 'joinedOn'], 'status']
+            })
+            .then((user) => {
+                let data = [];
+                user.forEach((element) => {
+                    data.push(element.get({ plain: true }));
+                });
+                return data;
+            });
+    };
+
+    User.hashPassword = function (password): String {
+        return bcrypt.hashSync(password, 8);
+    };
+
+    User.generateCSVJwt = function (config): String {
+        return Jwt.sign({ data: 'CSV' }, config.jwtCSV.jwtSecret, { expiresIn: config.jwtCSV.jwtExpiration });
     };
 
     return User;

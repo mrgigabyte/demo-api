@@ -15,6 +15,10 @@
         "port": 5000,
         "jwtSecret": "random-secret-password",
         "jwtExpiration": "1h",
+        "jwtCSV":{
+            "jwtSecret":"CSV",
+            "jwtExpiration":"10m"
+        },
         "plugins": [
             "logger",
             "jwt-auth",
