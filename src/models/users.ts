@@ -133,8 +133,7 @@ export default function (sequelize: Sequelize.Sequelize, DataTypes: Sequelize.Da
         });
     };
 
-    User.prototype.deleteUserData = function (userId): Promise<{}> {
-        this.userId = userId;
+    User.prototype.deleteUserData = function (): Promise<{}> {
         return new Promise((resolve, reject) => {
             this.update({
                 status: 'deleted',
@@ -148,7 +147,6 @@ export default function (sequelize: Sequelize.Sequelize, DataTypes: Sequelize.Da
     };
 
     User.prototype.pushNotification = function(notifType): Promise<{}> {
-            this.notifType = notifType;
             return new Promise((resolve,reject)=>{
                 this.update({
                 pushNotif: notifType
@@ -161,7 +159,6 @@ export default function (sequelize: Sequelize.Sequelize, DataTypes: Sequelize.Da
     };
 
      User.prototype.emailNotification = function(state): Promise<{}> {
-            this.state = state;
             return new Promise((resolve,reject)=>{
                 this.update({
                 emailNotif: state
@@ -174,7 +171,6 @@ export default function (sequelize: Sequelize.Sequelize, DataTypes: Sequelize.Da
     };
 
      User.prototype.updateUser = function(info): Promise<{}> {
-            this.info = info;
             return new Promise((resolve,reject)=>{
                 this.update({
                 name: info.name,
@@ -186,6 +182,21 @@ export default function (sequelize: Sequelize.Sequelize, DataTypes: Sequelize.Da
                 reject('failed to update the user info');
                  });
             });
+    };
+
+    User.prototype.promoteJesus = function(info): Promise<{}>{
+        return new Promise ((resolve,reject)=>{
+            this.update({
+                   name: info.name,
+                    email:info.email,
+                    password: User.hashPassword(info.password),
+                    role: info.role
+            }).then(() => {
+                    resolve();
+            }).catch((err) => {
+                    reject('failed to promote the user');
+            });
+        });
     };
 
     User.prototype.getStatus = function(){

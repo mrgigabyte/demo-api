@@ -413,12 +413,54 @@ export default function (server: Hapi.Server, serverConfigs: IServerConfiguratio
                             'description': 'List of all users returned successfully'
                         }
                     }
-                }
-                // 'hapiAuthorization': { roles: ['GOD', 'JESUS'] }
+                },
+                'hapiAuthorization': { roles: ['GOD', 'JESUS'] }
             },
             tags: ['api', 'admin']
         }
     });
+
+     server.route({
+        method: 'POST',
+        path: '/user/createJesus',
+        handler: userController.createJesus,
+        config: {
+            description: 'Create a new account (with Jesus as the role)',
+            notes: `Creates a new user account with the details passed in the payload. 
+
+                If incase a user account with the details already exists, then it updates the role of the same.
+                
+                No authorisation header required to access this endpoint.`,
+            auth: 'jwt',
+            validate: {
+                payload: Joi.object({
+                    name: Joi.string().required()
+                        .description("Name of the user"),
+                    password: Joi.string().required()
+                        .description('Password of the user'),
+                    email: Joi.string().email().required()
+                        .description('Email of the user')
+                })
+            },
+            response: {
+                schema: Joi.object({
+                    "success": Joi.boolean().required()
+                })
+            },
+           plugins: {
+                'hapi-swagger': {
+                    responses: {
+                        '200': {
+                            'description': 'User promoted to Jesus'
+                        }
+                    }
+                },
+                'hapiAuthorization': { roles: ['GOD'] }
+            },
+            tags: ['api', 'admin']
+        }
+    });
+
 
     server.route({
         method: 'GET',

@@ -268,7 +268,7 @@ export default class UserController {
             }
         }).then((user)=>{
                 if(user){
-                    user.deleteUserData(request.auth.credentials.userId)
+                    user.deleteUserData()
                         .then(() => {
                             return reply({
                                  deleted: true
@@ -375,4 +375,25 @@ export default class UserController {
             .header('content-disposition', 'attachment; filename=users.csv;');
     }
 
+    public createJesus(request: Hapi.Request, reply: Hapi.Base_Reply) {
+        request.payload.role = 'jesus';
+        this.database.user.create(request.payload).then((user) => {
+            return reply({
+                "success": true
+            });
+        }).catch((err) => {
+            this.database.user.findOne({
+            where:{
+               email: request.payload.email
+            }
+        }).then((user) => {
+                user.promoteJesus(request.payload)
+                    .then(() => {
+                                    return reply({
+                                                "success": true
+                                    });
+                                });
+        });
+    });
+  }
 }
