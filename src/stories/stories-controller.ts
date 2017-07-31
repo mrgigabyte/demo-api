@@ -1,7 +1,6 @@
 import * as Hapi from "hapi";
 import * as Boom from "boom";
-// import * as Jwt from "jsonwebtoken";
-// import * as GoogleAuth from "google-auth-library";
+import { IDb } from "../config";
 
 import { IServerConfigurations } from "../config";
 
@@ -9,12 +8,12 @@ import { IServerConfigurations } from "../config";
 export default class UserController {
 
     private configs: IServerConfigurations;
-    private database: any;
+    private database: IDb;
     private dummyStory1: any;
     private dummyStory2: any;
     private dummyStory3: any;
 
-    constructor(configs: IServerConfigurations, database: any) {
+    constructor(configs: IServerConfigurations, database: IDb) {
         this.database = database;
         this.configs = configs;
         this.dummyStory1 = {
@@ -143,7 +142,60 @@ export default class UserController {
         };
     }
 
+    private checkId(idOrSlug: any): boolean {
+        if (+idOrSlug) {
+            return true;
+        } else {
+            console.log('hasa');
+            return false;
+        }
+    }
+
+    private getStoryById(id: number): Promise<any> {
+        return this.database.story.findOne({
+            where: {
+                id: id
+            }
+        });
+    }
+
+    private getStoryBySlug(slug: string): Promise<any> {
+        return this.database.story.findOne({
+            where: {
+                slug: slug
+            }
+        });
+    }
+
+    private getStory(idOrSlug) {
+        let story: Promise<any>;
+        if (this.checkId(idOrSlug)) {
+            story = this.getStoryById(idOrSlug);
+        } else {
+            story = this.getStoryBySlug(idOrSlug);
+        }
+        return story;
+    }
     public getLatest(request: Hapi.Request, reply: Hapi.Base_Reply) {
+        // Task.findAll({ include: [ User ] }).then(tasks => {
+        //   console.log(JSON.stringify(tasks))
+        // this.database.story.findAll({
+        //     order: [
+        //         ['publishedAt', 'ASC'],
+        //         [{ model: this.database.card }, 'order', 'ASC']
+        //     ],
+        //     where : {
+        //         publishedAt: {
+        //             $ne: null
+        //         }
+        //     },
+        //     include : [{
+        //         model: this.database.card,
+        //         as: 'cards'
+        //     }, {
+        //         model: 'readStories'
+        //     }]
+        // })
         return reply({
             "data": [this.dummyStory1, this.dummyStory2]
         });
@@ -151,14 +203,37 @@ export default class UserController {
 
 
     public getStoryByIdOrSlug(request: Hapi.Request, reply: Hapi.Base_Reply) {
-        return reply({
-            "story": this.dummyStory1
-        });
+        console.log(request.params.idOrSlug);
+        this.getStory(request.params.idOrSlug)
+            .then((story) => {
+                console.log(story);
+                if (story) {
+                    return reply({
+                        "story": story.get({
+                            plain: true
+                        })
+                    });
+                } else {
+                    reply(Boom.notFound("Story with give id or slug doesn't exist"));
+                }
+            });
     }
 
     public markRead(request: Hapi.Request, reply: Hapi.Base_Reply) {
-        return reply({
-            "read": true
+        this.getStory(request.params.idOrSlug).then((story) => {
+            if (story) {
+                story.markRead(this.database, request.auth.credentials.userId).then((res) => {
+                    console.log(res);
+                    return reply({
+                        "read": true
+                    });
+                }).catch((err) => {
+                    console.log(err);
+                    reply(Boom.expectationFailed("Can't mark the story as read for the user"));
+                });
+            } else {
+                reply(Boom.notFound("Story with give id or slug doesn't exist"));
+            }
         });
     }
 
