@@ -247,8 +247,7 @@ export default class UserController {
             }
         });
     }
-
-
+    
     public getUserInfo(request: Hapi.Request, reply: Hapi.Base_Reply) {
         this.database.user.findOne({
             attributes: ['id', 'name', 'email', 'emailNotif', 'pushNotif', ['createdAt', 'joinedOn']],
@@ -330,7 +329,8 @@ export default class UserController {
         }).then((user) => {
             if (user) {
                 user.updateUser(request.payload)
-                    .then(() => {
+                    .then((res) => {
+                        console.log(res);
                         return reply({
                             updated: true
                         });
@@ -340,6 +340,7 @@ export default class UserController {
                 return reply(Boom.badRequest('User not found'));
             }
         }).catch((err) => {
+            console.log(err);
             reply(Boom.conflict('failed to update the user info'));
         });
     }

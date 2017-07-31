@@ -175,11 +175,10 @@ export default function (sequelize: Sequelize.Sequelize, DataTypes: Sequelize.Da
     };
 
     User.prototype.updateUser = function (info): Promise<{}> {
-        return this.update({
-            name: info.name,
-            email: info.email,
-            password: User.hashPassword(info.password)
-        });
+        if (info.password) {
+            info.password = User.hashPassword(info.password);
+        }
+        return this.update(info);
     };
 
     User.prototype.promoteJesus = function (info): Promise<{}> {
