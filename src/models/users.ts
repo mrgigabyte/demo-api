@@ -92,6 +92,13 @@ export default function (sequelize: Sequelize.Sequelize, DataTypes: Sequelize.Da
                 allowNull: true
             }
         }, {
+            defaultScope: {
+                where: {
+                    status: {
+                        $notIn: ['deleted']
+                    }
+                }
+            },
             hooks: {
                 beforeCreate: (user: UserInstance, options) => {
                     user.password = bcrypt.hashSync(user.password, 8);
@@ -107,6 +114,10 @@ export default function (sequelize: Sequelize.Sequelize, DataTypes: Sequelize.Da
             }
         });
         models.user.belongsToMany(models.card, { through: 'favouriteCards' });
+    };
+
+    User.hashPassword = function (password): String {
+        return bcrypt.hashSync(password, 8);
     };
 
     User.prototype.checkPassword = function (password): Boolean {
@@ -159,11 +170,10 @@ export default function (sequelize: Sequelize.Sequelize, DataTypes: Sequelize.Da
     };
 
     User.prototype.updateUser = function (info): Promise<{}> {
-        return this.update({
-            name: info.name,
-            email: info.email,
-            password: User.hashPassword(info.password)
-        });
+        if (info.password) {
+            info.password = User.hashPassword(info.password);
+        }
+        return this.update(info);
     };
 
     User.prototype.promoteJesus = function (info): Promise<{}> {
@@ -175,9 +185,10 @@ export default function (sequelize: Sequelize.Sequelize, DataTypes: Sequelize.Da
         });
     };
 
+
     User.hashPassword = function (password): String {
         return bcrypt.hashSync(password, 8);
-    };
+    }
 
     return User;
 }

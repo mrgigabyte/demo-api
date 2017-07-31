@@ -47,6 +47,11 @@ export default function (sequelize, DataTypes) {
                 }
             }
         }, {
+            defaultScope: {
+                where: {
+                    deleted: false
+                }
+            },
             hooks: {
                 beforeCreate: (code, options) => {
                     // code.code = shortid.generate();
