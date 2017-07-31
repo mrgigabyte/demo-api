@@ -145,7 +145,7 @@ export default class UserController {
 
                 });
             } else {
-                reply(Boom.badRequest('User with the given email already exists'));
+                reply(Boom.conflict('User with the given email already exists'));
             }
         });
     }
@@ -157,7 +157,6 @@ export default class UserController {
             }
         }).then((user) => {
             if (user) {
-<<<<<<< HEAD
                 if (user.checkPassword(request.payload.password)) {
                     return reply({
                         "jwt": user.generateJwt(this.configs)
@@ -166,21 +165,6 @@ export default class UserController {
                     reply(Boom.unauthorized('Password is incorrect.'));
                 }
 
-=======
-                if (user.getStatus !== 'deleted') {
-
-                    if (user.checkPassword(request.payload.password)) {
-                        return reply({
-                            "jwt": user.generateJwt(this.configs)
-                        });
-                    } else {
-                        reply(Boom.unauthorized('Password is incorrect.'));
-                    }
-                }
-                else {
-                    return reply(Boom.notFound('the user profile has been deleted'));
-                }
->>>>>>> vidur/dev
             } else {
                 reply(Boom.unauthorized('Email or Password is incorrect.'));
             }
@@ -211,7 +195,7 @@ export default class UserController {
                     });
                 });
             } else {
-                reply(Boom.badRequest('Email not registered on platform'));
+                reply(Boom.notFound('Email not registered on platform'));
             }
         });
 
@@ -248,7 +232,7 @@ export default class UserController {
                     }
                 });
             } else {
-                reply(Boom.badRequest('Email not registered on platform'));
+                reply(Boom.notFound('Email not registered on platform'));
             }
         });
     }
@@ -283,7 +267,7 @@ export default class UserController {
 
             } else {
 
-                return reply(Boom.badRequest('User not found'));
+                return reply(Boom.notFound('User not found'));
             }
         });
     }
@@ -304,7 +288,7 @@ export default class UserController {
 
             } else {
 
-                return reply(Boom.badRequest('User not found'));
+                return reply(Boom.notFound('User not found'));
             }
         });
     }
@@ -325,7 +309,7 @@ export default class UserController {
 
             } else {
 
-                return reply(Boom.badRequest('User not found'));
+                return reply(Boom.notFound('User not found'));
             }
         });
     }
@@ -346,10 +330,10 @@ export default class UserController {
 
             } else {
 
-                return reply(Boom.badRequest('User not found'));
+                return reply(Boom.notFound('User not found'));
             }
         }).catch((err) => {
-            reply(Boom.conflict('failed to update the user info'));
+            reply(Boom.expectationFailed('expected this to work'));
         });
     }
 
