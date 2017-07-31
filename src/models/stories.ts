@@ -45,11 +45,15 @@ export default function (sequelize, DataTypes) {
                 validate: {
                     notEmpty: true
                 }
-            }
+            },
+            views: Sequelize.VIRTUAL
         }, {
             defaultScope: {
                 where: {
-                    deleted: false
+                    deleted: false,
+                    publishedAt: {
+                        $ne: null
+                    }
                 }
             },
             hooks: {
@@ -77,6 +81,40 @@ export default function (sequelize, DataTypes) {
         });
     };
 
+    Story.checkId = function (idOrSlug: any): boolean {
+        if (+idOrSlug) {
+            return true;
+        } else {
+            console.log('hasa');
+            return false;
+        }
+    };
+
+    Story.getStoryById = function (id: number): Promise<any> {
+        return this.findOne({
+            where: {
+                id: id
+            }
+        });
+    };
+
+    Story.getStoryBySlug = function (slug: string): Promise<any> {
+        return this.findOne({
+            where: {
+                slug: slug
+            }
+        });
+    };
+
+    Story.getStory = function (idOrSlug: any): Promise<any> {
+        let story: Promise<any>;
+        if (Story.checkId(idOrSlug)) {
+            story = this.getStoryById(idOrSlug);
+        } else {
+            story = this.getStoryBySlug(idOrSlug);
+        }
+        return story;
+    };
 
     Story.prototype.markRead = function (database, userId) {
         return database.user.findOne({
@@ -84,11 +122,11 @@ export default function (sequelize, DataTypes) {
                 id: userId
             }
         }).then((user) => {
-            user.getStories().then((story) => {
-                if (story) {
+            return user.getStories({ where: { id: this.id } }).then((stories: Array<any>) => {
+                if (stories.length) {
                     throw 'User has already read the story';
                 } else {
-                    return this.setUsers(user);
+                    return this.addUsers(user);
                 }
             });
         });

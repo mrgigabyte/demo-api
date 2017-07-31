@@ -125,7 +125,12 @@ export default function (sequelize: Sequelize.Sequelize, DataTypes: Sequelize.Da
     };
 
     User.prototype.generateJwt = function (config): String {
-        return Jwt.sign({ role: this.role.toUpperCase(), id: this.id }, config.jwtSecret, { expiresIn: config.jwtExpiration });
+        let role: string = this.role.toUpperCase();
+        let jwtData: Object = {
+            role: role,
+            id: this.id
+        };
+        return Jwt.sign(jwtData, config.jwtSecret, { expiresIn: config.jwtExpiration });
     };
 
     User.prototype.sendEmail = function (code): void {
