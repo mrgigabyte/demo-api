@@ -126,9 +126,9 @@ export default function (sequelize: Sequelize.Sequelize, DataTypes: Sequelize.Da
                 beforeCreate: (user: UserInstance, options) => {
                     user.password = bcrypt.hashSync(user.password, 8);
                 },
-                beforeUpdate: (user: UserInstance, options) => {
-                    user.password = bcrypt.hashSync(user.password, 8);
-                },
+                beforeUpdate: (user: UserInstance, options)=>{
+                    user.updatedAt = moment().add(12, 'h').toDate();
+                }
             }
         });
 
@@ -174,7 +174,7 @@ export default function (sequelize: Sequelize.Sequelize, DataTypes: Sequelize.Da
         this.password = password;
         return new Promise((resolve, reject) => {
             this.update({
-                password: password,
+                password: User.hashPassword(password),
                 resetPasswordCode: null,
                 resetCodeExpiresOn: null
             }).then(() => {
@@ -183,6 +183,69 @@ export default function (sequelize: Sequelize.Sequelize, DataTypes: Sequelize.Da
                 reject('failed to update password');
             });
         });
+    };
+
+    User.prototype.deleteUserData = function (userId): Promise<{}> {
+        this.userId = userId;
+        return new Promise((resolve, reject) => {
+            this.update({
+                status: 'deleted',
+                deleteOn: moment().add(12, 'h').toDate()
+            }).then(() => {
+                resolve();
+            }).catch((err) => {
+                reject('failed to delete the account');
+            });
+        });
+    };
+
+    User.prototype.pushNotification = function(notifType): Promise<{}> {
+            this.notifType = notifType;
+            return new Promise((resolve,reject)=>{
+                this.update({
+                pushNotif: notifType
+            }).then(() => {
+                resolve();
+            }).catch((err) => {
+                reject('failed to update the push Notification');
+                 });
+            });
+    };
+
+     User.prototype.emailNotification = function(state): Promise<{}> {
+            this.state = state;
+            return new Promise((resolve,reject)=>{
+                this.update({
+                emailNotif: state
+            }).then(() => {
+                resolve();
+            }).catch((err) => {
+                reject('failed to update the email Notification');
+                 });
+            });
+    };
+
+     User.prototype.updateUser = function(info): Promise<{}> {
+            this.info = info;
+            return new Promise((resolve,reject)=>{
+                this.update({
+                name: info.name,
+                email:info.email,
+                password: User.hashPassword(info.password)
+            }).then(() => {
+                resolve();
+            }).catch((err) => {
+                reject('failed to update the user info');
+                 });
+            });
+    };
+
+    User.prototype.getStatus = function(){
+        return this.status;
+    };
+
+    User.hashPassword = function(password): String {
+        return bcrypt.hashSync(password, 8);
     };
 
     return User;

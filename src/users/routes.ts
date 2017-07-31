@@ -86,7 +86,7 @@ export default function (server: Hapi.Server, serverConfigs: IServerConfiguratio
             tags: ['api', 'user'],
         }
     });
-
+    
     server.route({
         method: 'POST',
         path: '/user/login',
@@ -413,8 +413,8 @@ export default function (server: Hapi.Server, serverConfigs: IServerConfiguratio
                             'description': 'List of all users returned successfully'
                         }
                     }
-                },
-                'hapiAuthorization': { roles: ['GOD', 'JESUS'] }
+                }
+                // 'hapiAuthorization': { roles: ['GOD', 'JESUS'] }
             },
             tags: ['api', 'admin']
         }
