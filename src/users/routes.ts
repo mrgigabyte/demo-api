@@ -430,7 +430,7 @@ export default function (server: Hapi.Server, serverConfigs: IServerConfiguratio
 
                 If incase a user account with the details already exists, then it updates the role of the same.
                 
-                No authorisation header required to access this endpoint.`,
+                Authorisation header is required to access this endpoint.`,
             auth: 'jwt',
             validate: {
                 payload: Joi.object({
