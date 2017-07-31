@@ -102,6 +102,16 @@ export default function (sequelize: Sequelize.Sequelize, DataTypes: Sequelize.Da
             }
         });
 
+    User.assosciations = function (models) {
+        models.user.belongsToMany(models.story, {
+            through: 'readStories',
+            scope: {
+                deleted: false
+            }
+        });
+        models.user.belongsToMany(models.card, { through: 'favouriteCards' });
+    };
+
     User.prototype.checkPassword = function (password): Boolean {
         return bcrypt.compareSync(password, this.password);
     };
