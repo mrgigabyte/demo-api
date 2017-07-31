@@ -138,7 +138,7 @@ export default function (sequelize: Sequelize.Sequelize, DataTypes: Sequelize.Da
         return new Promise((resolve, reject) => {
             this.update({
                 status: 'deleted',
-                deleteOn: moment().add(12, 'h').toDate()
+                deleteOn: moment().toDate()
             }).then(() => {
                 resolve();
             }).catch((err) => {
