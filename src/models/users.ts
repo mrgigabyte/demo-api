@@ -95,9 +95,6 @@ export default function (sequelize: Sequelize.Sequelize, DataTypes: Sequelize.Da
             hooks: {
                 beforeCreate: (user: UserInstance, options) => {
                     user.password = bcrypt.hashSync(user.password, 8);
-                },
-                beforeUpdate: (user: UserInstance, options)=>{
-                    user.updatedAt = moment().add(12, 'h').toDate();
                 }
             }
         });
