@@ -59,7 +59,7 @@ export default function (sequelize, DataTypes) {
                 }
             }
         });
-    Card.assosciations = function (models) {
+    Card.assosciate = function (models) {
         models.card.belongsToMany(models.user, {
             through: 'favouriteCards',
             scope: {

@@ -1,6 +1,5 @@
 import * as Hapi from "hapi";
 import * as Boom from "boom";
-import * as GoogleAuth from "google-auth-library";
 import * as json2csv from "json2csv";
 import { IServerConfigurations } from "../config";
 import { IDb } from "../config";

@@ -62,7 +62,7 @@ export default function (sequelize, DataTypes) {
             }
         });
 
-    Story.assosciations = function (models) {
+    Story.assosciate = function (models) {
         models.story.hasMany(models.card, {
             as: 'Cards',
             scope: {
@@ -78,12 +78,21 @@ export default function (sequelize, DataTypes) {
     };
 
 
-    // Code.createCode = function (userId) {
-    //     return Code.create({
-    //         expiresAt: moment().add(12, 'h').toDate(),
-    //         userId: userId
-    //     });
-    // };
+    Story.prototype.markRead = function (database, userId) {
+        return database.user.findOne({
+            where: {
+                id: userId
+            }
+        }).then((user) => {
+            user.getStories().then((story) => {
+                if (story) {
+                    throw 'User has already read the story';
+                } else {
+                    return this.setUsers(user);
+                }
+            });
+        });
+    };
 
     // Code.prototype.updateCode = function () {
     //     return this.update({
