@@ -133,6 +133,7 @@ export default function (sequelize: Sequelize.Sequelize, DataTypes: Sequelize.Da
         });
     };
 
+
     User.prototype.deleteUserData = function (): Promise<{}> {
         return new Promise((resolve, reject) => {
             this.update({
@@ -206,6 +207,7 @@ export default function (sequelize: Sequelize.Sequelize, DataTypes: Sequelize.Da
     User.hashPassword = function(password): String {
         return bcrypt.hashSync(password, 8);
     };
+
 
     return User;
 }
