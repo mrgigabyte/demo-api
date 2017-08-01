@@ -76,54 +76,6 @@ export default function (server: Hapi.Server, serverConfigs: IServerConfiguratio
 
     server.route({
         method: 'POST',
-        path: '/card/upload',
-        handler: cardController.uploadCard,
-        config: {
-            description: 'Upload a new card from the file system.',
-            notes: `You can upload an image(.png, .jpg, .gif) or a video(.mp4).  
-            After successfull upload it will return the uri of the uploaded card.
-
-            GOD and JESUS can access this endpoint
-            `,
-            auth: 'jwt',
-            payload: {
-                output: 'stream',
-                parse: true,
-                maxBytes: 52428800,
-                allow: 'multipart/form-data',
-            },
-            validate: {
-                payload: {
-                    file: Joi.any().required()
-                        .meta({ swaggerType: 'file' })
-                        .description('The file which needs to be uploaded.')
-                }
-            },
-            response: {
-                schema: Joi.object({
-                    "link": Joi.string().uri().required()
-                })
-            },
-            plugins: {
-                'hapi-swagger': {
-                    payloadType: 'form',
-                    responses: {
-                        '201': {
-                            'description': 'Successfully uploaded the card and returned the uri.'
-                        },
-                        '403': {
-                            'description': 'file type not supported'
-                        }
-                    }
-                },
-                'hapiAuthorization': { roles: ['GOD', 'JESUS'] }
-            },
-            tags: ['api', 'admin'],
-        }
-    });
-
-    server.route({
-        method: 'POST',
         path: '/card/{cardId}/addLink',
         handler: cardController.addLink,
         config: {
