@@ -154,9 +154,9 @@ export default function (server: Hapi.Server, serverConfigs: IServerConfiguratio
             GOD and JESUS can access this endpoint.`,
             auth: 'jwt',
             response: {
-                schema: Joi.object({
-                    "data": Joi.array().items(storySchema)
-                })
+                // schema: Joi.object({
+                //     "data": Joi.array().items(storySchema)
+                // })
             },
             plugins: {
                 'hapi-swagger': {

@@ -24,7 +24,7 @@ fs.readdirSync(__dirname)
 for (let model in db) {
     if (db.hasOwnProperty(model)) {
         try {
-            db[model].assosciations(db);
+            db[model].assosciate(db);
         } catch (error) {
             console.log(model + ' model doesnt have any assosciations');
         }

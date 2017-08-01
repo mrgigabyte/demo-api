@@ -2,6 +2,7 @@ import * as Sequelize from 'sequelize';
 import * as bcrypt from 'bcryptjs';
 import * as Jwt from "jsonwebtoken";
 import * as moment from 'moment';
+import * as json2csv from "json2csv";
 
 export interface UserAttribute {
     id?: string;
@@ -92,22 +93,89 @@ export default function (sequelize: Sequelize.Sequelize, DataTypes: Sequelize.Da
                 allowNull: true
             }
         }, {
+            defaultScope: {
+                where: {
+                    status: {
+                        $notIn: ['deleted']
+                    }
+                }
+            },
             hooks: {
                 beforeCreate: (user: UserInstance, options) => {
                     user.password = bcrypt.hashSync(user.password, 8);
-                },
-                beforeUpdate: (user: UserInstance, options) => {
-                    user.password = bcrypt.hashSync(user.password, 8);
-                },
+                }
             }
         });
+
+    User.assosciate = function (models) {
+        models.user.belongsToMany(models.story, {
+            through: 'readStories',
+            scope: {
+                deleted: false
+            }
+        });
+        models.user.belongsToMany(models.card, { through: 'favouriteCards' });
+    };
+
+    User.hashPassword = function (password): String {
+        return bcrypt.hashSync(password, 8);
+    };
+
+    User.getAllUsers = function (): Promise<{}> {
+        return User.scope(null).findAll({
+            attributes: ['id', 'name', 'email', 'emailNotif', 'pushNotif', ['createdAt', 'joinedOn'], 'status']
+        }).then((users: Array<any>) => {
+            if (users.length) {
+                let data: Array<any> = [];
+                users.forEach((user) => {
+                    data.push(user.get({ plain: true }));
+                    console.log(user);
+                });
+                console.log(data);
+                return data;
+            } else {
+                throw 'Users Not found';
+            }
+        });
+    };
+
+    User.hashPassword = function (password): String {
+        return bcrypt.hashSync(password, 8);
+    };
+
+    User.generateJwtCsv = function (config): String {
+        let data: Object = { data: 'CSV' };
+        return Jwt.sign(data, config.jwtCsvSecret, { expiresIn: config.jwtCsvExpiration });
+    };
+
+    User.verifyJwtCsv = function (jwt, secret): Boolean {
+        try {
+            Jwt.verify(jwt, secret);
+            return true;
+        } catch (err) {
+            return false;
+        }
+    };
+
+    User.getCsv = function (): Promise<any> {
+        return this.getAllUsers().then((users) => {
+            let fields = ['id', 'name', 'email', 'emailNotif', 'pushNotif'];
+            let res = json2csv({ data: users, fields: fields });
+            return res;
+        });
+    };
 
     User.prototype.checkPassword = function (password): Boolean {
         return bcrypt.compareSync(password, this.password);
     };
 
     User.prototype.generateJwt = function (config): String {
-        return Jwt.sign({ role: this.role.toUpperCase(), id: this.id }, config.jwtSecret, { expiresIn: config.jwtExpiration });
+        let role: string = this.role.toUpperCase();
+        let jwtData: Object = {
+            role: role,
+            id: this.id
+        };
+        return Jwt.sign(jwtData, config.jwtSecret, { expiresIn: config.jwtExpiration });
     };
 
     User.prototype.sendEmail = function (code): void {
@@ -123,19 +191,34 @@ export default function (sequelize: Sequelize.Sequelize, DataTypes: Sequelize.Da
     };
 
     User.prototype.updatePassword = function (password): Promise<{}> {
-        this.password = password;
-        return new Promise((resolve, reject) => {
-            this.update({
-                password: password,
-            }).then(() => {
-                resolve();
-            }).catch((err) => {
-                reject('failed to update password');
-            });
+        let pswd = User.hashPassword(password);
+        return this.update({
+            password: pswd,
         });
     };
 
+    User.prototype.deleteUser = function (): Promise<{}> {
+        return this.update({
+            status: 'deleted',
+            deleteOn: moment().toDate()
+        });
+    };
 
+    User.prototype.updateUserInfo = function (info): Promise<{}> {
+        if (info.password) {
+            info.password = User.hashPassword(info.password);
+        }
+        return this.update(info);
+    };
+
+    User.prototype.promoteJesus = function (info): Promise<{}> {
+        return this.update({
+            name: info.name,
+            email: info.email,
+            password: User.hashPassword(info.password),
+            role: info.role
+        });
+    };
 
     return User;
 }

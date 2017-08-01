@@ -8,12 +8,19 @@ Made using hapi.js and uses mysql as database.
 **Run**
 * *gulp build* (build ts files)
 * *gulp tslint* (run tslint)
+* *gulp test* (run tests-only for dev)
 * *gulp watch* (watch ts files)
 * *npm run start* (start the application)
 * *npm run watch* (restart the application when files change)
 
 ## Documentation
-When the code is running, documentation is accessible at `localhost:5000`.
+
+### Nginx
+We are using `nginx` for proxying `localhost:5000` to `localhost/api`.
+You need to configure your `nginx` first. The nginx config can be found in `src/config/nginx.dev.config`.
+
+### Swagger-Docs
+When the code is running, documentation is accessible at `localhost/api/docs`.
 
 ## Our Git Workflow
 

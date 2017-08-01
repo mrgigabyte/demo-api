@@ -77,7 +77,7 @@ export default function (server: Hapi.Server, serverConfigs: IServerConfiguratio
                         '200': {
                             'description': 'The email has not been registered with the platform before.'
                         },
-                        '400': {
+                        '409': {
                             'description': 'User with the given email already exists'
                         }
                     }
@@ -94,7 +94,7 @@ export default function (server: Hapi.Server, serverConfigs: IServerConfiguratio
         config: {
             description: 'Returns a JWT for the user after a successfull login',
             notes: [`This endpoint will return a JWT, generated on the basis of user role that will 
-            be used as the value of authorisation for making requests to protected endpoints.
+            be used as the value of authorisation for making requests to protected endpoint.
             
             No authorisation header required to access this endpoint.`],
             validate: {
@@ -154,9 +154,6 @@ export default function (server: Hapi.Server, serverConfigs: IServerConfiguratio
                     responses: {
                         '200': {
                             'description': 'Email with reset link sent successfully'
-                        },
-                        '400': {
-                            'description': 'Email not registered on platform'
                         }
                     }
                 }
@@ -199,6 +196,7 @@ export default function (server: Hapi.Server, serverConfigs: IServerConfiguratio
                         '400': {
                             'description': 'Cannot verify the unique code'
                         }
+
                     }
                 }
             },
@@ -213,7 +211,7 @@ export default function (server: Hapi.Server, serverConfigs: IServerConfiguratio
         config: {
             description: 'GET user information',
             notes: `  
-            GOD, JESUS and ROMANS can access this endpoint`,
+            GOD, JESUS and ROMANS can access this endpoints`,
             auth: 'jwt',
             validate: {
                 params: {
@@ -230,7 +228,7 @@ export default function (server: Hapi.Server, serverConfigs: IServerConfiguratio
                     responses: {
                         '200': {
                             'description': 'Successfully found info of the user with the given id.'
-                        },
+                        }
                     }
                 },
                 'hapiAuthorization': { roles: ['GOD', 'JESUS', 'ROMANS'] }
@@ -419,6 +417,49 @@ export default function (server: Hapi.Server, serverConfigs: IServerConfiguratio
             tags: ['api', 'admin']
         }
     });
+
+    server.route({
+        method: 'POST',
+        path: '/user/createJesus',
+        handler: userController.createJesus,
+        config: {
+            description: 'Create a new account (with Jesus as the role)',
+            notes: `Creates a new user account with the details passed in the payload. 
+
+                If incase a user account with the details already exists, then it updates the role of the same.
+                
+                GOD can access this endpoint.
+                Authorisation header is required to access this endpoint.`,
+            auth: 'jwt',
+            validate: {
+                payload: Joi.object({
+                    name: Joi.string().required()
+                        .description("Name of the user"),
+                    password: Joi.string().required()
+                        .description('Password of the user'),
+                    email: Joi.string().email().required()
+                        .description('Email of the user')
+                })
+            },
+            response: {
+                schema: Joi.object({
+                    "success": Joi.boolean().required()
+                })
+            },
+            plugins: {
+                'hapi-swagger': {
+                    responses: {
+                        '200': {
+                            'description': 'User promoted to Jesus'
+                        }
+                    }
+                },
+                'hapiAuthorization': { roles: ['GOD'] }
+            },
+            tags: ['api', 'admin']
+        }
+    });
+
 
     server.route({
         method: 'GET',

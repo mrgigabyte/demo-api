@@ -1,9 +1,9 @@
 {
     "dialect": "mysql",
-    "database": "database_development",
+    "database": "abstrct_dev",
     "host": "localhost",
-    "username": "root",
-    "password": "9949vidur",
+    "username": "nandan",
+    "password": "nandan123",
     "requestTimeout": 90000,
     "connectionTimeout": 30000,
     "acquireConnectionTimeout": 30000,
@@ -15,11 +15,13 @@
         "port": 5000,
         "jwtSecret": "random-secret-password",
         "jwtExpiration": "1h",
-        "plugins": [
-            "logger",
-            "jwt-auth",
-            "swagger",
-            "acl-auth"
-        ]
-    }
+        "jwtCsvSecret": "CSV",
+        "jwtCsvExpiration": "10m"
+    },
+    "plugins": [
+        "logger",
+        "jwt-auth",
+        "swagger",
+        "acl-auth"
+    ]
 }

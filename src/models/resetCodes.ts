@@ -54,9 +54,8 @@ export default function (sequelize: Sequelize.Sequelize, DataTypes: Sequelize.Da
             }
         });
 
-    Code.assosciations = function (models) {
+    Code.assosciate = function (models) {
         models.resetCode.belongsTo(models.user);
-        // Code.belongsTo(models.user);
     };
 
 
@@ -86,7 +85,6 @@ export default function (sequelize: Sequelize.Sequelize, DataTypes: Sequelize.Da
             expiresAt: null
         });
     };
-
 
     return Code;
 }

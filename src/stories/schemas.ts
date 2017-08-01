@@ -13,10 +13,8 @@ export const storySchema:Joi.ObjectSchema = baseStorySchema.keys({
     slug: Joi.string().required(),
     by: Joi.string(),
     views: Joi.number().required(),
-    publishedOn: Joi.date(),
-    createdOn: Joi.date().required(),
-    read: Joi.boolean().required(),
-    cardCount: Joi.number().required(),
+    publishedAt: Joi.date(),
+    createdAt: Joi.date().required(),
     cards: Joi.array().items(cardSchema)    
 });
 
