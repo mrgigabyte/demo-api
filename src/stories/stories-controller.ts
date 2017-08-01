@@ -1,6 +1,7 @@
 import * as Hapi from "hapi";
 import * as Boom from "boom";
-import { IDb } from "../config";
+// import * as Jwt from "jsonwebtoken";
+// import * as GoogleAuth from "google-auth-library";
 
 import { IServerConfigurations } from "../config";
 
@@ -8,12 +9,12 @@ import { IServerConfigurations } from "../config";
 export default class UserController {
 
     private configs: IServerConfigurations;
-    private database: IDb;
+    private database: any;
     private dummyStory1: any;
     private dummyStory2: any;
     private dummyStory3: any;
 
-    constructor(configs: IServerConfigurations, database: IDb) {
+    constructor(configs: IServerConfigurations, database: any) {
         this.database = database;
         this.configs = configs;
         this.dummyStory1 = {
@@ -21,8 +22,10 @@ export default class UserController {
             "title": "Lorem Ipsum",
             "slug": "lorem-ipsum",
             "by": "Steven Harrington",
-            "createdAt": "2017-07-22T07:15:13.250Z",
-            "publishedAt": "2017-07-25T07:15:13.250Z",
+            "createdOn": "2017-07-22T07:15:13.250Z",
+            "publishedOn": "2017-07-25T07:15:13.250Z",
+            "read": "false",
+            "cardCount": 5,
             "views": "1000",
             "cards": [
                 {
@@ -76,8 +79,10 @@ export default class UserController {
             "title": "Lorem Ipsum and lorem Ipsum",
             "slug": "lorem-ipsum-and-lorem-ipsum",
             "by": "John Doe",
-            "createdAt": "2017-07-21T07:15:13.250Z",
-            "publishedAt": "2017-07-23T07:15:13.250Z",
+            "createdOn": "2017-07-21T07:15:13.250Z",
+            "publishedOn": "2017-07-23T07:15:13.250Z",
+            "read": "false",
+            "cardCount": 3,
             "views": "500",
             "cards": [
                 {
@@ -113,7 +118,9 @@ export default class UserController {
             "title": "Lorem Ipsum and draft",
             "slug": "lorem-ipsum-and-draft",
             "by": "John Draft",
-            "createdAt": "2017-07-25T07:15:13.250Z",
+            "createdOn": "2017-07-25T07:15:13.250Z",
+            "read": "false",
+            "cardCount": 2,
             "views": "0",
             "cards": [
                 {
@@ -137,25 +144,6 @@ export default class UserController {
     }
 
     public getLatest(request: Hapi.Request, reply: Hapi.Base_Reply) {
-        // Task.findAll({ include: [ User ] }).then(tasks => {
-        //   console.log(JSON.stringify(tasks))
-        // this.database.story.findAll({
-        //     order: [
-        //         ['publishedAt', 'ASC'],
-        //         [{ model: this.database.card }, 'order', 'ASC']
-        //     ],
-        //     where : {
-        //         publishedAt: {
-        //             $ne: null
-        //         }
-        //     },
-        //     include : [{
-        //         model: this.database.card,
-        //         as: 'cards'
-        //     }, {
-        //         model: 'readStories'
-        //     }]
-        // })
         return reply({
             "data": [this.dummyStory1, this.dummyStory2]
         });
@@ -163,75 +151,35 @@ export default class UserController {
 
 
     public getStoryByIdOrSlug(request: Hapi.Request, reply: Hapi.Base_Reply) {
-        this.database.story.getStory(request.params.idOrSlug)
-            .then((story) => {
-                if (story) {
-                    return reply({
-                        "story": story.get({
-                            plain: true
-                        })
-                    });
-                } else {
-                    reply(Boom.notFound("Story with give id or slug doesn't exist"));
-                }
-            });
+        return reply({
+            "story": this.dummyStory1
+        });
     }
 
     public markRead(request: Hapi.Request, reply: Hapi.Base_Reply) {
-        this.database.story.getStory(request.params.idOrSlug).then((story) => {
-            if (story) {
-                story.markRead(this.database, request.auth.credentials.userId).then((res) => {
-                    return reply({
-                        "read": true
-                    });
-                }).catch((err) => {
-                    reply(Boom.conflict(err));
-                });
-            } else {
-                reply(Boom.notFound("Story with give id or slug doesn't exist"));
-            }
+        return reply({
+            "read": true
         });
     }
 
     public getArchived(request: Hapi.Request, reply: Hapi.Base_Reply) {
         let tempStory1 = this.dummyStory1;
+        tempStory1.read = true;
         let tempStory2 = this.dummyStory2;
+        tempStory2.read = true;
         return reply({
             "data": [tempStory1, tempStory2, this.dummyStory1, this.dummyStory2]
         });
     }
 
     public getAllStories(request: Hapi.Request, reply: Hapi.Base_Reply) {
-        this.database.story.unscoped().findAll({
-            attributes: ['id', 'title', 'slug', 'by', 'createdAt', 'publishedAt'],
-            include: [{
-                model: this.database.user,
-                attributes: ['id']
-            }],
-            nested: false,
-            where: {
-                deleted: false
-            },
-        }).then((stories: Array<any>) => {
-            if (stories.length) {
-                stories.forEach((story) => {
-                    story.views = story.users.length;
-                    story = story.get({
-                        plain: true
-                    });
-                });
-                return reply({
-                    "data": stories
-                });
-            } else {
-                reply(Boom.notFound('Stories not found.'));
-            }
+        let tempStory1 = this.dummyStory1;
+        tempStory1.read = true;
+        let tempStory2 = this.dummyStory2;
+        tempStory2.read = true;
+        return reply({
+            "data": [tempStory1, tempStory2, this.dummyStory1, this.dummyStory3, this.dummyStory2]
         });
-        // let tempStory1 = this.dummyStory1;
-        // let tempStory2 = this.dummyStory2;
-        // return reply({
-        //     "data": [tempStory1, tempStory2, this.dummyStory1, this.dummyStory3, this.dummyStory2]
-        // });
     }
 
     public newStory(request: Hapi.Request, reply: Hapi.Base_Reply) {
