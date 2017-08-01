@@ -138,10 +138,18 @@
 				<li><strong>ROMANS (User):</strong> With the least privileges</li>
 			</ul>
 			<br>
-			<p>You need to make a request to <code>/user/login</code> endpoint with a valid email and password in the body of the request. 
-			This endpoint will return 3 JWT's for each type of user privileges. 
-			Copy/paste the value of any one of these JWTS in the page header where it is written api_key so that you can access routes that require authentication.</p>
-			<br>
+			<p> You can create a new account with <strong>ROMANS</strong> privileges by making a request to <strong> POST /user</strong> endpoint. </p>
+			 <p>An account with <strong>GOD</strong> privilege is hardcoded in the database.</p>
+			 <ul>
+			 <li><strong>email :</strong> god@superadmin.com</li>
+			 <li><strong>password :</strong> superadmin </li>
+			 </ul>
+			 <br>
+			<p>Certain routes in the API are protected and are accessible only if you use <strong>api_key</strong> with correct privelege to access them.
+			You need to make a request to <strong>/user/login</strong> endpoint with a valid email and password in the body of the request. 
+			This endpoint will return a JWT(api_key) based on the user privelege.
+			Copy/paste the value of <strong>JWT</strong> in the page header where it is written <strong>api_key</strong> so that you can access routes that require authentication.</p>
+
 			<p>You will need to save the value of JWT at front-end and will have to make requests with Authorisations header value as the saved JWT to gain access to routes that require authentication.
 			</p>
 			<h2>Generic Error Codes</h2>
