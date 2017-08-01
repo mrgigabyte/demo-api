@@ -2,6 +2,7 @@ import * as Sequelize from 'sequelize';
 import * as bcrypt from 'bcryptjs';
 import * as Jwt from "jsonwebtoken";
 import * as moment from 'moment';
+import * as json2csv from "json2csv";
 
 export interface UserAttribute {
     id?: string;
@@ -120,6 +121,50 @@ export default function (sequelize: Sequelize.Sequelize, DataTypes: Sequelize.Da
         return bcrypt.hashSync(password, 8);
     };
 
+    User.getAllUsers = function (): Promise<{}> {
+        return User.scope(null).findAll({
+            attributes: ['id', 'name', 'email', 'emailNotif', 'pushNotif', ['createdAt', 'joinedOn'], 'status']
+        }).then((users: Array<any>) => {
+            if (users.length) {
+                let data: Array<any> = [];
+                users.forEach((user) => {
+                    data.push(user.get({ plain: true }));
+                    console.log(user);
+                });
+                console.log(data);
+                return data;
+            } else {
+                throw 'Users Not found';
+            }
+        });
+    };
+
+    User.hashPassword = function (password): String {
+        return bcrypt.hashSync(password, 8);
+    };
+
+    User.generateJwtCsv = function (config): String {
+        let data: Object = { data: 'CSV' };
+        return Jwt.sign(data, config.jwtCsvSecret, { expiresIn: config.jwtCsvExpiration });
+    };
+
+    User.verifyJwtCsv = function (jwt, secret): Boolean {
+        try {
+            Jwt.verify(jwt, secret);
+            return true;
+        } catch (err) {
+            return false;
+        }
+    };
+
+    User.getCsv = function (): Promise<any> {
+        return this.getAllUsers().then((users) => {
+            let fields = ['id', 'name', 'email', 'emailNotif', 'pushNotif'];
+            let res = json2csv({ data: users, fields: fields });
+            return res;
+        });
+    };
+
     User.prototype.checkPassword = function (password): Boolean {
         return bcrypt.compareSync(password, this.password);
     };
@@ -146,35 +191,20 @@ export default function (sequelize: Sequelize.Sequelize, DataTypes: Sequelize.Da
     };
 
     User.prototype.updatePassword = function (password): Promise<{}> {
-        this.password = password;
+        let pswd = User.hashPassword(password);
         return this.update({
-            password: password,
-
+            password: pswd,
         });
     };
-
 
     User.prototype.deleteUser = function (): Promise<{}> {
         return this.update({
             status: 'deleted',
             deleteOn: moment().toDate()
         });
-
     };
 
-    User.prototype.pushNotification = function (notifType): Promise<{}> {
-        return this.update({
-            pushNotif: notifType
-        });
-    };
-
-    User.prototype.emailNotification = function (state): Promise<{}> {
-        return this.update({
-            emailNotif: state
-        });
-    };
-
-    User.prototype.updateUser = function (info): Promise<{}> {
+    User.prototype.updateUserInfo = function (info): Promise<{}> {
         if (info.password) {
             info.password = User.hashPassword(info.password);
         }
@@ -188,28 +218,6 @@ export default function (sequelize: Sequelize.Sequelize, DataTypes: Sequelize.Da
             password: User.hashPassword(info.password),
             role: info.role
         });
-    };
-
-    User.getAllUsersData = function (): Promise<{}> {
-        return User.scope(null)
-            .findAll({
-                attributes: ['id', 'name', 'email', 'emailNotif', 'pushNotif', ['createdAt', 'joinedOn'], 'status']
-            })
-            .then((user) => {
-                let data = [];
-                user.forEach((element) => {
-                    data.push(element.get({ plain: true }));
-                });
-                return data;
-            });
-    };
-
-    User.hashPassword = function (password): String {
-        return bcrypt.hashSync(password, 8);
-    };
-
-    User.generateCSVJwt = function (config): String {
-        return Jwt.sign({ data: 'CSV' }, config.jwtCSV.jwtSecret, { expiresIn: config.jwtCSV.jwtExpiration });
     };
 
     return User;

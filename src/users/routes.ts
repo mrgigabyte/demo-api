@@ -86,7 +86,7 @@ export default function (server: Hapi.Server, serverConfigs: IServerConfiguratio
             tags: ['api', 'user'],
         }
     });
-    
+
     server.route({
         method: 'POST',
         path: '/user/login',
@@ -94,7 +94,7 @@ export default function (server: Hapi.Server, serverConfigs: IServerConfiguratio
         config: {
             description: 'Returns a JWT for the user after a successfull login',
             notes: [`This endpoint will return a JWT, generated on the basis of user role that will 
-            be used as the value of authorisation for making requests to protected endpoints.
+            be used as the value of authorisation for making requests to protected endpoint.
             
             No authorisation header required to access this endpoint.`],
             validate: {
@@ -418,7 +418,7 @@ export default function (server: Hapi.Server, serverConfigs: IServerConfiguratio
         }
     });
 
-     server.route({
+    server.route({
         method: 'POST',
         path: '/user/createJesus',
         handler: userController.createJesus,
@@ -446,7 +446,7 @@ export default function (server: Hapi.Server, serverConfigs: IServerConfiguratio
                     "success": Joi.boolean().required()
                 })
             },
-           plugins: {
+            plugins: {
                 'hapi-swagger': {
                     responses: {
                         '200': {

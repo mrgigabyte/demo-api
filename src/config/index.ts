@@ -17,15 +17,17 @@ export interface IServerConfigurations {
     plugins: Array<string>;
     jwtSecret: string;
     jwtExpiration: string;
+    jwtCsvSecret: string;
+    jwtCsvExpiration: string;
 }
 
 export interface IDb {
     sequelize: Sequelize.Sequelize;
     Sequelize: Sequelize.SequelizeStatic;
-    user: Sequelize.Model<any,any>;
-    story: Sequelize.Model<any,any>;
-    card: Sequelize.Model<any,any>;            
-    resetCode: Sequelize.Model<any,any>;    
+    user: Sequelize.Model<any, any>;
+    story: Sequelize.Model<any, any>;
+    card: Sequelize.Model<any, any>;
+    resetCode: Sequelize.Model<any, any>;
 }
 
 export interface IDataConfiguration {

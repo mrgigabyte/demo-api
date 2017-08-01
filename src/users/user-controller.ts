@@ -1,7 +1,5 @@
 import * as Hapi from "hapi";
 import * as Boom from "boom";
-import * as GoogleAuth from "google-auth-library";
-import * as json2csv from "json2csv";
 import { IServerConfigurations } from "../config";
 import { IDb } from "../config";
 import { UserModel, UserInstance } from '../models/users';
@@ -115,17 +113,17 @@ export default class UserController {
                                     });
                                 });
                             }).catch((reason) => {
-                                reply(Boom.badImplementation(reason));
+                                return reply(Boom.badImplementation(reason));
                             });
                         } else {
-                            reply(Boom.badRequest('Unique code no longer valid'));
+                            return reply(Boom.badRequest('Unique code no longer valid'));
                         }
                     } else {
-                        reply(Boom.badRequest('User has not requested to reset his password'));
+                        return reply(Boom.badRequest('User has not requested to reset his password'));
                     }
                 });
             } else {
-                reply(Boom.notFound('Email not registered on platform'));
+                return reply(Boom.notFound('Email not registered on platform'));
             }
         });
     }
@@ -145,8 +143,7 @@ export default class UserController {
                 reply(Boom.notFound('User not found'));
             }
         }).catch((err) => {
-            reply(Boom.expectationFailed('Expected this to work'));
-
+            return reply(Boom.expectationFailed('Expected this to work'));
         });
     }
 
@@ -157,15 +154,12 @@ export default class UserController {
             }
         }).then((user) => {
             if (user) {
-                user.deleteUser()
-                    .then(() => {
-                        return reply({
-                            deleted: true
-                        });
+                user.deleteUser().then(() => {
+                    return reply({
+                        deleted: true
                     });
-
+                });
             } else {
-
                 return reply(Boom.notFound('User not found'));
             }
         });
@@ -178,15 +172,13 @@ export default class UserController {
             }
         }).then((user) => {
             if (user) {
-                user.pushNotification(request.payload.pushNotif)
-                    .then(() => {
-                        return reply({
-                            changed: true
-                        });
+                user.updateUser(request.payload).then(() => {
+                    return reply({
+                        changed: true
                     });
+                });
 
             } else {
-
                 return reply(Boom.notFound('User not found'));
             }
         });
@@ -199,15 +191,12 @@ export default class UserController {
             }
         }).then((user) => {
             if (user) {
-                user.emailNotification(request.payload.emailNotif)
-                    .then(() => {
-                        return reply({
-                            changed: true
-                        });
+                user.updateUser(request.payload).then(() => {
+                    return reply({
+                        changed: true
                     });
-
+                });
             } else {
-
                 return reply(Boom.notFound('User not found'));
             }
         });
@@ -220,63 +209,41 @@ export default class UserController {
             }
         }).then((user) => {
             if (user) {
-                user.updateUser(request.payload)
-                    .then((res) => {
-                        console.log(res);
-                        return reply({
-                            updated: true
-                        });
+                user.updateUser(request.payload).then((res) => {
+                    return reply({
+                        updated: true
                     });
-
+                });
             } else {
-
                 return reply(Boom.notFound('User not found'));
             }
-        }).catch((err) => {
-            reply(Boom.expectationFailed('Expected this to work'));
-
-        });
+        }).catch((err) => reply(Boom.expectationFailed('Expected this to work')));
     }
 
     public getAllUsers(request: Hapi.Request, reply: Hapi.Base_Reply) {
-        this.database.user.getAllUsersData()
-            .then((userdata) => {
-                console.log(userdata);
-                return reply(
-                    {
-                        "data": userdata
-                    }
-                );
-            }).catch((err) => {
-                console.log(err);
-                reply(Boom.notFound('No Data found'));
+        this.database.user.getAllUsers().then((users) => {
+            return reply({
+                "data": users
             });
+        }).catch((err) => reply(Boom.notFound(err)));
     }
 
     public generateCsvLink(request: Hapi.Request, reply: Hapi.Base_Reply) {
-        let jwttoken = this.database.user.generateCSVJwt(this.configs);
+        let jwttoken = this.database.user.generateJwtCsv(this.configs);
         return reply({
             "link": request.server.info.uri + `/user/downloadCsv?jwt=` + jwttoken
         });
     }
 
     public downloadCsv(request: Hapi.Request, reply: Hapi.Base_Reply) {
-        try {
-            Jwt.verify(request.query.jwt, 'CSV');
-        }
-        catch (err) {
-            return reply(Boom.unauthorized('Invalid Token'));
-        }
-        this.database.user.getAllUsersData()
-            .then((userdata) => {
-                let fields = ['id', 'name', 'email', 'emailNotif', 'pushNotif'];
-                let res = json2csv({ data: userdata, fields: fields });
-                return reply(res)
-                    .header('Content-Type', 'text/csv')
+        if (this.database.user.verifyJwtCsv(request.query.jwt, this.configs.jwtCsvSecret)) {
+            this.database.user.getCsv().then((res) => {
+                return reply(res).header('Content-Type', 'text/csv')
                     .header('content-disposition', 'attachment; filename=users.csv;');
-            }).catch((err) => {
-                reply(Boom.expectationFailed('Expected this to work'));
-            });
+            }).catch((err) => reply(Boom.notFound(err)));
+        } else {
+            return reply(Boom.badRequest('Cannot verify JWT'));
+        }
     }
 
     public createJesus(request: Hapi.Request, reply: Hapi.Base_Reply) {
