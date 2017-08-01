@@ -4,7 +4,7 @@ import { IServerConfigurations } from "../config";
 import * as Boom from "boom";
 
 import CardController from "./cards-controller";
-import { cardSchema } from "./schemas";
+import { cardSchema, baseCardSchema } from "./schemas";
 
 export default function (server: Hapi.Server, serverConfigs: IServerConfigurations, database: any) {
 
@@ -73,37 +73,46 @@ export default function (server: Hapi.Server, serverConfigs: IServerConfiguratio
             tags: ['api', 'card'],
         }
     });
-
     server.route({
         method: 'POST',
-        path: '/card/{cardId}/addLink',
-        handler: cardController.addLink,
+        path: '/card/upload',
+        handler: cardController.uploadCard,
         config: {
-            description: 'Add link to a card which can be of type basic or video.',
-            notes: `
-            GOD and JESUS can access this endpoint`,
+            description: 'Upload a new card from the file system to google cloud storage.',
+            notes: `You can upload an image(.png, .jpg, .gif) or a video(.mp4).  
+            After successfull upload it will return the card details.
+            File size is limited to a max of 100 MBs.
+
+            GOD and JESUS can access this endpoint
+            `,
             auth: 'jwt',
+            payload: {
+                output: 'stream',
+                parse: true,
+                maxBytes: 102400000,
+                allow: 'multipart/form-data',
+            },
             validate: {
-                params: {
-                    cardId: Joi.number()
-                        .required()
-                        .description('the card id'),
-                },
                 payload: {
-                    link: Joi.string().uri().required()
-                        .description('Link to be assosciated witht a card.')
+                    file: Joi.any().required()
+                        .meta({ swaggerType: 'file' })
+                        .description('The file which needs to be uploaded.')
                 }
             },
             response: {
                 schema: Joi.object({
-                    "added": Joi.boolean().required()
+                    "link": Joi.string().uri().required()
                 })
             },
             plugins: {
                 'hapi-swagger': {
+                    payloadType: 'form',
                     responses: {
-                        '200': {
-                            'description': 'Successfully added the link to the card.'
+                        '201': {
+                            'description': 'Successfully uploaded the card and returned the uri.'
+                        },
+                        '403': {
+                            'description': 'file type not supported'
                         }
                     }
                 },

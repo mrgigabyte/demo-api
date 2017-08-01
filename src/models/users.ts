@@ -4,33 +4,7 @@ import * as Jwt from "jsonwebtoken";
 import * as moment from 'moment';
 import * as json2csv from "json2csv";
 
-export interface UserAttribute {
-    id?: string;
-    name?: string;
-    email?: string;
-    password?: string;
-    status?: string;
-    emailNotif?: boolean;
-    pushNotif?: string;
-    deleteOn?: string;
-    resetPasswordCode?: string;
-    resetCodeExpiresOn?: string;
-}
-
-export interface UserInstance extends Sequelize.Instance<UserAttribute>, UserAttribute {
-    id: string;
-    createdAt: Date;
-    updatedAt: Date;
-    email: string;
-    password: string;
-    callMe(): void;
-    hashPassword(password: string): void;
-}
-
-export interface UserModel extends Sequelize.Model<UserInstance, UserAttribute> {
-}
-
-export default function (sequelize: Sequelize.Sequelize, DataTypes: Sequelize.DataTypes) {
+export default function (sequelize, DataTypes) {
     let User = sequelize.define('user',
         {
             id: {
@@ -101,7 +75,7 @@ export default function (sequelize: Sequelize.Sequelize, DataTypes: Sequelize.Da
                 }
             },
             hooks: {
-                beforeCreate: (user: UserInstance, options) => {
+                beforeCreate: (user, options) => {
                     user.password = bcrypt.hashSync(user.password, 8);
                 }
             }

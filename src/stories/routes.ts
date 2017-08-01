@@ -5,6 +5,7 @@ import * as Boom from "boom";
 
 import StoryController from "./stories-controller";
 import { storySchema, baseStorySchema } from "./schemas";
+import { baseCardSchema } from "../cards/schemas";
 
 export default function (server: Hapi.Server, serverConfigs: IServerConfigurations, database: any) {
 
@@ -200,97 +201,6 @@ export default function (server: Hapi.Server, serverConfigs: IServerConfiguratio
                 'hapiAuthorization': { roles: ['GOD', 'JESUS'] }
             },
             tags: ['api', 'admin']
-        }
-    });
-
-    server.route({
-        method: 'POST',
-        path: '/story/{idOrSlug}/card/upload',
-        handler: storyController.uploadCard,
-        config: {
-            description: 'Upload a new card from the file system to google cloud storage.',
-            notes: `You can upload an image(.png, .jpg, .gif) or a video(.mp4).  
-            After successfull upload it will return the card details.
-            File size is limited to a max of 100 MBs.
-
-            GOD and JESUS can access this endpoint
-            `,
-            auth: 'jwt',
-            payload: {
-                output: 'stream',
-                parse: true,
-                maxBytes: 102400000,
-                allow: 'multipart/form-data',
-            },
-            validate: {
-                payload: {
-                    file: Joi.any().required()
-                        .meta({ swaggerType: 'file' })
-                        .description('The file which needs to be uploaded.')
-                },
-                params: {
-                    idOrSlug: Joi.any().required().description("Id/Slug of the story"),
-                }
-            },
-            response: {
-                schema: Joi.object({
-                    "link": Joi.string().uri().required()
-                })
-            },
-            plugins: {
-                'hapi-swagger': {
-                    payloadType: 'form',
-                    responses: {
-                        '201': {
-                            'description': 'Successfully uploaded the card and returned the uri.'
-                        },
-                        '403': {
-                            'description': 'file type not supported'
-                        }
-                    }
-                },
-                'hapiAuthorization': { roles: ['GOD', 'JESUS'] }
-            },
-            tags: ['api', 'admin'],
-        }
-    });
-
-    server.route({
-        method: 'POST',
-        path: '/story/{idOrSlug}/card',
-        handler: storyController.addCard,
-        config: {
-            description: 'Adds the card to the current story',
-            notes: `This endpoint will add the card data passed into the 
-            payload to the story.
-
-            GOD and JESUS can access this endpoint
-            `,
-            auth: 'jwt',
-            payload: {
-
-            },
-            validate: {
-                params: {
-                    idOrSlug: Joi.any().required().description("Id/Slug of the story"),
-                }
-            },
-            response: {
-                schema: Joi.object({
-                    "success": Joi.boolean().required()
-                })
-            },
-            plugins: {
-                'hapi-swagger': {
-                    responses: {
-                        '201': {
-                            'description': 'Successfully added the card to the story'
-                        }
-                    }
-                },
-                'hapiAuthorization': { roles: ['GOD', 'JESUS'] }
-            },
-            tags: ['api', 'admin'],
         }
     });
 

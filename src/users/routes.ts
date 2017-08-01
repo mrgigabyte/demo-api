@@ -24,10 +24,10 @@ export default function (server: Hapi.Server, serverConfigs: IServerConfiguratio
                 payload: Joi.object({
                     name: Joi.string().required()
                         .description("Name of the user"),
-                    password: Joi.string().required()
-                        .description('Password of the user'),
                     email: Joi.string().email().required()
-                        .description('Email of the user')
+                        .description('Email of the user'),
+                    password: Joi.string().required()
+                        .description('Password of the user')
                 })
             },
             response: {
