@@ -12,12 +12,6 @@ export default function (server: Hapi.Server, serverConfigs: IServerConfiguratio
     server.bind(cardController);
 
     server.route({
-        method: 'GET',
-        path: '/try',
-        handler: cardController.try,
-    });
-
-    server.route({
         method: 'POST',
         path: '/card/{cardId}/favourite',
         handler: cardController.favourite,

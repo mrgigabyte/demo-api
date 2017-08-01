@@ -15,7 +15,6 @@ export const storySchema:Joi.ObjectSchema = baseStorySchema.keys({
     views: Joi.number().required(),
     publishedAt: Joi.date(),
     createdAt: Joi.date().required(),
-    cards: Joi.array().items(cardSchema)    
 });
 
     

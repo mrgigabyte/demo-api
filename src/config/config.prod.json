@@ -1,9 +1,9 @@
 {
     "dialect": "mysql",
-    "database": "davinci",
-    "host": "localhost",
+    "database": "abstrct_staging",
+    "host": "104.197.20.135",
     "username": "root",
-    "password": "random",
+    "password": "hello123",
     "requestTimeout": 90000,
     "connectionTimeout": 30000,
     "acquireConnectionTimeout": 30000,
