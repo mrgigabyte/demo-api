@@ -18,45 +18,27 @@ export default class UserController {
             {
                 "id": 1,
                 "order": 1,
-                "cardType": "image",
-                "cardData": "https://wwww.loremipsum.com",
-                "link": "https://wwww.loremipsum.com",
-                "linkType": "video",
+                "mediaType": "image",
+                "mediaUri": "https://wwww.loremipsum.com",
+                "externalLink": "https://wwww.loremipsum.com",
                 "favourite": "true"
             },
             {
                 "id": 2,
                 "order": 2,
-                "cardType": "image",
-                "cardData": "https://wwww.loremipsum.com",
-                "link": "https://wwww.loremipsum.com",
-                "linkType": "basic",
+                "mediaType": "image",
+                "mediaUri": "https://wwww.loremipsum.com",
+                "externalLink": "https://wwww.loremipsum.com",
                 "favourite": "true"
             },
             {
                 "id": 3,
                 "order": 3,
-                "cardType": "video",
-                "cardData": "https://wwww.loremipsum.com",
+                "mediaType": "video",
+                "mediaUri": "https://wwww.loremipsum.com",
                 "favourite": "true"
             }
         ];
-    }
-
-    public try(request: Hapi.Request, reply: Hapi.Base_Reply) {
-        // console.log(this.database);
-        const a = this.database.user.build({
-            email: "vidur@navvv",
-            name: "vidur singla",
-            password: "random",
-            emailNotif: "disable"
-        });
-        a.save().then((res) => {
-            console.log('very good');
-            return reply(res);
-        }).catch((err) => {
-            console.log(err);
-        });
     }
 
     public favourite(request: Hapi.Request, reply: Hapi.Base_Reply) {

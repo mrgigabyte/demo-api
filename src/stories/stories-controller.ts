@@ -22,54 +22,47 @@ export default class UserController {
             "title": "Lorem Ipsum",
             "slug": "lorem-ipsum",
             "by": "Steven Harrington",
-            "createdOn": "2017-07-22T07:15:13.250Z",
-            "publishedOn": "2017-07-25T07:15:13.250Z",
-            "read": "false",
-            "cardCount": 5,
+            "createdAt": "2017-07-22T07:15:13.250Z",
+            "publishedAt": "2017-07-25T07:15:13.250Z",
             "views": "1000",
             "cards": [
                 {
                     "id": 14,
                     "order": 1,
-                    "cardType": "image",
-                    "cardData": "https://wwww.loremipsum.com",
-                    "link": "https://wwww.loremipsum.com",
-                    "linkType": "video",
-                    "favourite": "false"
+                    "mediaType": "image",
+                    "mediaUri": "https://wwww.loremipsum.com",
+                    "externalLink": "https://wwww.loremipsum.com",
                 },
                 {
                     "id": 27,
                     "order": 2,
-                    "cardType": "image",
-                    "cardData": "https://wwww.loremipsum.com",
-                    "link": "https://wwww.loremipsum.com",
-                    "linkType": "basic",
-                    "favourite": "false"
+                    "mediaType": "image",
+                    "mediaUri": "https://wwww.loremipsum.com",
+                    "externalLink": "https://wwww.loremipsum.com",
+                    
                 },
                 {
                     "id": 31,
                     "order": 3,
-                    "cardType": "video",
-                    "cardData": "https://wwww.loremipsum.com",
-                    "link": "https://wwww.loremipsum.com",
-                    "linkType": "video",
-                    "favourite": "false"
+                    "mediaType": "video",
+                    "mediaUri": "https://wwww.loremipsum.com",
+                    "externalLink": "https://wwww.loremipsum.com",
+                    
                 },
                 {
                     "id": 42,
                     "order": 4,
-                    "cardType": "image",
-                    "cardData": "https://wwww.loremipsum.com",
-                    "favourite": "false"
+                    "mediaType": "image",
+                    "mediaUri": "https://wwww.loremipsum.com",
+                    
                 },
                 {
                     "id": 51,
                     "order": 5,
-                    "cardType": "image",
-                    "cardData": "https://wwww.loremipsum.com",
-                    "link": "https://wwww.loremipsum.com",
-                    "linkType": "video",
-                    "favourite": "false"
+                    "mediaType": "image",
+                    "mediaUri": "https://wwww.loremipsum.com",
+                    "externalLink": "https://wwww.loremipsum.com",
+                    
                 }
             ]
         };
@@ -79,36 +72,31 @@ export default class UserController {
             "title": "Lorem Ipsum and lorem Ipsum",
             "slug": "lorem-ipsum-and-lorem-ipsum",
             "by": "John Doe",
-            "createdOn": "2017-07-21T07:15:13.250Z",
-            "publishedOn": "2017-07-23T07:15:13.250Z",
-            "read": "false",
-            "cardCount": 3,
+            "createdAt": "2017-07-21T07:15:13.250Z",
+            "publishedAt": "2017-07-23T07:15:13.250Z",
             "views": "500",
             "cards": [
                 {
                     "id": 1,
                     "order": 1,
-                    "cardType": "image",
-                    "cardData": "https://wwww.loremipsum.com",
-                    "link": "https://wwww.loremipsum.com",
-                    "linkType": "video",
-                    "favourite": "true"
+                    "mediaType": "image",
+                    "mediaUri": "https://wwww.loremipsum.com",
+                    "externalLink": "https://wwww.loremipsum.com",
                 },
                 {
                     "id": 2,
                     "order": 2,
-                    "cardType": "image",
-                    "cardData": "https://wwww.loremipsum.com",
-                    "link": "https://wwww.loremipsum.com",
-                    "linkType": "basic",
-                    "favourite": "false"
+                    "mediaType": "image",
+                    "mediaUri": "https://wwww.loremipsum.com",
+                    "externalLink": "https://wwww.loremipsum.com",
+                    
                 },
                 {
                     "id": 3,
                     "order": 3,
-                    "cardType": "video",
-                    "cardData": "https://wwww.loremipsum.com",
-                    "favourite": "false"
+                    "mediaType": "video",
+                    "mediaUri": "https://wwww.loremipsum.com",
+                    
                 }
             ]
         };
@@ -118,26 +106,22 @@ export default class UserController {
             "title": "Lorem Ipsum and draft",
             "slug": "lorem-ipsum-and-draft",
             "by": "John Draft",
-            "createdOn": "2017-07-25T07:15:13.250Z",
-            "read": "false",
-            "cardCount": 2,
+            "createdAt": "2017-07-25T07:15:13.250Z",
             "views": "0",
             "cards": [
                 {
                     "id": 12,
                     "order": 1,
-                    "cardType": "image",
-                    "cardData": "https://wwww.loremipsum.com",
+                    "mediaType": "image",
+                    "mediaUri": "https://wwww.loremipsum.com",
                     "link": "https://wwww.loremipsum.com",
-                    "linkType": "video",
-                    "favourite": "true"
                 },
                 {
                     "id": 22,
                     "order": 2,
-                    "cardType": "image",
-                    "cardData": "https://wwww.loremipsum.com",
-                    "favourite": "false"
+                    "mediaType": "image",
+                    "mediaUri": "https://wwww.loremipsum.com",
+                    
                 }
             ]
         };
@@ -164,9 +148,7 @@ export default class UserController {
 
     public getArchived(request: Hapi.Request, reply: Hapi.Base_Reply) {
         let tempStory1 = this.dummyStory1;
-        tempStory1.read = true;
         let tempStory2 = this.dummyStory2;
-        tempStory2.read = true;
         return reply({
             "data": [tempStory1, tempStory2, this.dummyStory1, this.dummyStory2]
         });
@@ -174,9 +156,7 @@ export default class UserController {
 
     public getAllStories(request: Hapi.Request, reply: Hapi.Base_Reply) {
         let tempStory1 = this.dummyStory1;
-        tempStory1.read = true;
         let tempStory2 = this.dummyStory2;
-        tempStory2.read = true;
         return reply({
             "data": [tempStory1, tempStory2, this.dummyStory1, this.dummyStory3, this.dummyStory2]
         });
