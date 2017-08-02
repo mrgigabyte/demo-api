@@ -50,17 +50,38 @@ export default class UserController {
             "data": this.dummyCards
         });
     }
-    
+
+    public imageFilter(fileName: string) {
+        if (!fileName.match(/\.(jpg|jpeg|png|gif)$/)) {
+            return false;
+        }
+        return true;
+    }
+
+    public uploadCard(request: Hapi.Request, reply: Hapi.Base_Reply) {
+        if (this.imageFilter(request.payload.file.hapi.filename)) {
+            let fileData = request.payload.file;
+            this.database.card.uploadCard(fileData, this.configs.googleCloud).then((res) => {
+                return reply(res);
+            }).catch((err) => {
+                return reply(Boom.expectationFailed(err));
+            });
+
+        } else {
+            return reply(Boom.badRequest('File type not supported'));
+        }
+    }
+
     public addLink(request: Hapi.Request, reply: Hapi.Base_Reply) {
-    return reply({
-        "added": true
-    });
-}
+        return reply({
+            "added": true
+        });
+    }
 
     public deleteCard(request: Hapi.Request, reply: Hapi.Base_Reply) {
-    return reply({
-        "deleted": true
-    });
-}
+        return reply({
+            "deleted": true
+        });
+    }
 }
 

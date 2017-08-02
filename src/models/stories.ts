@@ -132,23 +132,11 @@ export default function (sequelize, DataTypes) {
         });
     };
 
-    // Code.prototype.updateCode = function () {
-    //     return this.update({
-    //         expiresAt: moment().add(12, 'h').toDate()
-    //     });
-    // };
-
-    // Code.prototype.checkUniqueCode = function (code) {
-    //     if (this.code === code && moment().isBefore(this.expiresAt)) {
-    //         return true;
-    //     } else {
-    //         return false;
-    //     }
-    // };
-
-    // Code.prototype.markCodeInvalid = function () {
-    //     return this.update({
-    //         expiresAt: null
+    // Story.prototype.newCard = function (card, cardModel) {
+    //     return sequelize.transaction((t) => {
+    //         return cardModel.create(card, {transaction: t}).then((card) => {
+    //             return this.addCards(card, {transaction: t});
+    //         });
     //     });
     // };
 

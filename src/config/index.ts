@@ -19,6 +19,11 @@ export interface IServerConfigurations {
     jwtExpiration: string;
     jwtCsvSecret: string;
     jwtCsvExpiration: string;
+    googleCloud: {
+        projectId: string;
+        keyFilename: string;
+        cardBucket: string;
+    };
 }
 
 export interface IDb {
