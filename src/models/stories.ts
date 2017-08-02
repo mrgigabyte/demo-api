@@ -166,7 +166,7 @@ export default function (sequelize, DataTypes) {
     // Helper function that checks whether a slug is valid or not.
     // It recursively checks and generates a valid slug and returns a promise.
     let getValidSlug = function (oldSlug: string, newSlug: string, i: number): Promise<string> {
-        return validateSlug(oldSlug).then((valid) => {
+        return validateSlug(newSlug).then((valid) => {
             if (!valid) {
                 newSlug = oldSlug + '-' + i;
                 i++;
