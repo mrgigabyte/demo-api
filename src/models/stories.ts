@@ -51,9 +51,16 @@ export default function (sequelize, DataTypes) {
         }, {
             defaultScope: {
                 where: {
-                    deleted: false,
-                    publishedAt: {
-                        $ne: null
+                    deleted: false
+                }
+            },
+            scopes: {
+                notPublished: {
+                    where: {
+                        deleted: false,
+                        publishedAt: {
+                            $ne: null
+                        }
                     }
                 }
             },
@@ -92,33 +99,34 @@ export default function (sequelize, DataTypes) {
         if (+idOrSlug) {
             return true;
         } else {
-            console.log('hasa');
             return false;
         }
     };
 
-    Story.getStoryById = function (id: number): Promise<any> {
-        return this.findOne({
+    Story.getStoryById = function (id: number, scope: string): Promise<any> {
+        return this.scope(scope).findOne({
             where: {
                 id: id
-            }
+            },
+            attributes: ['id', 'title', 'by', 'slug', 'publishedAt', 'createdAt']
         });
     };
 
-    Story.getStoryBySlug = function (slug: string): Promise<any> {
-        return Story.findOne({
+    Story.getStoryBySlug = function (slug: string, scope: string): Promise<any> {
+        return Story.scope(scope).find({
             where: {
                 slug: slug
-            }
+            },
+            attributes: ['id', 'title', 'by', 'slug', 'publishedAt', 'createdAt']
         });
     };
 
-    Story.getStory = function (idOrSlug: any): Promise<any> {
+    Story.getStory = function (idOrSlug: any, scope: string): Promise<any> {
         let story: Promise<any>;
         if (Story.checkId(idOrSlug)) {
-            story = this.getStoryById(idOrSlug);
+            story = this.getStoryById(idOrSlug, scope);
         } else {
-            story = this.getStoryBySlug(idOrSlug);
+            story = this.getStoryBySlug(idOrSlug, scope);
         }
         return story;
     };
@@ -190,7 +198,12 @@ export default function (sequelize, DataTypes) {
                 id: userId
             }
         }).then((user) => {
-            return user.getStories({ where: { id: this.id } }).then((stories: Array<any>) => {
+            return user.getStories({
+                where: {
+                    id: this.id
+                }
+            }).then((stories: Array<any>) => {
+                console.log(stories);
                 if (stories.length) {
                     throw 'User has already read the story';
                 } else {
