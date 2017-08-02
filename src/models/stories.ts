@@ -69,13 +69,6 @@ export default function (sequelize, DataTypes) {
                     return story.getSlug().then((slug) => {
                         story.slug = slug;
                     });
-                    // code.code = shortid.generate();
-                },
-                beforeUpdate: (story, options) => {
-                    return story.getSlug().then((slug) => {
-                        story.slug = slug;
-                    });
-                    // code.code = shortid.generate();
                 }
             }
         });
@@ -159,8 +152,7 @@ export default function (sequelize, DataTypes) {
     let validateSlug = function (slug: string): Promise<Boolean> {
         return Story.unscoped().findOne({
             where: {
-                slug: slug,
-                deleted: false
+                slug: slug
             }
         }).then((story) => {
             if (!story) {
@@ -203,7 +195,6 @@ export default function (sequelize, DataTypes) {
                     id: this.id
                 }
             }).then((stories: Array<any>) => {
-                console.log(stories);
                 if (stories.length) {
                     throw 'User has already read the story';
                 } else {
@@ -213,5 +204,25 @@ export default function (sequelize, DataTypes) {
         });
     };
 
+    Story.prototype.deleteStoryAndCards = function (): Promise<any> {
+        return this.getCards().then((cards: Array<any>) => {
+            let promises: Array<Promise<any>> = [];
+            if (cards.length) {
+                cards.forEach(card => {
+                    card.deleted = true;
+                    promises.push(card.save());
+                });
+            }
+            return Promise.all(promises).then((res: any) => {
+                this.deleted = true;
+                return this.save();
+            });
+        });
+    };
+
+    Story.prototype.pushLive = function (): Promise<any> {
+        this.publishedAt = moment().toDate();
+        return this.save();
+    };
     return Story;
 }
