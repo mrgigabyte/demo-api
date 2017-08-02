@@ -95,6 +95,21 @@ export default function (sequelize, DataTypes) {
     //         expiresAt: null
     //     });
     // };
+    Card.toggleFav = function (userId, cardId) {
+        Card.findAll({
+            where: {
+                cardId: cardId,
+                userId: userId
+            }
+        }).then((user) => {
+            if (user) {
+                console.log('fuck');
+            } else {
+                console.log('fuck twice');
+            }
+
+        });
+    };
 
     return Card;
 }

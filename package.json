@@ -53,6 +53,7 @@
         "http": "0.0.0",
         "inert": "4.2.1",
         "is-utf8": "0.2.1",
+        "isexe": "^2.0.0",
         "joi": "10.6.0",
         "json2csv": "3.10.0",
         "jsonwebtoken": "7.4.1",
@@ -73,7 +74,8 @@
         "sigmund": "1.0.1",
         "tunnel-agent": "0.6.0",
         "vise": "2.0.2",
-        "vision": "4.1.1"
+        "vision": "4.1.1",
+        "yallist": "^3.0.2"
     },
     "devDependencies": {
         "@types/chai": "4.0.1",

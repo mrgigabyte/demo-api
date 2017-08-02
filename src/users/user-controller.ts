@@ -80,6 +80,7 @@ export default class UserController {
                         return this.database.resetCode.createCode(user.id);
                     }
                 }).then((code) => {
+                    console.log(code.code);
                     user.sendEmail(code.code);
                     return reply({
                         "success": true

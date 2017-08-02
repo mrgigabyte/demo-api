@@ -20,28 +20,26 @@ export default class UserController {
                 "order": 1,
                 "mediaType": "image",
                 "mediaUri": "https://wwww.loremipsum.com",
-                "externalLink": "https://wwww.loremipsum.com",
-                "favourite": "true"
+                "externalLink": "https://wwww.loremipsum.com"
             },
             {
                 "id": 2,
                 "order": 2,
                 "mediaType": "image",
                 "mediaUri": "https://wwww.loremipsum.com",
-                "externalLink": "https://wwww.loremipsum.com",
-                "favourite": "true"
+                "externalLink": "https://wwww.loremipsum.com"
             },
             {
                 "id": 3,
                 "order": 3,
                 "mediaType": "video",
-                "mediaUri": "https://wwww.loremipsum.com",
-                "favourite": "true"
+                "mediaUri": "https://wwww.loremipsum.com"
             }
         ];
     }
 
     public favourite(request: Hapi.Request, reply: Hapi.Base_Reply) {
+        this.database.user.addCard().toggleFav(request.auth.credentials.userId,request.query.cardId);
         return reply({
             "success": true
         });
