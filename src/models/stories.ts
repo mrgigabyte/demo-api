@@ -170,7 +170,7 @@ export default function (sequelize, DataTypes) {
             if (!valid) {
                 newSlug = oldSlug + '-' + i;
                 i++;
-                return getValidSlug(newSlug, oldSlug, i);
+                return getValidSlug(oldSlug, newSlug, i);
             } else {
                 return newSlug;
             }
