@@ -57,10 +57,12 @@ export default function (sequelize, DataTypes) {
                 }
             },
             hooks: {
-                beforeCreate: (code, options) => {
+                beforeCreate: (story, options) => {
+                    story.slug = story.getSlug();
                     // code.code = shortid.generate();
                 },
-                beforeUpdate: (code, options) => {
+                beforeUpdate: (story, options) => {
+                    story.slug = story.getSlug();
                     // code.code = shortid.generate();
                 }
             }
@@ -116,6 +118,43 @@ export default function (sequelize, DataTypes) {
         return story;
     };
 
+    Story.createNewStory = function (story, cardModel): Promise<any> {
+        // return sequelize.transaction((t) => {
+            return this.create({
+                "title": story.title,
+                "by": story.by,
+                "slug": story.title
+            }, 
+            // { transaction: t }
+            ).then((newStory) => {
+                if (story.cards) {
+                    return new Promise((resolve, reject) => {
+                        cardModel.bulkCreate(story.cards, 
+                        // { transaction: t }
+                        ).then(() => {
+                            console.log('finishes creating cards');
+                            cardModel.findAll({
+                                where: {
+                                    "storyId": null
+                                }
+                            }).then((newCards) => {
+                                console.log('finishes finding cards');
+                                console.log(newCards);
+                                newStory.addCards(newCards, 
+                                // { transaction: t }
+                                ).then(() => {
+                                    resolve();
+                                });
+                            });
+                        });
+                    });
+                } else {
+                    return Promise.resolve();
+                }
+            });
+        // });
+    };
+
     Story.prototype.markRead = function (database, userId) {
         return database.user.findOne({
             where: {
@@ -130,6 +169,11 @@ export default function (sequelize, DataTypes) {
                 }
             });
         });
+    };
+
+    Story.prototype.getSlug = function (): String {
+        let lowerCaseTitle: String = this.title.toLowerCase();
+        return lowerCaseTitle.replace(/\s/g, '-');
     };
 
     // Story.prototype.newCard = function (card, cardModel) {

@@ -48,7 +48,8 @@ export default function (sequelize, DataTypes) {
             },
             storyId: {
                 type: Sequelize.INTEGER(11),
-                unique: 'compositeOrder'
+                unique: 'compositeOrder',
+                defaultValue: null                
             }
         }, {
             defaultScope: {

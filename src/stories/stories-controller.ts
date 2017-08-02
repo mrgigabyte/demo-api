@@ -252,9 +252,15 @@ export default class UserController {
     // }
 
     public newStory(request: Hapi.Request, reply: Hapi.Base_Reply) {
-        return reply({
-            "success": true
+        this.database.story.createNewStory(request.payload, this.database.card).then((res) => {
+            return reply({
+                "success": true
+            });
+        }).catch((err) => {
+            console.log(err);
+            return reply(Boom.badRequest('Problem with payload'));
         });
+
     }
 
     public updateStory(request: Hapi.Request, reply: Hapi.Base_Reply) {
