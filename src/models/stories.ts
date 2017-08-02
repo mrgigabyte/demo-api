@@ -3,6 +3,7 @@ import * as bcrypt from 'bcryptjs';
 import * as Jwt from "jsonwebtoken";
 import * as shortid from 'shortid';
 import * as moment from 'moment';
+import * as slug from 'slug';
 
 export default function (sequelize, DataTypes) {
     let Story = sequelize.define('story',
@@ -58,7 +59,9 @@ export default function (sequelize, DataTypes) {
             },
             hooks: {
                 beforeCreate: (story, options) => {
-                    story.slug = story.getSlug();
+                    return story.getSlug().then((slug) => {
+                        story.slug = slug;
+                    });
                     // code.code = shortid.generate();
                 },
                 beforeUpdate: (story, options) => {
@@ -68,7 +71,7 @@ export default function (sequelize, DataTypes) {
             }
         });
 
-    Story.assosciate = function (models) {
+    Story.associate = function (models): void {
         models.story.hasMany(models.card, {
             as: 'Cards',
             scope: {
@@ -101,7 +104,7 @@ export default function (sequelize, DataTypes) {
     };
 
     Story.getStoryBySlug = function (slug: string): Promise<any> {
-        return this.findOne({
+        return Story.findOne({
             where: {
                 slug: slug
             }
@@ -118,45 +121,69 @@ export default function (sequelize, DataTypes) {
         return story;
     };
 
-    Story.createNewStory = function (story, cardModel): Promise<any> {
-        // return sequelize.transaction((t) => {
+    Story.addStoryId = function (cards: Array<any>, storyId: number) {
+        cards.forEach(card => {
+            card.storyId = storyId;
+        });
+    };
+
+    Story.createNewStory = function (story: any, cardModel: any): Promise<any> {
+        return sequelize.transaction((t) => {
             return this.create({
                 "title": story.title,
                 "by": story.by,
                 "slug": story.title
-            }, 
-            // { transaction: t }
-            ).then((newStory) => {
+            }, { transaction: t }).then((newStory) => {
                 if (story.cards) {
-                    return new Promise((resolve, reject) => {
-                        cardModel.bulkCreate(story.cards, 
-                        // { transaction: t }
-                        ).then(() => {
-                            console.log('finishes creating cards');
-                            cardModel.findAll({
-                                where: {
-                                    "storyId": null
-                                }
-                            }).then((newCards) => {
-                                console.log('finishes finding cards');
-                                console.log(newCards);
-                                newStory.addCards(newCards, 
-                                // { transaction: t }
-                                ).then(() => {
-                                    resolve();
-                                });
-                            });
-                        });
-                    });
+                    this.addStoryId(story.cards, newStory.id);
+                    return cardModel.bulkCreate(story.cards, { transaction: t });
                 } else {
                     return Promise.resolve();
                 }
             });
-        // });
+        });
     };
 
-    Story.prototype.markRead = function (database, userId) {
-        return database.user.findOne({
+    // Helper function that checks if a slug already exists in the database.
+    // Returns true if slug not present in the database.
+    let validateSlug = function (slug: string): Promise<Boolean> {
+        return Story.unscoped().findOne({
+            where: {
+                slug: slug,
+                deleted: false
+            }
+        }).then((story) => {
+            if (!story) {
+                return true;
+            } else {
+                return false;
+            }
+        });
+    };
+
+    // Helper function that checks whether a slug is valid or not.
+    // It recursively checks and generates a valid slug and returns a promise.
+    let getValidSlug = function (oldSlug: string, newSlug: string, i: number): Promise<string> {
+        return validateSlug(oldSlug).then((valid) => {
+            if (!valid) {
+                newSlug = oldSlug + '-' + 1;
+                i++;
+                return getValidSlug(newSlug, oldSlug, i);
+            } else {
+                return slug;
+            }
+        });
+    };
+
+    // returns a promise with the validSlug.
+    Story.prototype.getSlug = function (): Promise<string> {
+        return getValidSlug(slug(this.title), "", 1).then((validSlug) => {
+            return validSlug;
+        });
+    };
+
+    Story.prototype.markRead = function (userModel: any, userId: number): Promise<any> {
+        return userModel.findOne({
             where: {
                 id: userId
             }
@@ -170,19 +197,6 @@ export default function (sequelize, DataTypes) {
             });
         });
     };
-
-    Story.prototype.getSlug = function (): String {
-        let lowerCaseTitle: String = this.title.toLowerCase();
-        return lowerCaseTitle.replace(/\s/g, '-');
-    };
-
-    // Story.prototype.newCard = function (card, cardModel) {
-    //     return sequelize.transaction((t) => {
-    //         return cardModel.create(card, {transaction: t}).then((card) => {
-    //             return this.addCards(card, {transaction: t});
-    //         });
-    //     });
-    // };
 
     return Story;
 }

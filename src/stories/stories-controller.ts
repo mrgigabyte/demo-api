@@ -180,15 +180,15 @@ export default class UserController {
     public markRead(request: Hapi.Request, reply: Hapi.Base_Reply) {
         this.database.story.getStory(request.params.idOrSlug).then((story) => {
             if (story) {
-                story.markRead(this.database, request.auth.credentials.userId).then((res) => {
+                story.markRead(this.database.user, request.auth.credentials.userId).then((res) => {
                     return reply({
                         "read": true
-                    });
+                    }).code(201);
                 }).catch((err) => {
-                    reply(Boom.conflict(err));
+                   return reply(Boom.conflict(err));
                 });
             } else {
-                reply(Boom.notFound("Story with give id or slug doesn't exist"));
+                return reply(Boom.notFound("Story with give id or slug doesn't exist"));
             }
         });
     }
@@ -255,7 +255,7 @@ export default class UserController {
         this.database.story.createNewStory(request.payload, this.database.card).then((res) => {
             return reply({
                 "success": true
-            });
+            }).code(201);
         }).catch((err) => {
             console.log(err);
             return reply(Boom.badRequest('Problem with payload'));

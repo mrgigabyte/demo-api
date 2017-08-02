@@ -49,7 +49,7 @@ export default function (sequelize, DataTypes) {
             storyId: {
                 type: Sequelize.INTEGER(11),
                 unique: 'compositeOrder',
-                defaultValue: null                
+                allowNull: false               
             }
         }, {
             defaultScope: {
@@ -66,7 +66,7 @@ export default function (sequelize, DataTypes) {
                 }
             }
         });
-    Card.assosciate = function (models) {
+    Card.associate = function (models) {
         models.card.belongsToMany(models.user, {
             through: 'favouriteCards',
             scope: {
