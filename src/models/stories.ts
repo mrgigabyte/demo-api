@@ -166,7 +166,7 @@ export default function (sequelize, DataTypes) {
     let getValidSlug = function (oldSlug: string, newSlug: string, i: number): Promise<string> {
         return validateSlug(oldSlug).then((valid) => {
             if (!valid) {
-                newSlug = oldSlug + '-' + 1;
+                newSlug = oldSlug + '-' + i;
                 i++;
                 return getValidSlug(newSlug, oldSlug, i);
             } else {
