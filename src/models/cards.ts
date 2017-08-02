@@ -96,26 +96,6 @@ export default function (sequelize, DataTypes) {
         let filePath = 'cards/' + name;
         let file = bucket.file(filePath);
 
-<<<<<<< HEAD
-    // Code.prototype.markCodeInvalid = function () {
-    //     return this.update({
-    //         expiresAt: null
-    //     });
-    // };
-    Card.toggleFav = function (userId, cardId) {
-        Card.findAll({
-            where: {
-                cardId: cardId,
-                userId: userId
-            }
-        }).then((user) => {
-            if (user) {
-                console.log('fuck');
-            } else {
-                console.log('fuck twice');
-            }
-
-=======
         return new Promise((resolve, reject) => {
             let stream = file.createWriteStream({
                 metadata: {
@@ -131,8 +111,33 @@ export default function (sequelize, DataTypes) {
                 });
             });
             stream.end(fileData._data);
->>>>>>> vidur/dev
         });
+    };
+
+    Card.prototype.toggleFav = function (userId, userModel) {
+        userModel.findById(userId).then((user) => {
+            this.hasUser(user).then((result) => {
+                if (result) {
+                    this.removeUser(user);
+                } else {
+                    this.addUser(user);
+                }
+            });
+        });
+        // userModel.addCard(Card,)
+        // this.findAll({
+        //     where: {
+        //         id: cardId
+        //     }
+        // }).then((card)=>{
+        //     console.log(card);
+        //     if(card){
+        //         console.log('yup this is it');
+        //     }
+        //     else{
+        //         console.log('Nope this isnt');
+        //     }
+        // });
     };
 
     return Card;
