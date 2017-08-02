@@ -50,15 +50,15 @@ export default class UserController {
                 });
             }
             else {
-                return reply({
-                    "success": false
-                });
+                return reply(Boom.notFound('Card not found.'));
             }
         });
     }
 
     public getFavouriteCards(request: Hapi.Request, reply: Hapi.Base_Reply) {
-        this.database.user.findById(request.auth.credentials.userId)
+        this.database.user.findById(request.auth.credentials.userId).then((user)=>{
+
+        })
         return reply({
             "data": this.dummyCards
         });
