@@ -65,7 +65,9 @@ export default function (sequelize, DataTypes) {
                     // code.code = shortid.generate();
                 },
                 beforeUpdate: (story, options) => {
-                    story.slug = story.getSlug();
+                    return story.getSlug().then((slug) => {
+                        story.slug = slug;
+                    });
                     // code.code = shortid.generate();
                 }
             }
@@ -170,14 +172,14 @@ export default function (sequelize, DataTypes) {
                 i++;
                 return getValidSlug(newSlug, oldSlug, i);
             } else {
-                return slug;
+                return newSlug;
             }
         });
     };
 
     // returns a promise with the validSlug.
     Story.prototype.getSlug = function (): Promise<string> {
-        return getValidSlug(slug(this.title), "", 1).then((validSlug) => {
+        return getValidSlug(slug(this.title), "", 1).then((validSlug: string) => {
             return validSlug;
         });
     };
