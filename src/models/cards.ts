@@ -115,8 +115,9 @@ export default function (sequelize, DataTypes) {
         });
     };
 
-    Card.prototype.toggleFav = function (userId, userModel) {
-        userModel.findById(userId).then((user) => {
+    Card.prototype.toggleFav = function (userId, userModel): Promise<any> {
+      return userModel.findById(userId).then((user) => {
+
             this.hasUser(user).then((result) => {
                 if (result) {
                     this.removeUser(user);
@@ -125,20 +126,6 @@ export default function (sequelize, DataTypes) {
                 }
             });
         });
-        // userModel.addCard(Card,)
-        // this.findAll({
-        //     where: {
-        //         id: cardId
-        //     }
-        // }).then((card)=>{
-        //     console.log(card);
-        //     if(card){
-        //         console.log('yup this is it');
-        //     }
-        //     else{
-        //         console.log('Nope this isnt');
-        //     }
-        // });
     };
 
     return Card;

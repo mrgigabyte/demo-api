@@ -39,26 +39,26 @@ export default class UserController {
     }
 
     public favourite(request: Hapi.Request, reply: Hapi.Base_Reply) {
-        // console.log(r,request.params.cardId);
         let userId = request.auth.credentials.userId;
         let cardId = request.params.cardId;
-        this.database.card.findById(cardId).then((card)=>{
-            // console.log(card);
-            if(card){
-               console.log('ok');
-               card.toggleFav(userId,this.database.user);
+        this.database.card.findById(cardId).then((card) => {
+            if (card) {
+                card.toggleFav(userId, this.database.user).then(() => {
+                    return reply({
+                        "success": true
+                    });
+                });
             }
-            else{
-                console.log('Nope this isnt');
+            else {
+                return reply({
+                    "success": false
+                });
             }
-        });
-        // this.database.card.toggleFav(request.auth.credentials.userId,request.params.cardId, this.database.user);
-        return reply({
-            "success": true
         });
     }
 
     public getFavouriteCards(request: Hapi.Request, reply: Hapi.Base_Reply) {
+        this.database.user.findById(request.auth.credentials.userId)
         return reply({
             "data": this.dummyCards
         });
