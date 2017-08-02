@@ -179,7 +179,7 @@ export default function (sequelize, DataTypes) {
 
     // returns a promise with the validSlug.
     Story.prototype.getSlug = function (): Promise<string> {
-        return getValidSlug(slug(this.title), "", 1).then((validSlug: string) => {
+        return getValidSlug(slug(this.title), slug(this.title), 1).then((validSlug: string) => {
             return validSlug;
         });
     };
