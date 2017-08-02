@@ -75,7 +75,7 @@ export default class UserController {
         if (this.imageFilter(request.payload.file.hapi.filename)) {
             let fileData = request.payload.file;
             this.database.card.uploadCard(fileData, this.configs.googleCloud).then((res) => {
-                return reply(res);
+                return reply(res).code(201);
             }).catch((err) => {
                 return reply(Boom.expectationFailed(err));
             });

@@ -81,7 +81,7 @@ export default function (sequelize, DataTypes) {
             }
         });
 
-    User.assosciate = function (models) {
+    User.associate = function (models) {
         models.user.belongsToMany(models.story, {
             through: 'readStories',
             scope: {
