@@ -1,9 +1,9 @@
 import * as Hapi from "hapi";
 import * as Boom from "boom";
 import * as Jwt from "jsonwebtoken";
+import * as zen from 'zencoder';
 
 import { IServerConfigurations } from "../config";
-
 
 export default class UserController {
 
@@ -72,18 +72,6 @@ export default class UserController {
         } else {
             return reply(Boom.badRequest('File type not supported'));
         }
-    }
-
-    public addLink(request: Hapi.Request, reply: Hapi.Base_Reply) {
-        return reply({
-            "added": true
-        });
-    }
-
-    public deleteCard(request: Hapi.Request, reply: Hapi.Base_Reply) {
-        return reply({
-            "deleted": true
-        });
     }
 }
 

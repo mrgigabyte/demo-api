@@ -121,40 +121,4 @@ export default function (server: Hapi.Server, serverConfigs: IServerConfiguratio
             tags: ['api', 'admin'],
         }
     });
-
-    server.route({
-        method: 'DELETE',
-        path: '/card/{cardId}',
-        handler: cardController.deleteCard,
-        config: {
-            description: 'Delete the card.',
-            notes: `It will soft delete the card.  
-            
-            GOD and JESUS can access this endpoint`,
-            auth: 'jwt',
-            validate: {
-                params: {
-                    cardId: Joi.number()
-                        .required()
-                        .description('the card id'),
-                },
-            },
-            response: {
-                schema: Joi.object({
-                    "deleted": Joi.boolean().required()
-                })
-            },
-            plugins: {
-                'hapi-swagger': {
-                    responses: {
-                        '200': {
-                            'description': 'Successfully deleted the card.'
-                        }
-                    }
-                },
-                'hapiAuthorization': { roles: ['GOD', 'JESUS'] }
-            },
-            tags: ['api', 'admin'],
-        }
-    });
 }
