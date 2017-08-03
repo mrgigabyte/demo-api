@@ -78,7 +78,10 @@ export default function (sequelize, DataTypes) {
         });
     };
 
-    Story.checkId = function (idOrSlug: any): boolean {
+    /**
+     * Helper function that returns true if idOrSlug is number else false.
+     */
+    let checkId = function (idOrSlug: any): boolean {
         if (+idOrSlug) {
             return true;
         } else {
@@ -104,9 +107,13 @@ export default function (sequelize, DataTypes) {
         });
     };
 
+
+    /**
+     * Class function that calls getStoryById or getStoryBySlug after checking the type of idOrSlug param.
+     */
     Story.getStory = function (idOrSlug: any, scope: string): Promise<any> {
         let story: Promise<any>;
-        if (Story.checkId(idOrSlug)) {
+        if (checkId(idOrSlug)) {
             story = this.getStoryById(idOrSlug, scope);
         } else {
             story = this.getStoryBySlug(idOrSlug, scope);
@@ -114,7 +121,10 @@ export default function (sequelize, DataTypes) {
         return story;
     };
 
-    Story.addStoryIdAndOrder = function (cards: Array<any>, storyId: number) {
+    /**
+     * Helper function that adds storyId and order to cards object.
+     */
+    let addStoryIdAndOrder = function (cards: Array<any>, storyId: number) {
         cards.forEach((card, order: number) => {
             card.storyId = storyId;
             card.order = order;
@@ -129,7 +139,7 @@ export default function (sequelize, DataTypes) {
                 "slug": story.title
             }, { transaction: t }).then((newStory) => {
                 if (story.cards) {
-                    this.addStoryIdAndOrder(story.cards, newStory.id);
+                    addStoryIdAndOrder(story.cards, newStory.id);
                     return cardModel.bulkCreate(story.cards, { transaction: t });
                 } else {
                     return Promise.resolve();
@@ -179,8 +189,10 @@ export default function (sequelize, DataTypes) {
         });
     };
 
-    // Helper function that checks if a slug already exists in the database.
-    // Returns true if slug not present in the database.
+    /**
+     * Helper function that checks if a slug already exists in the database.
+     * Returns true if slug not present in the database.
+     */
     let validateSlug = function (slug: string): Promise<Boolean> {
         return Story.unscoped().findOne({
             where: {
@@ -195,8 +207,11 @@ export default function (sequelize, DataTypes) {
         });
     };
 
-    // Helper function that checks whether a slug is valid or not.
-    // It recursively checks and generates a valid slug and returns a promise.
+    /**
+     * Helper function that checks whether a slug is valid or not.
+     * It recursively checks and generates a valid slug and returns a promise.
+     */
+
     let getValidSlug = function (oldSlug: string, newSlug: string, i: number): Promise<string> {
         return validateSlug(newSlug).then((valid) => {
             if (!valid) {
@@ -209,7 +224,9 @@ export default function (sequelize, DataTypes) {
         });
     };
 
-    // returns a promise with the validSlug.
+    /**
+     * returns a promise with the validSlug.
+     */
     Story.prototype.getSlug = function (): Promise<string> {
         return getValidSlug(slug(this.title), slug(this.title), 1).then((validSlug: string) => {
             return validSlug;
@@ -236,11 +253,15 @@ export default function (sequelize, DataTypes) {
         });
     };
 
+    
     Story.prototype.pushLive = function (): Promise<any> {
         this.publishedAt = moment().toDate();
         return this.save();
     };
 
+    /**
+     * Helper function that update card details.
+     */
     let updateCardAttributes = function (card: any, cardModel: any, storyId: number): Promise<any> {
         return sequelize.transaction((t) => {
             return cardModel.findOne({
@@ -258,7 +279,10 @@ export default function (sequelize, DataTypes) {
         });
     };
 
-    Story.prototype.deleteOldCards = function (newCards?: Array<any>) {
+    /**
+     * This function deletes all those cards which are no longer assosciated with the story.
+     */
+    Story.prototype.deleteOldCards = function (newCards?: Array<any>): Promise<any> {
         return sequelize.transaction((t) => {
             let promises: Array<Promise<any>> = [];
             return this.getCards().then((oldCards: Array<any>) => {
@@ -282,6 +306,12 @@ export default function (sequelize, DataTypes) {
         });
     };
 
+    /**
+     * This function updates story details. This functin does the following:
+     * 1) Creates new Cards if card is not sent in the payload.
+     * 2) Update details of existing cards with the help of card id.
+     * 3) Remove those cards which are no longer associated with the story.
+     */
     Story.prototype.updateStory = function (story: any, cardModel: any): Promise<any> {
         let promises: Array<any> = [];
         return sequelize.transaction((t) => {
@@ -291,7 +321,7 @@ export default function (sequelize, DataTypes) {
                 this.slug = slug;
                 if (story.cards) {
                     return this.deleteOldCards(story.cards).then(() => {
-                        Story.addStoryIdAndOrder(story.cards, this.id);
+                        addStoryIdAndOrder(story.cards, this.id);
                         story.cards.forEach(card => {
                             if (!card.id) {
                                 promises.push(cardModel.create(card, { transaction: t }));
