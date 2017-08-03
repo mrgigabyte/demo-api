@@ -34,11 +34,6 @@ export default function (sequelize, DataTypes) {
                 type: Sequelize.ENUM('image', 'video'),
                 allowNull: false,
             },
-            deleted: {
-                type: Sequelize.BOOLEAN,
-                allowNull: false,
-                defaultValue: false
-            },
             externalLink: {
                 type: Sequelize.STRING(100),
                 allowNull: true,
@@ -49,13 +44,10 @@ export default function (sequelize, DataTypes) {
             storyId: {
                 type: Sequelize.INTEGER(11),
                 unique: 'compositeOrder',
-                allowNull: false               
+                allowNull: false                
             }
         }, {
             defaultScope: {
-                where: {
-                    deleted: false
-                }
             },
             hooks: {
                 beforeCreate: (code, options) => {

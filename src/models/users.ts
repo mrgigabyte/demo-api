@@ -83,10 +83,7 @@ export default function (sequelize, DataTypes) {
 
     User.associate = function (models) {
         models.user.belongsToMany(models.story, {
-            through: 'readStories',
-            scope: {
-                deleted: false
-            }
+            through: 'readStories'
         });
         models.user.belongsToMany(models.card, { through: 'favouriteCards' });
     };

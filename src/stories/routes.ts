@@ -4,7 +4,7 @@ import { IServerConfigurations } from "../config";
 import * as Boom from "boom";
 
 import StoryController from "./stories-controller";
-import { storySchema, baseStorySchema } from "./schemas";
+import { storySchema, baseStorySchema, updateStorySchema } from "./schemas";
 import { baseCardSchema } from "../cards/schemas";
 
 export default function (server: Hapi.Server, serverConfigs: IServerConfigurations, database: any) {
@@ -217,7 +217,7 @@ export default function (server: Hapi.Server, serverConfigs: IServerConfiguratio
                 params: {
                     idOrSlug: Joi.any().required().description("Id/Slug of the story"),
                 },
-                payload: baseStorySchema
+                payload: updateStorySchema
             },
             response: {
                 schema: Joi.object({
