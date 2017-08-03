@@ -60,18 +60,29 @@ export default class UserController {
         return true;
     }
 
-    public uploadCard(request: Hapi.Request, reply: Hapi.Base_Reply) {
-        if (this.imageFilter(request.payload.file.hapi.filename)) {
-            let fileData = request.payload.file;
-            this.database.card.uploadCard(fileData, this.configs.googleCloud).then((res) => {
-                return reply(res).code(201);
-            }).catch((err) => {
-                return reply(Boom.expectationFailed(err));
-            });
+    public videoFilter(fileName: string) {
+        if (!fileName.match(/\.(mp4)$/)) {
+            return false;
+        }
+        return true;
+    }
 
+    public uploadCard(request: Hapi.Request, reply: Hapi.Base_Reply) {
+        let mediaType: string;
+        if (this.imageFilter(request.payload.file.hapi.filename)) {
+            mediaType = 'image';
+        } else if (this.videoFilter(request.payload.file.hapi.filename)) {
+            mediaType = 'video';
         } else {
+            console.log('hey');
             return reply(Boom.badRequest('File type not supported'));
         }
+        let fileData = request.payload.file;
+        this.database.card.uploadCard(fileData, this.configs.googleCloud, mediaType).then((res) => {
+            return reply(res).code(201);
+        }).catch((err) => {
+            return reply(Boom.expectationFailed(err));
+        });
     }
 }
 

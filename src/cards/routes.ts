@@ -73,6 +73,7 @@ export default function (server: Hapi.Server, serverConfigs: IServerConfiguratio
             tags: ['api', 'card'],
         }
     });
+    
     server.route({
         method: 'POST',
         path: '/card/upload',
@@ -101,7 +102,8 @@ export default function (server: Hapi.Server, serverConfigs: IServerConfiguratio
             },
             response: {
                 schema: Joi.object({
-                    "link": Joi.string().uri().required()
+                    "link": Joi.string().uri().required(),
+                    "mediaType": Joi.string().valid(['image', 'video']).required(),
                 })
             },
             plugins: {

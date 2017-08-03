@@ -193,7 +193,7 @@ export default function (sequelize, DataTypes) {
      * Helper function that checks if a slug already exists in the database.
      * Returns true if slug not present in the database.
      */
-    let validateSlug = function (slug: string): Promise<Boolean> {
+    let validateSlug = function (slug: string): Promise<boolean> {
         return Story.unscoped().findOne({
             where: {
                 slug: slug
