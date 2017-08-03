@@ -212,6 +212,7 @@ export default function (sequelize, DataTypes) {
     User.prototype.updateUserInfo = function (info: any): Promise<any> {
         if (info.password) {
             info.password = User.hashPassword(info.password);
+            console.log(info);
         }
         return this.update(info);
     };

@@ -142,7 +142,7 @@ export default class UserController {
             }
         }).then((user: any) => {
             if (user) {
-                user.updateUser(request.payload).then(() => {
+                user.updateUserInfo(request.payload).then(() => {
                     return reply({
                         "changed": true
                     });
@@ -160,7 +160,7 @@ export default class UserController {
             }
         }).then((user: any) => {
             if (user) {
-                user.updateUser(request.payload).then(() => {
+                user.updateUserInfo(request.payload).then(() => {
                     return reply({
                         "changed": true
                     });
@@ -178,15 +178,21 @@ export default class UserController {
             }
         }).then((user: any) => {
             if (user) {
-                user.updateUser(request.payload).then((res) => {
+                console.log(request.payload);
+                user.updateUserInfo(request.payload).then((res) => {
                     return reply({
                         "updated": true
                     });
+                }).catch((err) => {
+                    return reply(Boom.badRequest("Can't update user details"));
                 });
             } else {
                 return reply(Boom.notFound('User not found'));
             }
-        }).catch((err) => reply(Boom.expectationFailed('Expected this to work')));
+        }).catch((err) => {
+            console.log(err);
+            reply(Boom.expectationFailed('Expected this to work'));
+        });
     }
 
     public getAllUsers(request: Hapi.Request, reply: Hapi.Base_Reply) {
