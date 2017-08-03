@@ -22,6 +22,7 @@
         "watch": "nodemon --watch build/src build/src/index.js"
     },
     "dependencies": {
+        "@google-cloud/storage": "1.2.1",
         "@types/bcryptjs": "2.4.0",
         "@types/boom": "4.3.5",
         "@types/hapi": "16.1.7",
@@ -71,6 +72,7 @@
         "sequelize-cli": "2.7.0",
         "shortid": "2.2.8",
         "sigmund": "1.0.1",
+        "slug": "0.9.1",
         "tunnel-agent": "0.6.0",
         "vise": "2.0.2",
         "vision": "4.1.1"

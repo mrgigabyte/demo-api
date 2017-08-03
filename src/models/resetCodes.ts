@@ -54,7 +54,7 @@ export default function (sequelize: Sequelize.Sequelize, DataTypes: Sequelize.Da
             }
         });
 
-    Code.assosciate = function (models) {
+    Code.associate = function (models) {
         models.resetCode.belongsTo(models.user);
     };
 

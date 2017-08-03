@@ -135,14 +135,33 @@ export default class UserController {
 
 
     public getStoryByIdOrSlug(request: Hapi.Request, reply: Hapi.Base_Reply) {
-        return reply({
-            "story": this.dummyStory1
-        });
+        this.database.story.getStory(request.params.idOrSlug, 'defaultScope')
+            .then((story) => {
+                if (story) {
+                    return reply({
+                        "story": story.get({
+                            plain: true
+                        })
+                    });
+                } else {
+                    reply(Boom.notFound("Story with give id or slug doesn't exist"));
+                }
+            });
     }
 
     public markRead(request: Hapi.Request, reply: Hapi.Base_Reply) {
-        return reply({
-            "read": true
+        this.database.story.getStory(request.params.idOrSlug, 'notPublished').then((story) => {
+            if (story) {
+                story.markRead(this.database.user, request.auth.credentials.userId).then((res) => {
+                    return reply({
+                        "read": true
+                    }).code(201);
+                }).catch((err) => {
+                    return reply(Boom.conflict(err));
+                });
+            } else {
+                return reply(Boom.notFound("Story with give id or slug doesn't exist"));
+            }
         });
     }
 
@@ -155,39 +174,80 @@ export default class UserController {
     }
 
     public getAllStories(request: Hapi.Request, reply: Hapi.Base_Reply) {
-        let tempStory1 = this.dummyStory1;
-        let tempStory2 = this.dummyStory2;
-        return reply({
-            "data": [tempStory1, tempStory2, this.dummyStory1, this.dummyStory3, this.dummyStory2]
+        this.database.story.getAllStories(this.database.user).then((stories) => {
+            if (stories.length) {
+                return reply({
+                    "data": stories
+                });
+            }
+        }).catch((err) => {
+            return reply(Boom.notFound(err));
         });
     }
 
     public newStory(request: Hapi.Request, reply: Hapi.Base_Reply) {
-        return reply({
-            "success": true
+        this.database.story.createNewStory(request.payload, this.database.card).then((res) => {
+            return reply({
+                "success": true
+            }).code(201);
+        }).catch((err) => {
+            console.log(err);
+            return reply(Boom.badRequest('Problem with payload'));
         });
+
     }
 
     public updateStory(request: Hapi.Request, reply: Hapi.Base_Reply) {
-        return reply({
-            "updated": true
-        });
+        this.database.story.getStory(request.params.idOrSlug, 'defaultScope')
+            .then((story) => {
+                if (story) {
+                    story.updateStory(request.payload, this.database.card).then((res) => {
+                        story.save().then((res) => {
+                            return reply({
+                                "updated": true
+                            });
+                        });
+                    }).catch((err) => {
+                        console.log(err);
+                        return reply(Boom.badRequest('Error in payload'));
+                    });
+                } else {
+                    return reply(Boom.notFound("Story with give id or slug doesn't exist"));
+                }
+            });
     }
 
     public pushLive(request: Hapi.Request, reply: Hapi.Base_Reply) {
-        return reply({
-            "pushed": true
-        });
-    }
-    public preview(request: Hapi.Request, reply: Hapi.Base_Reply) {
-        return reply({
-            "success": true
+        this.database.story.getStory(request.params.idOrSlug, 'defaultScope').then((story: any) => {
+            if (story) {
+                story.pushLive().then((story: any) => {
+                    return reply({
+                        "pushed": true
+                    });
+                });
+            } else {
+                return reply(Boom.notFound("Story with give id or slug doesn't exist"));
+            }
         });
     }
 
     public deleteStory(request: Hapi.Request, reply: Hapi.Base_Reply) {
+        this.database.story.getStory(request.params.idOrSlug, 'defaultScope').then((story: any) => {
+            if (story) {
+                story.destroy().then(() => {
+                    return reply({
+                        "deleted": true
+                    });
+                });
+            } else {
+                return reply(Boom.notFound("Story with give id or slug doesn't exist"));
+            }
+        });
+    }
+
+    public preview(request: Hapi.Request, reply: Hapi.Base_Reply) {
         return reply({
-            "deleted": true
+            "success": true
         });
     }
 }

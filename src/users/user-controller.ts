@@ -2,7 +2,6 @@ import * as Hapi from "hapi";
 import * as Boom from "boom";
 import { IServerConfigurations } from "../config";
 import { IDb } from "../config";
-import { UserModel, UserInstance } from '../models/users';
 export default class UserController {
 
     private configs: IServerConfigurations;

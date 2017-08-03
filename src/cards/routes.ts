@@ -4,7 +4,7 @@ import { IServerConfigurations } from "../config";
 import * as Boom from "boom";
 
 import CardController from "./cards-controller";
-import { cardSchema } from "./schemas";
+import { cardSchema, baseCardSchema } from "./schemas";
 
 export default function (server: Hapi.Server, serverConfigs: IServerConfigurations, database: any) {
 
@@ -73,15 +73,15 @@ export default function (server: Hapi.Server, serverConfigs: IServerConfiguratio
             tags: ['api', 'card'],
         }
     });
-
     server.route({
         method: 'POST',
         path: '/card/upload',
         handler: cardController.uploadCard,
         config: {
-            description: 'Upload a new card from the file system.',
+            description: 'Upload a new card from the file system to google cloud storage.',
             notes: `You can upload an image(.png, .jpg, .gif) or a video(.mp4).  
-            After successfull upload it will return the uri of the uploaded card.
+            After successfull upload it will return the card details.
+            File size is limited to a max of 100 MBs.
 
             GOD and JESUS can access this endpoint
             `,
@@ -89,7 +89,7 @@ export default function (server: Hapi.Server, serverConfigs: IServerConfiguratio
             payload: {
                 output: 'stream',
                 parse: true,
-                maxBytes: 52428800,
+                maxBytes: 102400000,
                 allow: 'multipart/form-data',
             },
             validate: {
@@ -113,45 +113,6 @@ export default function (server: Hapi.Server, serverConfigs: IServerConfiguratio
                         },
                         '403': {
                             'description': 'file type not supported'
-                        }
-                    }
-                },
-                'hapiAuthorization': { roles: ['GOD', 'JESUS'] }
-            },
-            tags: ['api', 'admin'],
-        }
-    });
-
-    server.route({
-        method: 'POST',
-        path: '/card/{cardId}/addLink',
-        handler: cardController.addLink,
-        config: {
-            description: 'Add link to a card which can be of type basic or video.',
-            notes: `
-            GOD and JESUS can access this endpoint`,
-            auth: 'jwt',
-            validate: {
-                params: {
-                    cardId: Joi.number()
-                        .required()
-                        .description('the card id'),
-                },
-                payload: {
-                    link: Joi.string().uri().required()
-                        .description('Link to be assosciated witht a card.')
-                }
-            },
-            response: {
-                schema: Joi.object({
-                    "added": Joi.boolean().required()
-                })
-            },
-            plugins: {
-                'hapi-swagger': {
-                    responses: {
-                        '200': {
-                            'description': 'Successfully added the link to the card.'
                         }
                     }
                 },
