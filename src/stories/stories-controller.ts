@@ -136,7 +136,7 @@ export default class UserController {
 
     public getStoryByIdOrSlug(request: Hapi.Request, reply: Hapi.Base_Reply) {
         this.database.story.getStory(request.params.idOrSlug, 'defaultScope')
-            .then((story) => {
+            .then((story: any) => {
                 if (story) {
                     return reply({
                         "story": story.get({
@@ -150,9 +150,9 @@ export default class UserController {
     }
 
     public markRead(request: Hapi.Request, reply: Hapi.Base_Reply) {
-        this.database.story.getStory(request.params.idOrSlug, 'notPublished').then((story) => {
+        this.database.story.getStory(request.params.idOrSlug, 'notPublished').then((story: any) => {
             if (story) {
-                story.markRead(this.database.user, request.auth.credentials.userId).then((res) => {
+                story.markRead(this.database.user, request.auth.credentials.userId).then((res: any) => {
                     return reply({
                         "read": true
                     }).code(201);
@@ -174,7 +174,7 @@ export default class UserController {
     }
 
     public getAllStories(request: Hapi.Request, reply: Hapi.Base_Reply) {
-        this.database.story.getAllStories(this.database.user).then((stories) => {
+        this.database.story.getAllStories(this.database.user).then((stories: Array<any>) => {
             if (stories.length) {
                 return reply({
                     "data": stories
@@ -186,7 +186,7 @@ export default class UserController {
     }
 
     public newStory(request: Hapi.Request, reply: Hapi.Base_Reply) {
-        this.database.story.createNewStory(request.payload, this.database.card).then((res) => {
+        this.database.story.createNewStory(request.payload, this.database.card).then((res: any) => {
             return reply({
                 "success": true
             }).code(201);
@@ -199,10 +199,10 @@ export default class UserController {
 
     public updateStory(request: Hapi.Request, reply: Hapi.Base_Reply) {
         this.database.story.getStory(request.params.idOrSlug, 'defaultScope')
-            .then((story) => {
+            .then((story: any) => {
                 if (story) {
-                    story.updateStory(request.payload, this.database.card).then((res) => {
-                        story.save().then((res) => {
+                    story.updateStory(request.payload, this.database.card).then((res: any) => {
+                        story.save().then((res: any) => {
                             return reply({
                                 "updated": true
                             });
