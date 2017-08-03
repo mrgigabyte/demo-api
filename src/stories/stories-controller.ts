@@ -1,6 +1,7 @@
 import * as Hapi from "hapi";
 import * as Boom from "boom";
-import { IDb } from "../config";
+// import * as Jwt from "jsonwebtoken";
+// import * as GoogleAuth from "google-auth-library";
 
 import { IServerConfigurations } from "../config";
 
@@ -8,12 +9,12 @@ import { IServerConfigurations } from "../config";
 export default class UserController {
 
     private configs: IServerConfigurations;
-    private database: IDb;
+    private database: any;
     private dummyStory1: any;
     private dummyStory2: any;
     private dummyStory3: any;
 
-    constructor(configs: IServerConfigurations, database: IDb) {
+    constructor(configs: IServerConfigurations, database: any) {
         this.database = database;
         this.configs = configs;
         this.dummyStory1 = {
@@ -28,45 +29,40 @@ export default class UserController {
                 {
                     "id": 14,
                     "order": 1,
-                    "cardType": "image",
-                    "cardData": "https://wwww.loremipsum.com",
-                    "link": "https://wwww.loremipsum.com",
-                    "linkType": "video",
-                    "favourite": "false"
+                    "mediaType": "image",
+                    "mediaUri": "https://wwww.loremipsum.com",
+                    "externalLink": "https://wwww.loremipsum.com",
                 },
                 {
                     "id": 27,
                     "order": 2,
-                    "cardType": "image",
-                    "cardData": "https://wwww.loremipsum.com",
-                    "link": "https://wwww.loremipsum.com",
-                    "linkType": "basic",
-                    "favourite": "false"
+                    "mediaType": "image",
+                    "mediaUri": "https://wwww.loremipsum.com",
+                    "externalLink": "https://wwww.loremipsum.com",
+                    
                 },
                 {
                     "id": 31,
                     "order": 3,
-                    "cardType": "video",
-                    "cardData": "https://wwww.loremipsum.com",
-                    "link": "https://wwww.loremipsum.com",
-                    "linkType": "video",
-                    "favourite": "false"
+                    "mediaType": "video",
+                    "mediaUri": "https://wwww.loremipsum.com",
+                    "externalLink": "https://wwww.loremipsum.com",
+                    
                 },
                 {
                     "id": 42,
                     "order": 4,
-                    "cardType": "image",
-                    "cardData": "https://wwww.loremipsum.com",
-                    "favourite": "false"
+                    "mediaType": "image",
+                    "mediaUri": "https://wwww.loremipsum.com",
+                    
                 },
                 {
                     "id": 51,
                     "order": 5,
-                    "cardType": "image",
-                    "cardData": "https://wwww.loremipsum.com",
-                    "link": "https://wwww.loremipsum.com",
-                    "linkType": "video",
-                    "favourite": "false"
+                    "mediaType": "image",
+                    "mediaUri": "https://wwww.loremipsum.com",
+                    "externalLink": "https://wwww.loremipsum.com",
+                    
                 }
             ]
         };
@@ -83,27 +79,24 @@ export default class UserController {
                 {
                     "id": 1,
                     "order": 1,
-                    "cardType": "image",
-                    "cardData": "https://wwww.loremipsum.com",
-                    "link": "https://wwww.loremipsum.com",
-                    "linkType": "video",
-                    "favourite": "true"
+                    "mediaType": "image",
+                    "mediaUri": "https://wwww.loremipsum.com",
+                    "externalLink": "https://wwww.loremipsum.com",
                 },
                 {
                     "id": 2,
                     "order": 2,
-                    "cardType": "image",
-                    "cardData": "https://wwww.loremipsum.com",
-                    "link": "https://wwww.loremipsum.com",
-                    "linkType": "basic",
-                    "favourite": "false"
+                    "mediaType": "image",
+                    "mediaUri": "https://wwww.loremipsum.com",
+                    "externalLink": "https://wwww.loremipsum.com",
+                    
                 },
                 {
                     "id": 3,
                     "order": 3,
-                    "cardType": "video",
-                    "cardData": "https://wwww.loremipsum.com",
-                    "favourite": "false"
+                    "mediaType": "video",
+                    "mediaUri": "https://wwww.loremipsum.com",
+                    
                 }
             ]
         };
@@ -119,43 +112,22 @@ export default class UserController {
                 {
                     "id": 12,
                     "order": 1,
-                    "cardType": "image",
-                    "cardData": "https://wwww.loremipsum.com",
+                    "mediaType": "image",
+                    "mediaUri": "https://wwww.loremipsum.com",
                     "link": "https://wwww.loremipsum.com",
-                    "linkType": "video",
-                    "favourite": "true"
                 },
                 {
                     "id": 22,
                     "order": 2,
-                    "cardType": "image",
-                    "cardData": "https://wwww.loremipsum.com",
-                    "favourite": "false"
+                    "mediaType": "image",
+                    "mediaUri": "https://wwww.loremipsum.com",
+                    
                 }
             ]
         };
     }
 
     public getLatest(request: Hapi.Request, reply: Hapi.Base_Reply) {
-        // Task.findAll({ include: [ User ] }).then(tasks => {
-        //   console.log(JSON.stringify(tasks))
-        // this.database.story.findAll({
-        //     order: [
-        //         ['publishedAt', 'ASC'],
-        //         [{ model: this.database.card }, 'order', 'ASC']
-        //     ],
-        //     where : {
-        //         publishedAt: {
-        //             $ne: null
-        //         }
-        //     },
-        //     include : [{
-        //         model: this.database.card,
-        //         as: 'cards'
-        //     }, {
-        //         model: 'readStories'
-        //     }]
-        // })
         return reply({
             "data": [this.dummyStory1, this.dummyStory2]
         });
