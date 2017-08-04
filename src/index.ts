@@ -9,14 +9,14 @@ const serverConfigs = Configs.getServerConfigs();
 database.sequelize.sync().then(() => {
     //Starting Application Server
     Server.init(serverConfigs, database).then((server: Hapi.Server) => {
-        if (!module.parent) {
-            server.start(() => {
-                console.log('Server running at:', server.info.uri);
-                // console.log('Documentaion available at:', server.info.uri + '/docs');
-            });
-            console.log("Running server from parent :)");
-        } else {
-            console.log("Not running the server because it is not run through parent module.");
-        }
+        server.start(() => {
+            if (process.env.NODE_ENV === 'prod') {
+                console.log('Server running at: http://staging.abstrct.co/api/');
+                console.log('Docs available at http://staging.abstrct.co/api/docs');
+            } else if (process.env.NODE_ENV === 'dev' || !process.env.NODE_ENV) {
+                console.log('Server running at: http://loacalhost/api/');
+                console.log('Docs available at http://localhost/api/docs');
+            }
+        });
     });
 });
