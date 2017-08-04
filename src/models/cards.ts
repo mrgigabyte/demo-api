@@ -20,7 +20,7 @@ export default function (sequelize, DataTypes) {
                 validate: {
                     notEmpty: true
                 },
-                unique: 'compositeOrder'                
+                unique: 'compositeOrder'
             },
             mediaUri: {
                 type: Sequelize.STRING(100),
@@ -34,11 +34,6 @@ export default function (sequelize, DataTypes) {
                 type: Sequelize.ENUM('image', 'video'),
                 allowNull: false,
             },
-            deleted: {
-                type: Sequelize.BOOLEAN,
-                allowNull: false,
-                defaultValue: false
-            },
             externalLink: {
                 type: Sequelize.STRING(100),
                 allowNull: true,
@@ -49,20 +44,13 @@ export default function (sequelize, DataTypes) {
             storyId: {
                 type: Sequelize.INTEGER(11),
                 unique: 'compositeOrder',
-                allowNull: false               
+                allowNull: false
             }
         }, {
-            defaultScope: {
-                where: {
-                    deleted: false
-                }
-            },
             hooks: {
                 beforeCreate: (code, options) => {
-                    // code.code = shortid.generate();
                 },
                 beforeUpdate: (code, options) => {
-                    // code.code = shortid.generate();
                 }
             }
         });
@@ -75,9 +63,11 @@ export default function (sequelize, DataTypes) {
         });
     };
 
-    // I generate the UID from two parts here 
-    // to ensure the random number provide enough bits.
-    Card.generateUID = function () {
+    /**
+     * Helper function for generating UUID.
+     * I generate the UID from two parts here to ensure the random number provide enough bits.
+     */
+    let generateUID = function () {
         let firstPart = ((Math.random() * 46656) | 0).toString(36);
         let secondPart = ((Math.random() * 46656) | 0).toString(36);
         firstPart = ("000" + firstPart).slice(-3);
@@ -85,7 +75,7 @@ export default function (sequelize, DataTypes) {
         return firstPart + secondPart;
     };
 
-    Card.uploadCard = function (fileData, config) {
+    Card.uploadCard = function (fileData, config, mediaType) {
         let gcs = GoogleCloudStorage({
             projectId: config.projectId,
             keyFilename: __dirname + '/../' + config.keyFilename
@@ -93,7 +83,7 @@ export default function (sequelize, DataTypes) {
 
         let bucket = gcs.bucket(config.cardsBucket);
 
-        let name = this.generateUID() + '.' + fileData.hapi.filename;
+        let name = generateUID() + '.' + fileData.hapi.filename;
         let filePath = 'cards/' + name;
         let file = bucket.file(filePath);
 
@@ -108,7 +98,8 @@ export default function (sequelize, DataTypes) {
             });
             stream.on('finish', () => {
                 resolve({
-                    "link": "https://storage.googleapis.com/" + config.cardsBucket + '/' + filePath
+                    "link": "https://storage.googleapis.com/" + config.cardsBucket + '/' + filePath,
+                    "mediaType": mediaType
                 });
             });
             stream.end(fileData._data);

@@ -24,6 +24,7 @@ export default function (sequelize, DataTypes) {
             slug: {
                 type: Sequelize.STRING(100),
                 allowNull: false,
+                unique: true,
                 validate: {
                     notEmpty: true
                 }
@@ -35,11 +36,6 @@ export default function (sequelize, DataTypes) {
                     notEmpty: true
                 }
             },
-            deleted: {
-                type: Sequelize.BOOLEAN,
-                allowNull: false,
-                defaultValue: false
-            },
             publishedAt: {
                 type: Sequelize.DATE,
                 allowNull: true,
@@ -47,17 +43,12 @@ export default function (sequelize, DataTypes) {
                     notEmpty: true
                 }
             },
-            views: Sequelize.VIRTUAL
+            views: Sequelize.VIRTUAL,
+            cards: Sequelize.VIRTUAL
         }, {
-            defaultScope: {
-                where: {
-                    deleted: false
-                }
-            },
             scopes: {
-                notPublished: {
+                published: {
                     where: {
-                        deleted: false,
                         publishedAt: {
                             $ne: null
                         }
@@ -75,10 +66,7 @@ export default function (sequelize, DataTypes) {
 
     Story.associate = function (models): void {
         models.story.hasMany(models.card, {
-            as: 'Cards',
-            scope: {
-                deleted: false
-            }
+            as: 'Cards'
         });
         models.story.belongsToMany(models.user, {
             through: 'readStories',
@@ -88,7 +76,10 @@ export default function (sequelize, DataTypes) {
         });
     };
 
-    Story.checkId = function (idOrSlug: any): boolean {
+    /**
+     * Helper function that returns true if idOrSlug is number else false.
+     */
+    let checkId = function (idOrSlug: any): boolean {
         if (+idOrSlug) {
             return true;
         } else {
@@ -96,8 +87,88 @@ export default function (sequelize, DataTypes) {
         }
     };
 
-    Story.getStoryById = function (id: number, scope: string): Promise<any> {
-        return this.scope(scope).findOne({
+    /**
+     * First, it will get the ids of stories which are read by the user.
+     * Then, it will find all the stories which are not read by the user and are published.
+     * and, will return at max of 2 stories.
+     */
+    Story.getLatestStories = function (userInstance: any): Promise<any> {
+        return userInstance.getReadStoryIds().then((ids: Array<number>) => {
+            return this.scope('published').findAll({
+                order: [["publishedAt", 'DESC']],
+                where: {
+                    id: {
+                        $notIn: ids
+                    },
+                    publishedAt: {
+                        $gt: userInstance.createdAt
+                    }
+                },
+                limit: 2,
+                attributes: ['id', 'title', 'slug', 'by', 'createdAt', 'publishedAt']
+            });
+        });
+    };
+
+    /**
+     * It will return all those stories which are read by the user. 
+     * And, the stories are not latest stories.
+     */
+    Story.getArchivedStories = function (userInstance: any): Promise<Array<any>> {
+        return userInstance.getReadStoryIds().then((ids: Array<number>) => {
+            return this.scope('published').findAll({
+                order: [["publishedAt", 'DESC']],
+                where: {
+                    id: {
+                        $in: ids
+                    },
+                    publishedAt: {
+                        $gt: userInstance.createdAt
+                    }
+                },
+                attributes: ['id', 'title', 'slug', 'by', 'createdAt', 'publishedAt']
+            }).then((readStories: Array<any>) => {
+                return this.scope('published').findAll({
+                    order: [["publishedAt", 'DESC']],
+                    where: {
+                        id: {
+                            $notIn: ids
+                        },
+                        publishedAt: {
+                            $gt: userInstance.createdAt
+                        }
+                    },
+                    attributes: ['id', 'title', 'slug', 'by', 'createdAt', 'publishedAt']
+                }).then((notReadStories: Array<any>) => {
+                    let archivedStories: Array<any>;
+                    if (notReadStories.length > 2) {
+                        notReadStories.splice(0, 2);
+                        archivedStories = notReadStories.concat(readStories);
+                    } else if (notReadStories.length <= 2) {
+                        archivedStories = readStories;
+                    }
+                    return Promise.resolve(archivedStories);
+                });
+            });
+        });
+    };
+
+
+    /**
+     * Static funtion that returns plain stories(JSON).
+     */
+    Story.getPlainStories = function (stories: Array<any>): Promise<Array<any>> {
+        let Stories: Array<any> = [];
+        stories.forEach((story: any) => {
+            Stories.push(story.get({
+                plain: true
+            }));
+        });
+        return Promise.resolve(Stories);
+    };
+
+    let getStoryById = function (id: number, scope: string): Promise<any> {
+        return Story.scope(scope).findOne({
             where: {
                 id: id
             },
@@ -105,7 +176,7 @@ export default function (sequelize, DataTypes) {
         });
     };
 
-    Story.getStoryBySlug = function (slug: string, scope: string): Promise<any> {
+    let getStoryBySlug = function (slug: string, scope: string): Promise<any> {
         return Story.scope(scope).find({
             where: {
                 slug: slug
@@ -114,19 +185,27 @@ export default function (sequelize, DataTypes) {
         });
     };
 
+
+    /**
+     * Static function that calls getStoryById or getStoryBySlug after checking the type of idOrSlug param.
+     */
     Story.getStory = function (idOrSlug: any, scope: string): Promise<any> {
         let story: Promise<any>;
-        if (Story.checkId(idOrSlug)) {
-            story = this.getStoryById(idOrSlug, scope);
+        if (checkId(idOrSlug)) {
+            story = getStoryById(idOrSlug, scope);
         } else {
-            story = this.getStoryBySlug(idOrSlug, scope);
+            story = getStoryBySlug(idOrSlug, scope);
         }
         return story;
     };
 
-    Story.addStoryId = function (cards: Array<any>, storyId: number) {
-        cards.forEach(card => {
+    /**
+     * Helper function that adds storyId and order to cards object.
+     */
+    let addStoryIdAndOrder = function (cards: Array<any>, storyId: number) {
+        cards.forEach((card, order: number) => {
             card.storyId = storyId;
+            card.order = order;
         });
     };
 
@@ -138,7 +217,7 @@ export default function (sequelize, DataTypes) {
                 "slug": story.title
             }, { transaction: t }).then((newStory) => {
                 if (story.cards) {
-                    this.addStoryId(story.cards, newStory.id);
+                    addStoryIdAndOrder(story.cards, newStory.id);
                     return cardModel.bulkCreate(story.cards, { transaction: t });
                 } else {
                     return Promise.resolve();
@@ -147,9 +226,52 @@ export default function (sequelize, DataTypes) {
         });
     };
 
-    // Helper function that checks if a slug already exists in the database.
-    // Returns true if slug not present in the database.
-    let validateSlug = function (slug: string): Promise<Boolean> {
+    Story.getAllStories = function (userModel: any): Promise<Array<any>> {
+        return this.findAll({
+            attributes: ['id', 'title', 'slug', 'by', 'createdAt', 'publishedAt'],
+            include: [{
+                model: userModel,
+                attributes: ['id'],
+                required: false
+            }]
+        }).then((stories: Array<any>) => {
+            if (stories.length) {
+                let cardPromises: Array<Promise<any>> = [];
+                stories.forEach((story: any) => {
+                    if (story.publishedAt) {
+                        story.views = story.users.length;
+                        cardPromises.push(story.getPlainCards());
+                    }
+                });
+                return Promise.all(cardPromises).then(() => {
+                    return Story.getPlainStories(stories);
+                });
+            } else {
+                throw new Error('Stories not found');
+            }
+        });
+    };
+
+    Story.prototype.getPlainCards = function (): Promise<any> {
+        return this.getCards({
+            order: [['order', 'ASC']],
+            attributes: ['id', 'mediaUri', 'mediaType', 'externalLink']
+        }).then((cards: Array<any>) => {
+            if (cards.length) {
+                let plainCards: Array<any> = [];
+                cards.forEach(card => {
+                    plainCards.push(card.get({ plain: true }));
+                });
+                this.cards = plainCards;
+            }
+        });
+    };
+
+    /**
+     * Helper function that checks if a slug already exists in the database.
+     * Returns true if slug not present in the database.
+     */
+    let validateSlug = function (slug: string): Promise<boolean> {
         return Story.unscoped().findOne({
             where: {
                 slug: slug
@@ -163,8 +285,11 @@ export default function (sequelize, DataTypes) {
         });
     };
 
-    // Helper function that checks whether a slug is valid or not.
-    // It recursively checks and generates a valid slug and returns a promise.
+    /**
+     * Helper function that checks whether a slug is valid or not.
+     * It recursively checks and generates a valid slug and returns a promise.
+     */
+
     let getValidSlug = function (oldSlug: string, newSlug: string, i: number): Promise<string> {
         return validateSlug(newSlug).then((valid) => {
             if (!valid) {
@@ -177,7 +302,9 @@ export default function (sequelize, DataTypes) {
         });
     };
 
-    // returns a promise with the validSlug.
+    /**
+     * returns a promise with the validSlug.
+     */
     Story.prototype.getSlug = function (): Promise<string> {
         return getValidSlug(slug(this.title), slug(this.title), 1).then((validSlug: string) => {
             return validSlug;
@@ -190,39 +317,107 @@ export default function (sequelize, DataTypes) {
                 id: userId
             }
         }).then((user) => {
-            return user.getStories({
-                where: {
-                    id: this.id
-                }
-            }).then((stories: Array<any>) => {
-                if (stories.length) {
-                    throw 'User has already read the story';
-                } else {
-                    return this.addUsers(user);
-                }
-            });
+            if (user) {
+                return user.getStories({ where: { id: this.id } }).then((stories: Array<any>) => {
+                    if (stories.length) {
+                        throw 'User has already read the story';
+                    } else {
+                        return this.addUsers(user);
+                    }
+                });
+            } else {
+                throw 'User not found';
+            }
         });
     };
 
-    Story.prototype.deleteStoryAndCards = function (): Promise<any> {
-        return this.getCards().then((cards: Array<any>) => {
-            let promises: Array<Promise<any>> = [];
-            if (cards.length) {
-                cards.forEach(card => {
-                    card.deleted = true;
-                    promises.push(card.save());
-                });
-            }
-            return Promise.all(promises).then((res: any) => {
-                this.deleted = true;
-                return this.save();
-            });
-        });
-    };
 
     Story.prototype.pushLive = function (): Promise<any> {
         this.publishedAt = moment().toDate();
         return this.save();
+    };
+
+    /**
+     * Helper function that update card details.
+     */
+    let updateCardAttributes = function (card: any, cardModel: any, storyId: number, t: any): Promise<any> {
+        return sequelize.transaction((t) => {
+            return cardModel.findOne({
+                where: {
+                    id: card.id,
+                    storyId: storyId
+                }
+            }).then((oldCard: any) => {
+                if (oldCard) {
+                    return oldCard.update(card, { transaction: t });
+                } else {
+                    throw new Error('Card with ' + card.id + 'not found');
+                }
+            });
+        });
+    };
+
+    /**
+     * This function deletes all those cards which are no longer assosciated with the story.
+     */
+    Story.prototype.deleteOldCards = function (t: any, newCards?: Array<any>): Promise<any> {
+        // TDOD use where clause to destroy.
+        return sequelize.transaction((t) => {
+            let promises: Array<Promise<any>> = [];
+            return this.getCards().then((oldCards: Array<any>) => {
+                oldCards.forEach(oldCard => {
+                    if (newCards) {
+                        let found = false;
+                        newCards.forEach(newCard => {
+                            if (newCard.id === oldCard.id) {
+                                found = true;
+                            }
+                        });
+                        if (!found) {
+                            promises.push(oldCard.destroy({ transaction: t }));
+                        }
+                    } else {
+                        promises.push(oldCard.destroy({ transaction: t }));
+                    }
+                });
+                return Promise.all(promises);
+            });
+        });
+    };
+
+    /**
+     * This function updates story details. This functin does the following:
+     * 1) Creates new Cards if card is not sent in the payload.
+     * 2) Update details of existing cards with the help of card id.
+     * 3) Remove those cards which are no longer associated with the story.
+     */
+    Story.prototype.updateStory = function (story: any, cardModel: any): Promise<any> {
+        let updatePromises: Array<any> = [];
+        let createPromises: Array<any> = [];
+        return sequelize.transaction((t) => {
+            this.title = story.title;
+            this.by = story.by;
+            return this.getSlug().then((slug) => {
+                this.slug = slug;
+                if (story.cards) {
+                    return this.deleteOldCards(t, story.cards).then(() => {
+                        addStoryIdAndOrder(story.cards, this.id);
+                        story.cards.forEach(card => {
+                            if (!card.id) {
+                                createPromises.push(cardModel.create(card, { transaction: t }));
+                            } else {
+                                updatePromises.push(updateCardAttributes(card, cardModel, this.id, t));
+                            }
+                        });
+                        return Promise.all(updatePromises).then(() => {
+                            return Promise.all(createPromises);
+                        });
+                    });
+                } else {
+                    return this.deleteOldCards();
+                }
+            });
+        });
     };
     return Story;
 }
