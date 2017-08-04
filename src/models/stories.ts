@@ -46,8 +46,6 @@ export default function (sequelize, DataTypes) {
             views: Sequelize.VIRTUAL,
             cards: Sequelize.VIRTUAL
         }, {
-            defaultScope: {
-            },
             scopes: {
                 published: {
                     where: {
@@ -89,7 +87,11 @@ export default function (sequelize, DataTypes) {
         }
     };
 
-
+    /**
+     * First, it will get the ids of stories which are read by the user.
+     * Then, it will find all the stories which are not read by the user and are published.
+     * and, will return at max of 2 stories.
+     */
     Story.getLatestStories = function (userInstance: any): Promise<any> {
         return userInstance.getReadStoryIds().then((ids: Array<number>) => {
             return this.scope('published').findAll({
@@ -108,6 +110,10 @@ export default function (sequelize, DataTypes) {
         });
     };
 
+    /**
+     * It will return all those stories which are read by the user. 
+     * And, the stories are not latest stories.
+     */
     Story.getArchivedStories = function (userInstance: any): Promise<Array<any>> {
         return userInstance.getReadStoryIds().then((ids: Array<number>) => {
             return this.scope('published').findAll({
@@ -147,6 +153,10 @@ export default function (sequelize, DataTypes) {
         });
     };
 
+
+    /**
+     * Static funtion that returns plain stories(JSON).
+     */
     Story.getPlainStories = function (stories: Array<any>): Promise<Array<any>> {
         let Stories: Array<any> = [];
         stories.forEach((story: any) => {
@@ -157,7 +167,7 @@ export default function (sequelize, DataTypes) {
         return Promise.resolve(Stories);
     };
 
-    Story.getStoryById = function (id: number, scope: string): Promise<any> {
+    let getStoryById = function (id: number, scope: string): Promise<any> {
         return this.scope(scope).findOne({
             where: {
                 id: id
@@ -166,7 +176,7 @@ export default function (sequelize, DataTypes) {
         });
     };
 
-    Story.getStoryBySlug = function (slug: string, scope: string): Promise<any> {
+    let getStoryBySlug = function (slug: string, scope: string): Promise<any> {
         return Story.scope(scope).find({
             where: {
                 slug: slug
@@ -177,14 +187,14 @@ export default function (sequelize, DataTypes) {
 
 
     /**
-     * Class function that calls getStoryById or getStoryBySlug after checking the type of idOrSlug param.
+     * Static function that calls getStoryById or getStoryBySlug after checking the type of idOrSlug param.
      */
     Story.getStory = function (idOrSlug: any, scope: string): Promise<any> {
         let story: Promise<any>;
         if (checkId(idOrSlug)) {
-            story = this.getStoryById(idOrSlug, scope);
+            story = getStoryById(idOrSlug, scope);
         } else {
-            story = this.getStoryBySlug(idOrSlug, scope);
+            story = getStoryBySlug(idOrSlug, scope);
         }
         return story;
     };
