@@ -105,7 +105,6 @@ export default function (sequelize, DataTypes) {
                     data.push(user.get({ plain: true }));
                     console.log(user);
                 });
-                console.log(data);
                 return data;
             } else {
                 throw 'Users Not found';
@@ -113,8 +112,18 @@ export default function (sequelize, DataTypes) {
         });
     };
 
-    User.hashPassword = function (password): String {
-        return bcrypt.hashSync(password, 8);
+    User.prototype.getFavouriteCard = function(): Promise<any> {
+        return this.getCards().then((cards)=>{
+            if(cards.length){
+                let data: Array<any> = [];
+                cards.forEach((card) => {
+                    data.push(card.get({ plain: true }));
+                });
+                return data;
+            } else {
+                throw 'Users Not found';
+            }
+        });
     };
 
     User.generateJwtCsv = function (config): String {

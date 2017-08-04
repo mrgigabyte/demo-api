@@ -115,9 +115,18 @@ export default function (sequelize, DataTypes) {
         });
     };
 
+    Card.prototype.getFavCards = function (userId, userModel): Promise<any>{
+      return  userModel.findById(userId).then((user)=>{
+            this.hasUser(user).then((result)=>{
+                if(result){
+                    userModel.getCards(user).then((x)=>{console.log(x);});
+                }
+            });
+        });
+    };
+
     Card.prototype.toggleFav = function (userId, userModel): Promise<any> {
       return userModel.findById(userId).then((user) => {
-
             this.hasUser(user).then((result) => {
                 if (result) {
                     this.removeUser(user);
@@ -127,6 +136,7 @@ export default function (sequelize, DataTypes) {
             });
         });
     };
+
 
     return Card;
 }

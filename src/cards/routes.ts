@@ -57,7 +57,7 @@ export default function (server: Hapi.Server, serverConfigs: IServerConfiguratio
             auth: 'jwt',
             response: {
                 schema: Joi.object({
-                    "data": Joi.array().items(cardSchema)
+                    "data": Joi.array().items(cardSchema).options({ stripUnknown: true })
                 })
             },
             plugins: {
