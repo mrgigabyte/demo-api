@@ -35,14 +35,16 @@ export default class UserController {
                         });
                     });
                 }).catch((err) => {
-                    console.log(err);
+                    // console.log(err);
                     return reply(Boom.internal('Some server problem'));
                 });
+            } else {
+                return reply(Boom.notFound('User not found'));
             }
         });
     }
 
-     public getArchived(request: Hapi.Request, reply: Hapi.Base_Reply) {
+    public getArchived(request: Hapi.Request, reply: Hapi.Base_Reply) {
         this.database.user.findById(request.auth.credentials.userId).then((user: any) => {
             if (user) {
                 this.database.story.getArchivedStories(user).then((stories: Array<any>) => {
@@ -52,15 +54,17 @@ export default class UserController {
                     });
                     Promise.all(cardPromises).then(() => {
                         this.database.story.getPlainStories(stories).then((plainStories: Array<any>) => {
-                                return reply({
-                                    "archived": plainStories
-                                });
+                            return reply({
+                                "archived": plainStories
+                            });
                         });
                     });
                 }).catch((err) => {
                     console.log(err);
                     return reply(Boom.internal('Some server problem'));
                 });
+            } else {
+                return reply(Boom.notFound('User not found.'));
             }
         });
     }

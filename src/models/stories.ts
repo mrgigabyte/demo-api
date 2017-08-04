@@ -317,11 +317,13 @@ export default function (sequelize, DataTypes) {
                 id: userId
             }
         }).then((user) => {
-            return user.getStories({
-                where: {
-                    id: this.id
-                }
-            }).then((stories: Array<any>) => {
+            let promise: Promise<any>;
+            if (user) {
+                promise = user.getStories({ where: { id: this.id } });
+            } else {
+                throw 'User Not Found';
+            }
+            promise.then((stories: Array<any>) => {
                 if (stories.length) {
                     throw 'User has already read the story';
                 } else {
@@ -360,7 +362,7 @@ export default function (sequelize, DataTypes) {
     /**
      * This function deletes all those cards which are no longer assosciated with the story.
      */
-    Story.prototype.deleteOldCards = function (newCards?: Array<any>): Promise<any> {
+    Story.prototype.deleteOldCards = function (t: any, newCards?: Array<any>): Promise<any> {
         // TDOD use where clause to destroy.
         return sequelize.transaction((t) => {
             let promises: Array<Promise<any>> = [];
@@ -400,7 +402,7 @@ export default function (sequelize, DataTypes) {
             return this.getSlug().then((slug) => {
                 this.slug = slug;
                 if (story.cards) {
-                    return this.deleteOldCards(story.cards).then(() => {
+                    return this.deleteOldCards(t, story.cards).then(() => {
                         addStoryIdAndOrder(story.cards, this.id);
                         story.cards.forEach(card => {
                             if (!card.id) {
