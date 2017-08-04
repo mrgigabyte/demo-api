@@ -24,7 +24,7 @@ export default class UserController {
                     });
                     Promise.all(cardPromises).then(() => {
                         this.database.story.getPlainStories(stories).then((plainStories: Array<any>) => {
-                            if (plainStories.length < 2) {
+                            if (plainStories.length <= 2) {
                                 return reply({
                                     "latest": plainStories
                                 });

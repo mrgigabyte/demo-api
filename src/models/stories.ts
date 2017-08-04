@@ -168,7 +168,7 @@ export default function (sequelize, DataTypes) {
     };
 
     let getStoryById = function (id: number, scope: string): Promise<any> {
-        return this.scope(scope).findOne({
+        return Story.scope(scope).findOne({
             where: {
                 id: id
             },
@@ -317,19 +317,17 @@ export default function (sequelize, DataTypes) {
                 id: userId
             }
         }).then((user) => {
-            let promise: Promise<any>;
             if (user) {
-                promise = user.getStories({ where: { id: this.id } });
+                return user.getStories({ where: { id: this.id } }).then((stories: Array<any>) => {
+                    if (stories.length) {
+                        throw 'User has already read the story';
+                    } else {
+                        return this.addUsers(user);
+                    }
+                });
             } else {
-                throw 'User Not Found';
+                throw 'User not found';
             }
-            promise.then((stories: Array<any>) => {
-                if (stories.length) {
-                    throw 'User has already read the story';
-                } else {
-                    return this.addUsers(user);
-                }
-            });
         });
     };
 
