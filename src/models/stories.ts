@@ -90,7 +90,7 @@ export default function (sequelize, DataTypes) {
     };
 
 
-    Story.getLatestStories = function (userInstance: any) {
+    Story.getLatestStories = function (userInstance: any): Promise<any> {
         return userInstance.getReadStoryIds().then((ids: Array<number>) => {
             return this.scope('published').findAll({
                 order: [["publishedAt", 'DESC']],
@@ -104,6 +104,45 @@ export default function (sequelize, DataTypes) {
                 },
                 limit: 2,
                 attributes: ['id', 'title', 'slug', 'by', 'createdAt', 'publishedAt']
+            });
+        });
+    };
+
+    Story.getArchivedStories = function (userInstance: any): Promise<Array<any>> {
+        return userInstance.getReadStoryIds().then((ids: Array<number>) => {
+            return this.scope('published').findAll({
+                order: [["publishedAt", 'DESC']],
+                where: {
+                    id: {
+                        $in: ids
+                    },
+                    publishedAt: {
+                        $gt: userInstance.createdAt
+                    }
+                },
+                attributes: ['id', 'title', 'slug', 'by', 'createdAt', 'publishedAt']
+            }).then((readStories: Array<any>) => {
+                return this.scope('published').findAll({
+                    order: [["publishedAt", 'DESC']],
+                    where: {
+                        id: {
+                            $notIn: ids
+                        },
+                        publishedAt: {
+                            $gt: userInstance.createdAt
+                        }
+                    },
+                    attributes: ['id', 'title', 'slug', 'by', 'createdAt', 'publishedAt']
+                }).then((notReadStories: Array<any>) => {
+                    let archivedStories: Array<any>;
+                    if (notReadStories.length > 2) {
+                        notReadStories.splice(0, 2);
+                        archivedStories = notReadStories.concat(readStories);
+                    } else if (notReadStories.length <= 2) {
+                        archivedStories = readStories;
+                    }
+                    return Promise.resolve(archivedStories);
+                });
             });
         });
     };

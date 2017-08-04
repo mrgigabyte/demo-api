@@ -153,6 +153,29 @@ export default class UserController {
         });
     }
 
+     public getArchived(request: Hapi.Request, reply: Hapi.Base_Reply) {
+        this.database.user.findById(request.auth.credentials.userId).then((user) => {
+            if (user) {
+                this.database.story.getArchivedStories(user).then((stories: Array<any>) => {
+                    let cardPromises: Array<Promise<any>> = [];
+                    stories.forEach(story => {
+                        cardPromises.push(story.getPlainCards());
+                    });
+                    Promise.all(cardPromises).then(() => {
+                        this.database.story.getPlainStories(stories).then((plainStories) => {
+                                return reply({
+                                    "archived": plainStories
+                                });
+                        });
+                    });
+                }).catch((err) => {
+                    console.log(err);
+                    return reply(Boom.internal('Some server problem'));
+                });
+            }
+        });
+    }
+
     public getStoryByIdOrSlug(request: Hapi.Request, reply: Hapi.Base_Reply) {
         this.database.story.getStory(request.params.idOrSlug, 'defaultScope')
             .then((story: any) => {
@@ -181,14 +204,6 @@ export default class UserController {
             } else {
                 return reply(Boom.notFound("Story with give id or slug doesn't exist"));
             }
-        });
-    }
-
-    public getArchived(request: Hapi.Request, reply: Hapi.Base_Reply) {
-        let tempStory1 = this.dummyStory1;
-        let tempStory2 = this.dummyStory2;
-        return reply({
-            "data": [tempStory1, tempStory2, this.dummyStory1, this.dummyStory2]
         });
     }
 

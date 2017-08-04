@@ -91,7 +91,7 @@ export default function (server: Hapi.Server, serverConfigs: IServerConfiguratio
             auth: 'jwt',
             response: {
                 schema: Joi.object({
-                    "data": Joi.array().items(storySchema)
+                    "archived": Joi.array().items(storySchema)
                 })
             },
             plugins: {
