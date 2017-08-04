@@ -4,7 +4,7 @@ import { IServerConfigurations } from "../config";
 import * as Boom from "boom";
 
 import CardController from "./cards-controller";
-import { cardSchema, baseCardSchema } from "./schemas";
+import { cardSchema } from "./schemas";
 
 export default function (server: Hapi.Server, serverConfigs: IServerConfigurations, database: any) {
 
@@ -73,6 +73,7 @@ export default function (server: Hapi.Server, serverConfigs: IServerConfiguratio
             tags: ['api', 'card'],
         }
     });
+    
     server.route({
         method: 'POST',
         path: '/card/upload',
@@ -101,7 +102,8 @@ export default function (server: Hapi.Server, serverConfigs: IServerConfiguratio
             },
             response: {
                 schema: Joi.object({
-                    "link": Joi.string().uri().required()
+                    "link": Joi.string().uri().required(),
+                    "mediaType": Joi.string().valid(['image', 'video']).required(),
                 })
             },
             plugins: {
@@ -113,42 +115,6 @@ export default function (server: Hapi.Server, serverConfigs: IServerConfiguratio
                         },
                         '403': {
                             'description': 'file type not supported'
-                        }
-                    }
-                },
-                'hapiAuthorization': { roles: ['GOD', 'JESUS'] }
-            },
-            tags: ['api', 'admin'],
-        }
-    });
-
-    server.route({
-        method: 'DELETE',
-        path: '/card/{cardId}',
-        handler: cardController.deleteCard,
-        config: {
-            description: 'Delete the card.',
-            notes: `It will soft delete the card.  
-            
-            GOD and JESUS can access this endpoint`,
-            auth: 'jwt',
-            validate: {
-                params: {
-                    cardId: Joi.number()
-                        .required()
-                        .description('the card id'),
-                },
-            },
-            response: {
-                schema: Joi.object({
-                    "deleted": Joi.boolean().required()
-                })
-            },
-            plugins: {
-                'hapi-swagger': {
-                    responses: {
-                        '200': {
-                            'description': 'Successfully deleted the card.'
                         }
                     }
                 },

@@ -62,7 +62,7 @@ export default function (sequelize, DataTypes) {
                 allowNull: false,
                 defaultValue: 'disable'
             },
-            deleteOn: {
+            deletedOn: {
                 type: Sequelize.DATE,
                 allowNull: true
             }
@@ -81,18 +81,18 @@ export default function (sequelize, DataTypes) {
             }
         });
 
-    User.associate = function (models) {
+    User.associate = function (models): void {
         models.user.belongsToMany(models.story, {
             through: 'readStories'
         });
         models.user.belongsToMany(models.card, { through: 'favouriteCards' });
     };
 
-    User.hashPassword = function (password): String {
+    User.hashPassword = function (password: string): string {
         return bcrypt.hashSync(password, 8);
     };
 
-    User.getAllUsers = function (): Promise<{}> {
+    User.getAllUsers = function (): Promise<any> {
         return User.scope(null).findAll({
             attributes: ['id', 'name', 'email', 'emailNotif', 'pushNotif', ['createdAt', 'joinedOn'], 'status']
         }).then((users: Array<any>) => {
@@ -100,9 +100,7 @@ export default function (sequelize, DataTypes) {
                 let data: Array<any> = [];
                 users.forEach((user) => {
                     data.push(user.get({ plain: true }));
-                    console.log(user);
                 });
-                console.log(data);
                 return data;
             } else {
                 throw 'Users Not found';
@@ -110,16 +108,16 @@ export default function (sequelize, DataTypes) {
         });
     };
 
-    User.hashPassword = function (password): String {
+    User.hashPassword = function (password: string): string {
         return bcrypt.hashSync(password, 8);
     };
 
-    User.generateJwtCsv = function (config): String {
-        let data: Object = { data: 'CSV' };
+    User.generateJwtCsv = function (config: any): string {
+        let data: any = { data: 'CSV' };
         return Jwt.sign(data, config.jwtCsvSecret, { expiresIn: config.jwtCsvExpiration });
     };
 
-    User.verifyJwtCsv = function (jwt, secret): Boolean {
+    User.verifyJwtCsv = function (jwt: string, secret: string): boolean {
         try {
             Jwt.verify(jwt, secret);
             return true;
@@ -136,24 +134,60 @@ export default function (sequelize, DataTypes) {
         });
     };
 
-    User.prototype.checkPassword = function (password): Boolean {
+    User.prototype.checkPassword = function (password: string): boolean {
         return bcrypt.compareSync(password, this.password);
     };
 
-    User.prototype.generateJwt = function (config): String {
+    User.prototype.generateJwt = function (config: any): string {
         let role: string = this.role.toUpperCase();
-        let jwtData: Object = {
+        let jwtData: any = {
             role: role,
             id: this.id
         };
         return Jwt.sign(jwtData, config.jwtSecret, { expiresIn: config.jwtExpiration });
     };
 
-    User.prototype.sendEmail = function (code): void {
+    User.prototype.requestResetPassword = function (resetCodeModel: any): Promise<any> {
+        return resetCodeModel.findOne({
+            where: {
+                userId: this.id
+            }
+        }).then((code: any) => {
+            if (code) {
+                return code.updateCode();
+            } else {
+                return resetCodeModel.createCode(this.id);
+            }
+        }).then((code: any) => {
+            return this.sendEmail(code.code);
+        });
+    };
+
+    User.prototype.sendEmail = function (code: string): void {
         console.log(code);
     };
 
-    User.prototype.checkUniqueCode = function (code): Boolean {
+    User.prototype.resetPassword = function (resetCodeModel: any, resetCode: string, newPassword: string) {
+        return resetCodeModel.findOne({
+            where: {
+                userId: this.id
+            }
+        }).then((code: any) => {
+            if (code) {
+                if (code.checkUniqueCode(resetCode)) {
+                    return this.updatePassword(newPassword).then(() => {
+                        return code.markCodeInvalid();
+                    });
+                } else {
+                    throw 'Unique code no longer valid';
+                }
+            } else {
+                throw 'User has not requested to reset his password';
+            }
+        });
+    };
+
+    User.prototype.checkUniqueCode = function (code: string): boolean {
         if (this.resetPasswordCode === code && moment().isBefore(this.resetCodeExpiresOn)) {
             return true;
         } else {
@@ -161,28 +195,39 @@ export default function (sequelize, DataTypes) {
         }
     };
 
-    User.prototype.updatePassword = function (password): Promise<{}> {
+    User.prototype.updatePassword = function (password: string): Promise<any> {
         let pswd = User.hashPassword(password);
         return this.update({
-            password: pswd,
+            password: pswd
         });
     };
 
-    User.prototype.deleteUser = function (): Promise<{}> {
+    User.prototype.deleteUser = function (): Promise<any> {
         return this.update({
             status: 'deleted',
-            deleteOn: moment().toDate()
+            deletedOn: moment().toDate()
         });
     };
 
-    User.prototype.updateUserInfo = function (info): Promise<{}> {
+    User.prototype.updateUserInfo = function (info: any): Promise<any> {
         if (info.password) {
             info.password = User.hashPassword(info.password);
+            console.log(info);
         }
         return this.update(info);
     };
 
-    User.prototype.promoteJesus = function (info): Promise<{}> {
+    User.prototype.getReadStoryIds = function (): Promise<Array<number>> {
+        return this.getStories().then((readStories: Array<any>) => {
+            let ids: Array<number> = [];
+            readStories.forEach(story => {
+                ids.push(story.id);
+            });            
+            return ids;
+        });
+    };
+
+    User.prototype.promoteJesus = function (info: any): Promise<any> {
         return this.update({
             name: info.name,
             email: info.email,

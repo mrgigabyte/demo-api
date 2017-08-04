@@ -14,7 +14,7 @@ export default class UserController {
     }
 
     public signup(request: Hapi.Request, reply: Hapi.Base_Reply) {
-        this.database.user.create(request.payload).then((user) => {
+        this.database.user.create(request.payload).then((user: any) => {
             return reply({
                 "success": true
             });
@@ -28,11 +28,10 @@ export default class UserController {
             where: {
                 email: request.payload.email
             }
-        }).then((user) => {
+        }).then((user: any) => {
             if (!user) {
                 return reply({
                     "valid": true
-
                 });
             } else {
                 reply(Boom.conflict('User with the given email already exists'));
@@ -45,7 +44,7 @@ export default class UserController {
             where: {
                 email: request.payload.email
             }
-        }).then((user) => {
+        }).then((user: any) => {
             if (user) {
                 if (user.checkPassword(request.payload.password)) {
                     return reply({
@@ -54,7 +53,6 @@ export default class UserController {
                 } else {
                     reply(Boom.unauthorized('Password is incorrect.'));
                 }
-
             } else {
                 reply(Boom.unauthorized('Email or Password is incorrect.'));
             }
@@ -66,20 +64,9 @@ export default class UserController {
             where: {
                 email: request.payload.email
             }
-        }).then((user) => {
+        }).then((user: any) => {
             if (user) {
-                this.database.resetCode.findOne({
-                    where: {
-                        userId: user.id
-                    }
-                }).then((code) => {
-                    if (code) {
-                        return code.updateCode();
-                    } else {
-                        return this.database.resetCode.createCode(user.id);
-                    }
-                }).then((code) => {
-                    user.sendEmail(code.code);
+                user.requestResetPassword(this.database.resetCode).then(() => {
                     return reply({
                         "success": true
                     });
@@ -96,30 +83,14 @@ export default class UserController {
             where: {
                 email: request.payload.email
             }
-        }).then((user) => {
+        }).then((user: any) => {
             if (user) {
-                this.database.resetCode.findOne({
-                    where: {
-                        userId: user.id
-                    }
-                }).then((code) => {
-                    if (code) {
-                        if (code.checkUniqueCode(request.payload.code)) {
-                            user.updatePassword(request.payload.password).then(() => {
-                                code.markCodeInvalid().then(() => {
-                                    return reply({
-                                        reset: true
-                                    });
-                                });
-                            }).catch((reason) => {
-                                return reply(Boom.badImplementation(reason));
-                            });
-                        } else {
-                            return reply(Boom.badRequest('Unique code no longer valid'));
-                        }
-                    } else {
-                        return reply(Boom.badRequest('User has not requested to reset his password'));
-                    }
+                user.resetPassword(this.database.resetCode, request.payload.code, request.payload.password).then(() => {
+                    return reply({
+                        reset: true
+                    });
+                }).catch((err) => {
+                    return reply(Boom.badRequest(err));
                 });
             } else {
                 return reply(Boom.notFound('Email not registered on platform'));
@@ -133,7 +104,7 @@ export default class UserController {
             where: {
                 id: request.auth.credentials.userId
             }
-        }).then((user) => {
+        }).then((user: any) => {
             if (user) {
                 return reply({
                     "user": user.get({ plain: true })
@@ -151,11 +122,11 @@ export default class UserController {
             where: {
                 id: request.auth.credentials.userId
             }
-        }).then((user) => {
+        }).then((user: any) => {
             if (user) {
                 user.deleteUser().then(() => {
                     return reply({
-                        deleted: true
+                        "deleted": true
                     });
                 });
             } else {
@@ -169,14 +140,13 @@ export default class UserController {
             where: {
                 id: request.auth.credentials.userId
             }
-        }).then((user) => {
+        }).then((user: any) => {
             if (user) {
-                user.updateUser(request.payload).then(() => {
+                user.updateUserInfo(request.payload).then(() => {
                     return reply({
-                        changed: true
+                        "changed": true
                     });
                 });
-
             } else {
                 return reply(Boom.notFound('User not found'));
             }
@@ -188,11 +158,11 @@ export default class UserController {
             where: {
                 id: request.auth.credentials.userId
             }
-        }).then((user) => {
+        }).then((user: any) => {
             if (user) {
-                user.updateUser(request.payload).then(() => {
+                user.updateUserInfo(request.payload).then(() => {
                     return reply({
-                        changed: true
+                        "changed": true
                     });
                 });
             } else {
@@ -206,17 +176,23 @@ export default class UserController {
             where: {
                 id: request.auth.credentials.userId
             }
-        }).then((user) => {
+        }).then((user: any) => {
             if (user) {
-                user.updateUser(request.payload).then((res) => {
+                console.log(request.payload);
+                user.updateUserInfo(request.payload).then((res) => {
                     return reply({
-                        updated: true
+                        "updated": true
                     });
+                }).catch((err) => {
+                    return reply(Boom.badRequest("Can't update user details"));
                 });
             } else {
                 return reply(Boom.notFound('User not found'));
             }
-        }).catch((err) => reply(Boom.expectationFailed('Expected this to work')));
+        }).catch((err) => {
+            console.log(err);
+            reply(Boom.expectationFailed('Expected this to work'));
+        });
     }
 
     public getAllUsers(request: Hapi.Request, reply: Hapi.Base_Reply) {
@@ -247,7 +223,7 @@ export default class UserController {
 
     public createJesus(request: Hapi.Request, reply: Hapi.Base_Reply) {
         request.payload.role = 'jesus';
-        this.database.user.create(request.payload).then((user) => {
+        this.database.user.create(request.payload).then((user: any) => {
             return reply({
                 "success": true
             });
@@ -256,7 +232,7 @@ export default class UserController {
                 where: {
                     email: request.payload.email
                 }
-            }).then((user) => {
+            }).then((user: any) => {
                 user.promoteJesus(request.payload)
                     .then(() => {
                         return reply({

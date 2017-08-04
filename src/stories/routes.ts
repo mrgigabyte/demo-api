@@ -4,8 +4,7 @@ import { IServerConfigurations } from "../config";
 import * as Boom from "boom";
 
 import StoryController from "./stories-controller";
-import { storySchema, baseStorySchema, updateStorySchema } from "./schemas";
-import { baseCardSchema } from "../cards/schemas";
+import { storySchema, newStorySchema } from "./schemas";
 
 export default function (server: Hapi.Server, serverConfigs: IServerConfigurations, database: any) {
 
@@ -27,7 +26,7 @@ export default function (server: Hapi.Server, serverConfigs: IServerConfiguratio
             },
             response: {
                 schema: Joi.object({
-                    "data": Joi.array().items(storySchema)
+                    "latest": Joi.array().items(storySchema)
                 })
             },
             plugins: {
@@ -92,7 +91,7 @@ export default function (server: Hapi.Server, serverConfigs: IServerConfiguratio
             auth: 'jwt',
             response: {
                 schema: Joi.object({
-                    "data": Joi.array().items(storySchema)
+                    "archived": Joi.array().items(storySchema)
                 })
             },
             plugins: {
@@ -183,7 +182,7 @@ export default function (server: Hapi.Server, serverConfigs: IServerConfiguratio
             GOD and JESUS can access this endpoint.`,
             auth: 'jwt',
             validate: {
-                payload: baseStorySchema
+                payload: newStorySchema
             },
             response: {
                 schema: Joi.object({
@@ -217,7 +216,7 @@ export default function (server: Hapi.Server, serverConfigs: IServerConfiguratio
                 params: {
                     idOrSlug: Joi.any().required().description("Id/Slug of the story"),
                 },
-                payload: updateStorySchema
+                payload: newStorySchema
             },
             response: {
                 schema: Joi.object({
