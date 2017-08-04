@@ -49,7 +49,7 @@ export default function (sequelize, DataTypes) {
             defaultScope: {
             },
             scopes: {
-                notPublished: {
+                published: {
                     where: {
                         publishedAt: {
                             $ne: null
@@ -87,6 +87,35 @@ export default function (sequelize, DataTypes) {
         } else {
             return false;
         }
+    };
+
+
+    Story.getLatestStories = function (userInstance: any) {
+        return userInstance.getReadStoryIds().then((ids: Array<number>) => {
+            return this.scope('published').findAll({
+                order: [["publishedAt", 'DESC']],
+                where: {
+                    id: {
+                        $notIn: ids
+                    },
+                    publishedAt: {
+                        $gt: userInstance.createdAt
+                    }
+                },
+                limit: 2,
+                attributes: ['id', 'title', 'slug', 'by', 'createdAt', 'publishedAt']
+            });
+        });
+    };
+
+    Story.getPlainStories = function (stories: Array<any>): Promise<Array<any>> {
+        let Stories: Array<any> = [];
+        stories.forEach((story: any) => {
+            Stories.push(story.get({
+                plain: true
+            }));
+        });
+        return Promise.resolve(Stories);
     };
 
     Story.getStoryById = function (id: number, scope: string): Promise<any> {
@@ -162,29 +191,29 @@ export default function (sequelize, DataTypes) {
                 stories.forEach((story: any) => {
                     if (story.publishedAt) {
                         story.views = story.users.length;
+                        cardPromises.push(story.getPlainCards());
                     }
-                    cardPromises.push(story.getCards().then((cards: Array<any>) => {
-                        if (cards.length) {
-                            let Cards: Array<any> = [];
-                            cards.forEach(card => {
-                                Cards.push(card.get({ plain: true }));
-                            });
-                            story.cards = Cards;
-                            Promise.resolve();
-                        }
-                    }));
                 });
                 return Promise.all(cardPromises).then(() => {
-                    let Stories: Array<any> = [];
-                    stories.forEach((story: any) => {
-                        Stories.push(story.get({
-                            plain: true
-                        }));
-                    });
-                    return Promise.resolve(Stories);
+                    return Story.getPlainStories(stories);
                 });
             } else {
                 throw new Error('Stories not found');
+            }
+        });
+    };
+
+    Story.prototype.getPlainCards = function (): Promise<any> {
+        return this.getCards({
+            order: [['order', 'ASC']],
+            attributes: ['id', 'mediaUri', 'mediaType', 'externalLink']
+        }).then((cards: Array<any>) => {
+            if (cards.length) {
+                let plainCards: Array<any> = [];
+                cards.forEach(card => {
+                    plainCards.push(card.get({ plain: true }));
+                });
+                this.cards = plainCards;
             }
         });
     };
@@ -253,7 +282,7 @@ export default function (sequelize, DataTypes) {
         });
     };
 
-    
+
     Story.prototype.pushLive = function (): Promise<any> {
         this.publishedAt = moment().toDate();
         return this.save();
@@ -262,7 +291,7 @@ export default function (sequelize, DataTypes) {
     /**
      * Helper function that update card details.
      */
-    let updateCardAttributes = function (card: any, cardModel: any, storyId: number): Promise<any> {
+    let updateCardAttributes = function (card: any, cardModel: any, storyId: number, t: any): Promise<any> {
         return sequelize.transaction((t) => {
             return cardModel.findOne({
                 where: {
@@ -283,6 +312,7 @@ export default function (sequelize, DataTypes) {
      * This function deletes all those cards which are no longer assosciated with the story.
      */
     Story.prototype.deleteOldCards = function (newCards?: Array<any>): Promise<any> {
+        // TDOD use where clause to destroy.
         return sequelize.transaction((t) => {
             let promises: Array<Promise<any>> = [];
             return this.getCards().then((oldCards: Array<any>) => {
@@ -313,7 +343,8 @@ export default function (sequelize, DataTypes) {
      * 3) Remove those cards which are no longer associated with the story.
      */
     Story.prototype.updateStory = function (story: any, cardModel: any): Promise<any> {
-        let promises: Array<any> = [];
+        let updatePromises: Array<any> = [];
+        let createPromises: Array<any> = [];
         return sequelize.transaction((t) => {
             this.title = story.title;
             this.by = story.by;
@@ -324,12 +355,14 @@ export default function (sequelize, DataTypes) {
                         addStoryIdAndOrder(story.cards, this.id);
                         story.cards.forEach(card => {
                             if (!card.id) {
-                                promises.push(cardModel.create(card, { transaction: t }));
+                                createPromises.push(cardModel.create(card, { transaction: t }));
                             } else {
-                                promises.push(updateCardAttributes(card, cardModel, this.id));
+                                updatePromises.push(updateCardAttributes(card, cardModel, this.id, t));
                             }
                         });
-                        return Promise.all(promises);
+                        return Promise.all(updatePromises).then(() => {
+                            return Promise.all(createPromises);
+                        });
                     });
                 } else {
                     return this.deleteOldCards();

@@ -217,6 +217,16 @@ export default function (sequelize, DataTypes) {
         return this.update(info);
     };
 
+    User.prototype.getReadStoryIds = function (): Promise<Array<number>> {
+        return this.getStories().then((readStories: Array<any>) => {
+            let ids: Array<number> = [];
+            readStories.forEach(story => {
+                ids.push(story.id);
+            });            
+            return ids;
+        });
+    };
+
     User.prototype.promoteJesus = function (info: any): Promise<any> {
         return this.update({
             name: info.name,

@@ -1,7 +1,6 @@
 import * as Hapi from "hapi";
 import * as Boom from "boom";
-// import * as Jwt from "jsonwebtoken";
-// import * as GoogleAuth from "google-auth-library";
+import { IDb } from "../config";
 
 import { IServerConfigurations } from "../config";
 
@@ -9,12 +8,12 @@ import { IServerConfigurations } from "../config";
 export default class UserController {
 
     private configs: IServerConfigurations;
-    private database: any;
+    private database: IDb;
     private dummyStory1: any;
     private dummyStory2: any;
     private dummyStory3: any;
 
-    constructor(configs: IServerConfigurations, database: any) {
+    constructor(configs: IServerConfigurations, database: IDb) {
         this.database = database;
         this.configs = configs;
         this.dummyStory1 = {
@@ -39,7 +38,7 @@ export default class UserController {
                     "mediaType": "image",
                     "mediaUri": "https://wwww.loremipsum.com",
                     "externalLink": "https://wwww.loremipsum.com",
-                    
+
                 },
                 {
                     "id": 31,
@@ -47,14 +46,14 @@ export default class UserController {
                     "mediaType": "video",
                     "mediaUri": "https://wwww.loremipsum.com",
                     "externalLink": "https://wwww.loremipsum.com",
-                    
+
                 },
                 {
                     "id": 42,
                     "order": 4,
                     "mediaType": "image",
                     "mediaUri": "https://wwww.loremipsum.com",
-                    
+
                 },
                 {
                     "id": 51,
@@ -62,7 +61,7 @@ export default class UserController {
                     "mediaType": "image",
                     "mediaUri": "https://wwww.loremipsum.com",
                     "externalLink": "https://wwww.loremipsum.com",
-                    
+
                 }
             ]
         };
@@ -89,14 +88,14 @@ export default class UserController {
                     "mediaType": "image",
                     "mediaUri": "https://wwww.loremipsum.com",
                     "externalLink": "https://wwww.loremipsum.com",
-                    
+
                 },
                 {
                     "id": 3,
                     "order": 3,
                     "mediaType": "video",
                     "mediaUri": "https://wwww.loremipsum.com",
-                    
+
                 }
             ]
         };
@@ -121,18 +120,38 @@ export default class UserController {
                     "order": 2,
                     "mediaType": "image",
                     "mediaUri": "https://wwww.loremipsum.com",
-                    
+
                 }
             ]
         };
     }
-
     public getLatest(request: Hapi.Request, reply: Hapi.Base_Reply) {
-        return reply({
-            "data": [this.dummyStory1, this.dummyStory2]
+        this.database.user.findById(request.auth.credentials.userId).then((user) => {
+            if (user) {
+                this.database.story.getLatestStories(user).then((stories: Array<any>) => {
+                    let cardPromises: Array<Promise<any>> = [];
+                    stories.forEach(story => {
+                        cardPromises.push(story.getPlainCards());
+                    });
+                    Promise.all(cardPromises).then(() => {
+                        this.database.story.getPlainStories(stories).then((plainStories) => {
+                            if (plainStories.length < 2) {
+                                return reply({
+                                    "latest": plainStories
+                                });
+                            } else {
+                                console.log('expected this to work');
+                                return reply(Boom.internal('Some server problem'));
+                            }
+                        });
+                    });
+                }).catch((err) => {
+                    console.log(err);
+                    return reply(Boom.internal('Some server problem'));
+                });
+            }
         });
     }
-
 
     public getStoryByIdOrSlug(request: Hapi.Request, reply: Hapi.Base_Reply) {
         this.database.story.getStory(request.params.idOrSlug, 'defaultScope')
@@ -150,7 +169,7 @@ export default class UserController {
     }
 
     public markRead(request: Hapi.Request, reply: Hapi.Base_Reply) {
-        this.database.story.getStory(request.params.idOrSlug, 'notPublished').then((story: any) => {
+        this.database.story.getStory(request.params.idOrSlug, 'published').then((story: any) => {
             if (story) {
                 story.markRead(this.database.user, request.auth.credentials.userId).then((res: any) => {
                     return reply({

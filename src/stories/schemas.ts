@@ -1,13 +1,13 @@
 import * as Joi from "joi";
-import { baseCardSchema, cardSchema, cardSchemaWithOptionalId } from "../cards/schemas";
+import { cardSchema } from "../cards/schemas";
 
-export const baseStorySchema: Joi.ObjectSchema = Joi.object({
+export const newStorySchema: Joi.ObjectSchema = Joi.object({
     title: Joi.string().required(),
     by: Joi.string().required(),
-    cards: Joi.array().items(baseCardSchema)
+    cards: Joi.array().items(cardSchema)
 });
 
-export const storySchema: Joi.ObjectSchema = baseStorySchema.keys({
+export const storySchema: Joi.ObjectSchema = newStorySchema.keys({
     id: Joi.number().required(),
     slug: Joi.string().required(),
     by: Joi.string(),
@@ -17,11 +17,4 @@ export const storySchema: Joi.ObjectSchema = baseStorySchema.keys({
     // users: Joi.array().items(Joi.number())
     users: Joi.any(),
     cards: Joi.array().items(cardSchema)
-});
-
-
-export const updateStorySchema: Joi.ObjectSchema = baseStorySchema.keys({
-    by: Joi.string(),
-    // users: Joi.array().items(Joi.number())
-    cards: Joi.array().items(cardSchemaWithOptionalId)
 });

@@ -4,7 +4,7 @@ import { IServerConfigurations } from "../config";
 import * as Boom from "boom";
 
 import CardController from "./cards-controller";
-import { cardSchema, baseCardSchema } from "./schemas";
+import { cardSchema } from "./schemas";
 
 export default function (server: Hapi.Server, serverConfigs: IServerConfigurations, database: any) {
 
