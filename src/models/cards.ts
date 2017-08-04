@@ -84,6 +84,7 @@ export default function (sequelize, DataTypes) {
         let bucket = gcs.bucket(config.cardsBucket);
 
         let name = generateUID() + '.' + fileData.hapi.filename;
+        name = name.replace(/ /g,'');
         let filePath = 'cards/' + name;
         let file = bucket.file(filePath);
 
@@ -98,7 +99,7 @@ export default function (sequelize, DataTypes) {
             });
             stream.on('finish', () => {
                 resolve({
-                    "link": "https://storage.googleapis.com/" + config.cardsBucket + '/' + filePath,
+                    "mediaUri": "https://storage.googleapis.com/" + config.cardsBucket + '/' + filePath,
                     "mediaType": mediaType
                 });
             });

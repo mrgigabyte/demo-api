@@ -22,6 +22,11 @@
             "jwt-auth",
             "swagger",
             "acl-auth"
-        ]
+        ],
+        "googleCloud": {
+            "projectId": "omega-branch-174318",
+            "keyFilename": "config/key.json",
+            "cardsBucket": "abstrct-story-cards"
+        }
     }
 }

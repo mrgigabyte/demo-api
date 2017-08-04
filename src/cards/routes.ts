@@ -16,7 +16,7 @@ export default function (server: Hapi.Server, serverConfigs: IServerConfiguratio
         path: '/card/{cardId}/favourite',
         handler: cardController.favourite,
         config: {
-            description: 'Favourite/Un-faviourite a card',
+            description: 'Favourite/Un-favourite a card',
             notes: `
             GOD, JESUS and ROMANS can access this endpoint`,
             auth: 'jwt',
@@ -102,7 +102,7 @@ export default function (server: Hapi.Server, serverConfigs: IServerConfiguratio
             },
             response: {
                 schema: Joi.object({
-                    "link": Joi.string().uri().required(),
+                    "mediaUri": Joi.string().uri().required(),
                     "mediaType": Joi.string().valid(['image', 'video']).required(),
                 })
             },

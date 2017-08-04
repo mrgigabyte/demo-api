@@ -66,23 +66,7 @@ export default class UserController {
             }
         }).then((user: any) => {
             if (user) {
-<<<<<<< HEAD
-                this.database.resetCode.findOne({
-                    where: {
-                        userId: user.id
-                    }
-                }).then((code) => {
-                    if (code) {
-                        return code.updateCode();
-                    } else {
-                        return this.database.resetCode.createCode(user.id);
-                    }
-                }).then((code) => {
-                    console.log(code.code);
-                    user.sendEmail(code.code);
-=======
                 user.requestResetPassword(this.database.resetCode).then(() => {
->>>>>>> vidur/dev
                     return reply({
                         "success": true
                     });
@@ -245,18 +229,7 @@ export default class UserController {
                 "success": true
             });
         }).catch((err) => {
-            this.database.user.findOne({
-                where: {
-                    email: request.payload.email
-                }
-            }).then((user: any) => {
-                user.promoteJesus(request.payload)
-                    .then(() => {
-                        return reply({
-                            "success": true
-                        });
-                    });
-            });
+            return reply(Boom.conflict('User data already exists.'));
         });
     }
 }
