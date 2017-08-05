@@ -28,9 +28,6 @@ export default class UserController {
                                 return reply({
                                     "latest": plainStories
                                 });
-                            } else {
-                                console.log('expected this to work');
-                                return reply(Boom.internal('Some server problem'));
                             }
                         });
                     });

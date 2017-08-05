@@ -4,7 +4,7 @@ import { IServerConfigurations } from "../config";
 import * as Boom from "boom";
 
 import StoryController from "./stories-controller";
-import { storySchema, newStorySchema } from "./schemas";
+import { storySchema, newStorySchema, updateStorySchema } from "./schemas";
 
 export default function (server: Hapi.Server, serverConfigs: IServerConfigurations, database: any) {
 
@@ -178,7 +178,9 @@ export default function (server: Hapi.Server, serverConfigs: IServerConfiguratio
         handler: storyController.newStory,
         config: {
             description: 'Creates a new story using the info sent in the payload.',
-            notes: `
+            notes: `The order of the cards will be decided from the position of cards in the array sent in the payload.
+            And, new cards will be created accordingly.
+
             GOD and JESUS can access this endpoint.`,
             auth: 'jwt',
             validate: {
@@ -209,14 +211,20 @@ export default function (server: Hapi.Server, serverConfigs: IServerConfiguratio
         handler: storyController.updateStory,
         config: {
             description: 'Update details of a previously published/draft story.',
-            notes: `
+            notes: `This endpoint can to the following things  :
+
+            1) Update title and by of a story.
+            2) Add new cards (cards without id).
+            3) Update details of existing cards(cards with id).
+            4) Delete old cards (cards not a part of request payload).
+
             GOD and JESUS can access this endpoint.`,
             auth: 'jwt',
             validate: {
                 params: {
                     idOrSlug: Joi.any().required().description("Id/Slug of the story"),
                 },
-                payload: newStorySchema
+                payload: updateStorySchema
             },
             response: {
                 schema: Joi.object({
