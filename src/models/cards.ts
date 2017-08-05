@@ -84,6 +84,7 @@ export default function (sequelize, DataTypes) {
         let bucket = gcs.bucket(config.cardsBucket);
 
         let name = generateUID() + '.' + fileData.hapi.filename;
+        name = name.replace(/ /g,'');
         let filePath = 'cards/' + name;
         let file = bucket.file(filePath);
 
@@ -98,13 +99,36 @@ export default function (sequelize, DataTypes) {
             });
             stream.on('finish', () => {
                 resolve({
-                    "link": "https://storage.googleapis.com/" + config.cardsBucket + '/' + filePath,
+                    "mediaUri": "https://storage.googleapis.com/" + config.cardsBucket + '/' + filePath,
                     "mediaType": mediaType
                 });
             });
             stream.end(fileData._data);
         });
     };
+
+    Card.prototype.getFavCards = function (userId, userModel): Promise<any>{
+      return  userModel.findById(userId).then((user)=>{
+            this.hasUser(user).then((result)=>{
+                if(result){
+                    userModel.getCards(user).then((x)=>{console.log(x);});
+                }
+            });
+        });
+    };
+
+    Card.prototype.toggleFav = function (userId, userModel): Promise<any> {
+      return userModel.findById(userId).then((user) => {
+            this.hasUser(user).then((result) => {
+                if (result) {
+                    this.removeUser(user);
+                } else {
+                    this.addUser(user);
+                }
+            });
+        });
+    };
+
 
     return Card;
 }

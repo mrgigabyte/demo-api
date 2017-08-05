@@ -205,8 +205,9 @@ export default class UserController {
 
     public generateCsvLink(request: Hapi.Request, reply: Hapi.Base_Reply) {
         let jwttoken = this.database.user.generateJwtCsv(this.configs);
+        let link: string = request.server.info.uri + '/user/downloadCsv?jwt=' + jwttoken;
         return reply({
-            "link": request.server.info.uri + `/user/downloadCsv?jwt=` + jwttoken
+            "link": link
         });
     }
 
@@ -228,18 +229,7 @@ export default class UserController {
                 "success": true
             });
         }).catch((err) => {
-            this.database.user.findOne({
-                where: {
-                    email: request.payload.email
-                }
-            }).then((user: any) => {
-                user.promoteJesus(request.payload)
-                    .then(() => {
-                        return reply({
-                            "success": true
-                        });
-                    });
-            });
+            return reply(Boom.conflict('User data already exists.'));
         });
     }
 }

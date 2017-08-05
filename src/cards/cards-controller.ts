@@ -14,42 +14,38 @@ export default class UserController {
     constructor(configs: IServerConfigurations, database: any) {
         this.database = database;
         this.configs = configs;
-        this.dummyCards = [
-            {
-                "id": 1,
-                "order": 1,
-                "mediaType": "image",
-                "mediaUri": "https://wwww.loremipsum.com",
-                "externalLink": "https://wwww.loremipsum.com",
-                "favourite": "true"
-            },
-            {
-                "id": 2,
-                "order": 2,
-                "mediaType": "image",
-                "mediaUri": "https://wwww.loremipsum.com",
-                "externalLink": "https://wwww.loremipsum.com",
-                "favourite": "true"
-            },
-            {
-                "id": 3,
-                "order": 3,
-                "mediaType": "video",
-                "mediaUri": "https://wwww.loremipsum.com",
-                "favourite": "true"
-            }
-        ];
     }
 
     public favourite(request: Hapi.Request, reply: Hapi.Base_Reply) {
-        return reply({
-            "success": true
+        let userId = request.auth.credentials.userId;
+        let cardId = request.params.cardId;
+        this.database.card.findById(cardId).then((card) => {
+            if (card) {
+                card.toggleFav(userId, this.database.user).then(() => {
+                    return reply({
+                        "success": true
+                    });
+                });
+            }
+            else {
+                return reply(Boom.notFound('Card not found.'));
+            }
+        }).catch((err)=>{
+            return reply(Boom.expectationFailed(err));
         });
     }
 
     public getFavouriteCards(request: Hapi.Request, reply: Hapi.Base_Reply) {
-        return reply({
-            "data": this.dummyCards
+        let userId = request.auth.credentials.userId;
+        this.database.user.findById(userId).then((user)=>{
+            user.getFavouriteCard().then((data)=>{
+                console.log(data);
+                return reply({
+                       "data": data
+                 });
+            }).catch(()=>{
+                return reply(Boom.notFound("User doesn't have any favourite card"));
+            });
         });
     }
 

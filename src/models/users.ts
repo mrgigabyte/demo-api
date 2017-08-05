@@ -108,8 +108,19 @@ export default function (sequelize, DataTypes) {
         });
     };
 
-    User.hashPassword = function (password: string): string {
-        return bcrypt.hashSync(password, 8);
+    User.prototype.getFavouriteCard = function(): Promise<any> {
+        return this.getCards().then((cards)=>{
+            if(cards.length){
+                let data: Array<any> = [];
+                cards.forEach((card) => {
+                    data.push(card.get({ plain: true }));
+                });
+                return data;
+            } else {
+                throw 'Users Not found';
+            }
+        });
+
     };
 
     User.generateJwtCsv = function (config: any): string {

@@ -1,0 +1,32 @@
+{
+    "dialect": "mysql",
+    "database": "abstrct_dev",
+    "host": "localhost",
+    "username": "nandan",
+    "password": "nandan123",
+    "requestTimeout": 90000,
+    "connectionTimeout": 30000,
+    "acquireConnectionTimeout": 30000,
+    "pool": {
+        "min": 4,
+        "max": 10
+    },
+    "server": {
+        "port": 5000,
+        "jwtSecret": "random-secret-password",
+        "jwtExpiration": "1h",
+        "jwtCsvSecret": "CSV",
+        "jwtCsvExpiration": "10m",
+        "plugins": [
+            "logger",
+            "jwt-auth",
+            "swagger",
+            "acl-auth"
+        ],
+        "googleCloud": {
+            "projectId": "omega-branch-174318",
+            "keyFilename": "config/key.json",
+            "cardsBucket": "abstrct-story-cards"
+        }
+    }
+}
