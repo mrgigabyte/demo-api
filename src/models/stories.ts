@@ -351,7 +351,7 @@ export default function (sequelize, DataTypes) {
                 if (oldCard) {
                     return oldCard.update(card, { transaction: t });
                 } else {
-                    throw new Error('Card with ' + card.id + 'not found');
+                    throw new Error('Card with ' + card.id + ' not found');
                 }
             });
         });
