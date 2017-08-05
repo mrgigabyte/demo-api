@@ -46,14 +46,7 @@ export default function (sequelize, DataTypes) {
                 unique: 'compositeOrder',
                 allowNull: false
             }
-        }, {
-            hooks: {
-                beforeCreate: (code, options) => {
-                },
-                beforeUpdate: (code, options) => {
-                }
-            }
-        });
+        }, {});
     Card.associate = function (models) {
         models.card.belongsToMany(models.user, {
             through: 'favouriteCards',
@@ -84,7 +77,7 @@ export default function (sequelize, DataTypes) {
         let bucket = gcs.bucket(config.cardsBucket);
 
         let name = generateUID() + '.' + fileData.hapi.filename;
-        name = name.replace(/ /g,'');
+        name = name.replace(/ /g, '');
         let filePath = 'cards/' + name;
         let file = bucket.file(filePath);
 
@@ -107,23 +100,15 @@ export default function (sequelize, DataTypes) {
         });
     };
 
-    Card.prototype.getFavCards = function (userId, userModel): Promise<any>{
-      return  userModel.findById(userId).then((user)=>{
-            this.hasUser(user).then((result)=>{
-                if(result){
-                    userModel.getCards(user).then((x)=>{console.log(x);});
-                }
-            });
-        });
-    };
-
-    Card.prototype.toggleFav = function (userId, userModel): Promise<any> {
-      return userModel.findById(userId).then((user) => {
-            this.hasUser(user).then((result) => {
+    Card.prototype.toggleFav = function (userId, userModel): Promise<boolean> {
+        return userModel.findById(userId).then((user) => {
+            return this.hasUser(user).then((result) => {
                 if (result) {
                     this.removeUser(user);
+                    return Promise.resolve(false);
                 } else {
                     this.addUser(user);
+                    return Promise.resolve(true);                    
                 }
             });
         });

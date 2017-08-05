@@ -29,7 +29,7 @@ export default function (server: Hapi.Server, serverConfigs: IServerConfiguratio
             },
             response: {
                 schema: Joi.object({
-                    "success": Joi.boolean().required()
+                    "favourited": Joi.boolean().required()
                 })
             },
             plugins: {
@@ -57,7 +57,7 @@ export default function (server: Hapi.Server, serverConfigs: IServerConfiguratio
             auth: 'jwt',
             response: {
                 schema: Joi.object({
-                    "data": Joi.array().items(cardSchema).options({ stripUnknown: true })
+                    "cards": Joi.array().items(cardSchema).options({ stripUnknown: true })
                 })
             },
             plugins: {

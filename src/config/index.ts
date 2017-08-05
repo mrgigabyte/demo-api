@@ -27,28 +27,12 @@ export interface IServerConfigurations {
 }
 
 export interface IDb {
-    sequelize: Sequelize.Sequelize;
-    Sequelize: Sequelize.SequelizeStatic;
-    user: Sequelize.Model<any, any>;
-    story: Sequelize.Model<any, any>;
-    card: Sequelize.Model<any, any>;
-    resetCode: Sequelize.Model<any, any>;
-}
-
-export interface IDataConfiguration {
-    client: string;
-    database: string;
-    host: string;
-    user: string;
-    password: string;
-    requestTimeout: number;
-    connectionTimeout: number;
-    acquireConnectionTimeout: number;
-    pool: {
-        min: number;
-        max: number;
-    };
-    models: Array<string>;
+    sequelize: any;
+    Sequelize: any;
+    user: any;
+    story: any;
+    card: any;
+    resetCode: any;
 }
 
 export function getServerConfigs(): IServerConfigurations {

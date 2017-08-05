@@ -108,19 +108,21 @@ export default function (sequelize, DataTypes) {
         });
     };
 
-    User.prototype.getFavouriteCard = function(): Promise<any> {
-        return this.getCards().then((cards)=>{
-            if(cards.length){
-                let data: Array<any> = [];
-                cards.forEach((card) => {
-                    data.push(card.get({ plain: true }));
-                });
-                return data;
-            } else {
-                throw 'Users Not found';
-            }
-        });
+    User.prototype.getFavouriteCards = function (cardModel: any): Promise<any> {
 
+        return this.getCards({ attributes: ['id', 'storyId', 'mediaUri', 'mediaType', 'externalLink'] })
+            .then((cards: Array<any>) => {
+                if (cards.length) {
+                    let plainCards: Array<any> = [];
+                    cards.forEach((card: any, index: number) => {
+                        plainCards.push(card.get({ plain: true }));
+                        delete plainCards[index]['favouriteCards'];
+                    });
+                    return Promise.resolve(plainCards);
+                } else {
+                    throw 'No favourite cards';
+                }
+            });
     };
 
     User.generateJwtCsv = function (config: any): string {
@@ -233,7 +235,7 @@ export default function (sequelize, DataTypes) {
             let ids: Array<number> = [];
             readStories.forEach(story => {
                 ids.push(story.id);
-            });            
+            });
             return ids;
         });
     };

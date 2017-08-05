@@ -15,13 +15,13 @@ export default class CardController {
     }
 
     public favourite(request: Hapi.Request, reply: Hapi.Base_Reply) {
-        let userId = request.auth.credentials.userId;
-        let cardId = request.params.cardId;
-        this.database.card.findById(cardId).then((card) => {
+        let userId: number = request.auth.credentials.userId;
+        let cardId: number = +request.params.cardId;
+        this.database.card.findById(cardId).then((card: any) => {
             if (card) {
-                card.toggleFav(userId, this.database.user).then(() => {
+                card.toggleFav(userId, this.database.user).then((res: boolean) => {
                     return reply({
-                        "success": true
+                        "favourited": res 
                     });
                 });
             }
@@ -29,19 +29,20 @@ export default class CardController {
                 return reply(Boom.notFound('Card not found.'));
             }
         }).catch((err)=>{
+            console.log(err);
             return reply(Boom.expectationFailed(err));
         });
     }
 
     public getFavouriteCards(request: Hapi.Request, reply: Hapi.Base_Reply) {
-        let userId = request.auth.credentials.userId;
-        this.database.user.findById(userId).then((user)=>{
-            user.getFavouriteCard().then((data)=>{
-                console.log(data);
+        let userId: number = request.auth.credentials.userId;
+        this.database.user.findById(userId).then((user: any)=>{
+            user.getFavouriteCards(this.database.card).then((cards: Array<any>)=>{
                 return reply({
-                       "data": data
+                       "cards": cards
                  });
-            }).catch(()=>{
+            }).catch((err)=>{
+                console.log(err);
                 return reply(Boom.notFound("User doesn't have any favourite card"));
             });
         });
