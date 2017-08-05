@@ -1,11 +1,9 @@
 import * as Hapi from "hapi";
 import * as Boom from "boom";
 import { IDb } from "../config";
-
 import { IServerConfigurations } from "../config";
 
-
-export default class UserController {
+export default class StoryController {
 
     private configs: IServerConfigurations;
     private database: IDb;

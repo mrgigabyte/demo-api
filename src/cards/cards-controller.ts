@@ -1,17 +1,15 @@
 import * as Hapi from "hapi";
 import * as Boom from "boom";
-import * as Jwt from "jsonwebtoken";
 import * as zen from 'zencoder';
-
+import { IDb } from "../config";
 import { IServerConfigurations } from "../config";
 
-export default class UserController {
+export default class CardController {
 
     private configs: IServerConfigurations;
-    private database: any;
-    private dummyCards: any;
+    private database: IDb;
 
-    constructor(configs: IServerConfigurations, database: any) {
+    constructor(configs: IServerConfigurations, database: IDb) {
         this.database = database;
         this.configs = configs;
     }

@@ -1,8 +1,8 @@
 import * as Hapi from "hapi";
 import * as Joi from "joi";
-import { IServerConfigurations } from "../config";
 import * as Boom from "boom";
 
+import { IServerConfigurations } from "../config";
 import CardController from "./cards-controller";
 import { cardSchema } from "./schemas";
 

@@ -6,7 +6,6 @@ export default class UserController {
 
     private configs: IServerConfigurations;
     private database: IDb;
-    private dummyData: any;
 
     constructor(configs: IServerConfigurations, database: IDb) {
         this.database = database;
