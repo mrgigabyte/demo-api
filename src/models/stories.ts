@@ -4,6 +4,7 @@ import * as Jwt from "jsonwebtoken";
 import * as shortid from 'shortid';
 import * as moment from 'moment';
 import * as slug from 'slug';
+import * as Boom from 'boom';
 
 export default function (sequelize, DataTypes) {
     let Story = sequelize.define('story',
@@ -95,17 +96,17 @@ export default function (sequelize, DataTypes) {
     Story.getLatestStories = function (userInstance: any): Promise<any> {
         return userInstance.getReadStoryIds().then((ids: Array<number>) => {
             return this.scope('published').findAll({
-        order: [["publishedAt", 'DESC']],
-        where: {
-            id: {
-                $notIn: ids
-            },
-            publishedAt: {
-                $gt: userInstance.createdAt
-            }
-        },
-        limit: 2,
-        attributes: ['id', 'title', 'slug', 'by', 'createdAt', 'publishedAt']
+                order: [["publishedAt", 'DESC']],
+                where: {
+                    id: {
+                        $notIn: ids
+                    },
+                    publishedAt: {
+                        $gt: userInstance.createdAt
+                    }
+                },
+                limit: 2,
+                attributes: ['id', 'title', 'slug', 'by', 'createdAt', 'publishedAt']
             });
         });
     };
@@ -155,16 +156,23 @@ export default function (sequelize, DataTypes) {
 
 
     /**
-     * Static funtion that returns plain stories(JSON).
+     * Static funtion that returns plain stories(JSON) with plain(JSON) cards.
      */
     Story.getPlainStories = function (stories: Array<any>): Promise<Array<any>> {
-        let Stories: Array<any> = [];
-        stories.forEach((story: any) => {
-            Stories.push(story.get({
-                plain: true
-            }));
+        let Stories: Array<Promise<any>> = [];
+        let cardPromises: Array<Promise<any>> = [];
+        stories.forEach(story => {
+            cardPromises.push(story.getPlainCards());
         });
-        return Promise.resolve(Stories);
+        return Promise.all(cardPromises).then(() => {
+            stories.forEach((story: any) => {
+                Stories.push(story.get({
+                    plain: true
+                }));
+            });
+            return Promise.resolve(Stories);
+        });
+
     };
 
     let getStoryById = function (id: number, scope: string): Promise<any> {
@@ -190,13 +198,13 @@ export default function (sequelize, DataTypes) {
      * Static function that calls getStoryById or getStoryBySlug after checking the type of idOrSlug param.
      */
     Story.getStory = function (idOrSlug: any, scope: string): Promise<any> {
-        let story: Promise<any>;
+        let storyPromise: Promise<any>;
         if (checkId(idOrSlug)) {
-            story = getStoryById(idOrSlug, scope);
+            storyPromise = getStoryById(idOrSlug, scope);
         } else {
-            story = getStoryBySlug(idOrSlug, scope);
+            storyPromise = getStoryBySlug(idOrSlug, scope);
         }
-        return story;
+        return storyPromise;
     };
 
     /**
@@ -234,17 +242,16 @@ export default function (sequelize, DataTypes) {
                 let promises: Array<Promise<any>> = [];
                 stories.forEach((story: any) => {
                     if (story.publishedAt) {
-                        promises.push(story.getUsers().then((users:Array<any>) => {
+                        promises.push(story.getUsers().then((users: Array<any>) => {
                             story.views = users.length;
                         }));
-                        promises.push(story.getPlainCards());
                     }
                 });
                 return Promise.all(promises).then(() => {
                     return Story.getPlainStories(stories);
                 });
             } else {
-                throw new Error('Stories not found');
+                throw Boom.notFound('Stories not found');
             }
         });
     };
@@ -317,13 +324,13 @@ export default function (sequelize, DataTypes) {
             if (user) {
                 return user.getStories({ where: { id: this.id } }).then((stories: Array<any>) => {
                     if (stories.length) {
-                        throw 'User has already read the story';
+                        throw Boom.conflict('User has already read the story');
                     } else {
                         return this.addUsers(user);
                     }
                 });
             } else {
-                throw 'User not found';
+                throw Boom.notFound('User not found');
             }
         });
     };
@@ -348,7 +355,7 @@ export default function (sequelize, DataTypes) {
                 if (oldCard) {
                     return oldCard.update(card, { transaction: t });
                 } else {
-                    throw new Error('Card with ' + card.id + ' not found');
+                    throw Boom.notFound('Card with ' + card.id + ' not found');
                 }
             });
         });
