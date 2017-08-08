@@ -18,7 +18,11 @@ export default class UserController {
                 "success": true
             });
         }).catch((err) => {
-            reply(Boom.conflict('User with the given details already exists'));
+            if (err.parent.errno === 1062) {
+                reply(Boom.conflict('User with the given email already exists'));
+            } else {
+                return reply(err);
+            }
         });
     }
 
@@ -35,7 +39,7 @@ export default class UserController {
             } else {
                 reply(Boom.conflict('User with the given email already exists'));
             }
-        });
+        }).catch(err => reply(err));
     }
 
     public login(request: Hapi.Request, reply: Hapi.Base_Reply) {
@@ -55,7 +59,7 @@ export default class UserController {
             } else {
                 reply(Boom.unauthorized('Email or Password is incorrect.'));
             }
-        });
+        }).catch(err => reply(err));
     }
 
     public requestResetPassword(request: Hapi.Request, reply: Hapi.Base_Reply) {
@@ -65,16 +69,16 @@ export default class UserController {
             }
         }).then((user: any) => {
             if (user) {
-                user.requestResetPassword(this.database.resetCode).then(() => {
-                    return reply({
-                        "success": true
-                    });
-                });
+                return user.generatePasswordResetCode(this.database.resetCode);
             } else {
                 reply(Boom.notFound('Email not registered on platform'));
             }
-        });
-
+        }).then((code: string) => {
+            // TODO: send email to the user after generating the code.
+            return reply({
+                "code": code
+            });
+        }).catch(err => reply(err));
     }
 
     public resetPassword(request: Hapi.Request, reply: Hapi.Base_Reply) {
@@ -84,24 +88,22 @@ export default class UserController {
             }
         }).then((user: any) => {
             if (user) {
-                user.resetPassword(this.database.resetCode, request.payload.code, request.payload.password).then(() => {
-                    return reply({
-                        reset: true
-                    });
-                }).catch((err) => {
-                    return reply(Boom.badRequest(err));
-                });
+                return user.resetPassword(this.database.resetCode, request.payload.code, request.payload.password);
             } else {
                 return reply(Boom.notFound('Email not registered on platform'));
             }
-        });
+        }).then(() => {
+            return reply({
+                reset: true
+            });
+        }).catch(err => reply(err));
     }
 
     public getUserInfo(request: Hapi.Request, reply: Hapi.Base_Reply) {
         this.database.user.findOne({
             attributes: ['id', 'name', 'email', 'emailNotif', 'pushNotif', ['createdAt', 'joinedOn']],
             where: {
-                id: request.auth.credentials.userId
+                id: request.params.userId
             }
         }).then((user: any) => {
             if (user) {
@@ -111,63 +113,25 @@ export default class UserController {
             } else {
                 reply(Boom.notFound('User not found'));
             }
-        }).catch((err) => {
-            return reply(Boom.expectationFailed('Expected this to work'));
-        });
+        }).catch(err => reply(err));
     }
 
-    public deleteProfile(request: Hapi.Request, reply: Hapi.Base_Reply) {
+    public softDeleteUser(request: Hapi.Request, reply: Hapi.Base_Reply) {
         this.database.user.findOne({
             where: {
                 id: request.auth.credentials.userId
             }
         }).then((user: any) => {
             if (user) {
-                user.deleteUser().then(() => {
-                    return reply({
-                        "deleted": true
-                    });
-                });
+                return user.softDeleteUser();
             } else {
                 return reply(Boom.notFound('User not found'));
             }
-        });
-    }
-
-    public pushNotif(request: Hapi.Request, reply: Hapi.Base_Reply) {
-        this.database.user.findOne({
-            where: {
-                id: request.auth.credentials.userId
-            }
-        }).then((user: any) => {
-            if (user) {
-                user.updateUserInfo(request.payload).then(() => {
-                    return reply({
-                        "changed": true
-                    });
-                });
-            } else {
-                return reply(Boom.notFound('User not found'));
-            }
-        });
-    }
-
-    public emailNotif(request: Hapi.Request, reply: Hapi.Base_Reply) {
-        this.database.user.findOne({
-            where: {
-                id: request.auth.credentials.userId
-            }
-        }).then((user: any) => {
-            if (user) {
-                user.updateUserInfo(request.payload).then(() => {
-                    return reply({
-                        "changed": true
-                    });
-                });
-            } else {
-                return reply(Boom.notFound('User not found'));
-            }
-        });
+        }).then(() => {
+            return reply({
+                "deleted": true
+            });
+        }).catch(err => reply(err));
     }
 
     public updateUserInfo(request: Hapi.Request, reply: Hapi.Base_Reply) {
@@ -177,29 +141,21 @@ export default class UserController {
             }
         }).then((user: any) => {
             if (user) {
-                console.log(request.payload);
-                user.updateUserInfo(request.payload).then((res) => {
-                    return reply({
-                        "updated": true
-                    });
-                }).catch((err) => {
-                    return reply(Boom.badRequest("Can't update user details"));
-                });
+                return user.updateUserInfo(request.payload);
             } else {
                 return reply(Boom.notFound('User not found'));
             }
-        }).catch((err) => {
-            console.log(err);
-            reply(Boom.expectationFailed('Expected this to work'));
-        });
+        }).then((res) => {
+            return reply({
+                "success": true
+            });
+        }).catch(err => reply(err));
     }
 
     public getAllUsers(request: Hapi.Request, reply: Hapi.Base_Reply) {
-        this.database.user.getAllUsers().then((users) => {
-            return reply({
-                "data": users
-            });
-        }).catch((err) => reply(Boom.notFound(err)));
+        this.database.user.getAllUsers(request.query.size, request.query.page).then((response: any) => {
+            return reply(response);
+        }).catch(err => reply(err));
     }
 
     public generateCsvLink(request: Hapi.Request, reply: Hapi.Base_Reply) {
@@ -212,12 +168,12 @@ export default class UserController {
 
     public downloadCsv(request: Hapi.Request, reply: Hapi.Base_Reply) {
         if (this.database.user.verifyJwtCsv(request.query.jwt, this.configs.jwtCsvSecret)) {
-            this.database.user.getCsv().then((res) => {
-                return reply(res).header('Content-Type', 'text/csv')
+            return this.database.user.getCsv().then((csv: any) => {
+                return reply(csv).header('Content-Type', 'text/csv')
                     .header('content-disposition', 'attachment; filename=users.csv;');
-            }).catch((err) => reply(Boom.notFound(err)));
+            }).catch(err => reply(err));
         } else {
-            return reply(Boom.badRequest('Cannot verify JWT'));
+            return reply(Boom.badRequest('The link has expired. Try downloading the file again.'));
         }
     }
 

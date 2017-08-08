@@ -4,23 +4,7 @@ import * as Jwt from "jsonwebtoken";
 import * as shortid from 'shortid';
 import * as moment from 'moment';
 
-export interface ResetCodeAttribute {
-    id?: string;
-    code?: string;
-    userId?: string;
-    expiresAt?: string;
-}
-
-export interface ResetCodeInstance extends Sequelize.Instance<ResetCodeAttribute>, ResetCodeAttribute {
-    id: string;
-    createdAt: Date;
-    updatedAt: Date;
-}
-
-export interface ResetCodeModel extends Sequelize.Model<ResetCodeInstance, ResetCodeAttribute> {
-}
-
-export default function (sequelize: Sequelize.Sequelize, DataTypes: Sequelize.DataTypes) {
+export default function (sequelize, DataTypes) {
     let Code = sequelize.define('resetCode',
         {
             id: {
@@ -30,7 +14,7 @@ export default function (sequelize: Sequelize.Sequelize, DataTypes: Sequelize.Da
                 allowNull: false,
             },
             code: {
-                type: Sequelize.STRING(150),
+                type: Sequelize.STRING(10),
                 allowNull: true,
                 validate: {
                     notEmpty: true
@@ -42,6 +26,10 @@ export default function (sequelize: Sequelize.Sequelize, DataTypes: Sequelize.Da
                 validate: {
                     notEmpty: true
                 }
+            },
+            userId: {
+                type: Sequelize.INTEGER(11),
+                unique: true
             }
         }, {
             hooks: {
@@ -58,8 +46,12 @@ export default function (sequelize: Sequelize.Sequelize, DataTypes: Sequelize.Da
         models.resetCode.belongsTo(models.user);
     };
 
-
+    /**
+     * Creates a unique code that will be used by the user to reset his/her password.
+     * This code will expire in 12 h from the date-time of creation of the code.
+     */
     Code.createCode = function (userId) {
+        console.log('gege');
         return Code.create({
             expiresAt: moment().add(12, 'h').toDate(),
             userId: userId
@@ -72,6 +64,10 @@ export default function (sequelize: Sequelize.Sequelize, DataTypes: Sequelize.Da
         });
     };
 
+    /**
+     * This function checks whether the unique Code is equal to the code sent in the payload.
+     * and checks whether the current time is before the expiry time of the code. 
+     */
     Code.prototype.checkUniqueCode = function (code) {
         if (this.code === code && moment().isBefore(this.expiresAt)) {
             return true;
@@ -80,6 +76,9 @@ export default function (sequelize: Sequelize.Sequelize, DataTypes: Sequelize.Da
         }
     };
 
+    /**
+     * Makes a code invalid by setting the expiredAt key as null for that user.
+     */
     Code.prototype.markCodeInvalid = function () {
         return this.update({
             expiresAt: null

@@ -1,6 +1,5 @@
 import * as Hapi from "hapi";
 import * as Boom from "boom";
-import * as zen from 'zencoder';
 import { IDb } from "../config";
 import { IServerConfigurations } from "../config";
 
@@ -19,33 +18,27 @@ export default class CardController {
         let cardId: number = +request.params.cardId;
         this.database.card.findById(cardId).then((card: any) => {
             if (card) {
-                card.toggleFav(userId, this.database.user).then((res: boolean) => {
-                    return reply({
-                        "favourited": res 
-                    });
-                });
+                return card.toggleFav(userId, this.database.user);
             }
             else {
                 return reply(Boom.notFound('Card not found.'));
             }
-        }).catch((err)=>{
-            console.log(err);
-            return reply(Boom.expectationFailed(err));
-        });
+        }).then((res: boolean) => {
+            return reply({
+                "favourited": res
+            });
+        }).catch(err => reply(err));
     }
 
     public getFavouriteCards(request: Hapi.Request, reply: Hapi.Base_Reply) {
         let userId: number = request.auth.credentials.userId;
-        this.database.user.findById(userId).then((user: any)=>{
-            user.getFavouriteCards(this.database.card).then((cards: Array<any>)=>{
-                return reply({
-                       "cards": cards
-                 });
-            }).catch((err)=>{
-                console.log(err);
-                return reply(Boom.notFound("User doesn't have any favourite card"));
+        this.database.user.findById(userId).then((user: any) => {
+            return user.getFavouriteCards(this.database.card);
+        }).then((cards: Array<any>) => {
+            return reply({
+                "cards": cards
             });
-        });
+        }).catch(err => reply(err));
     }
 
     public imageFilter(fileName: string) {
@@ -64,19 +57,45 @@ export default class CardController {
 
     public uploadCard(request: Hapi.Request, reply: Hapi.Base_Reply) {
         let mediaType: string;
-        if (this.imageFilter(request.payload.file.hapi.filename)) {
+        let fileData = request.payload.file;
+        let fileName = request.payload.file.hapi.filename;
+        if (this.imageFilter(fileName)) {
             mediaType = 'image';
-        } else if (this.videoFilter(request.payload.file.hapi.filename)) {
+            this.database.card.uploadCard(fileData, this.configs.googleCloud).then((res: any) => {
+                return reply({
+                    "mediaUri": res.gcsLink,
+                    "mediaType": mediaType,
+                    "isQueued": false
+                }).code(201);
+            }).catch(err => reply(err));
+        } else if (this.videoFilter(fileName)) {
             mediaType = 'video';
+            this.database.card.uploadCard(fileData, this.configs.googleCloud).then((res: any) => {
+                this.database.card.encodeVideo( // begins the encoding process.
+                    res.gcsLink, res.fileName, this.configs.zenCoderApiKey, this.configs.googleCloud.encodedVideoBucket)
+                    .then((id: number) => {
+                        return reply({
+                            "jobId": id,
+                            "mediaType": mediaType,
+                            "isQueued": true
+                        }).code(202);
+                    });
+            }).catch(err => reply(err));
         } else {
-            console.log('hey');
+            // TODO: Code never reaches here.
             return reply(Boom.badRequest('File type not supported'));
         }
-        let fileData = request.payload.file;
-        this.database.card.uploadCard(fileData, this.configs.googleCloud, mediaType).then((res) => {
-            return reply(res).code(201);
+    }
+
+    public checkEncodingStatus(request: Hapi.Request, reply: Hapi.Base_Reply) {
+        this.database.card.checkJobStatus(request.query.jobId, this.configs.zenCoderApiKey).then((res: any) => {
+            return reply(res);
         }).catch((err) => {
-            return reply(Boom.expectationFailed(err));
+            if (err.code === 404) {
+                return reply(Boom.notFound('Job with the given id not found.'));
+            } else {
+                return reply(err);
+            }
         });
     }
 }

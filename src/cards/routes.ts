@@ -73,16 +73,20 @@ export default function (server: Hapi.Server, serverConfigs: IServerConfiguratio
             tags: ['api', 'card'],
         }
     });
-    
+
     server.route({
         method: 'POST',
-        path: '/card/upload',
+        path: '/card/mediaUpload',
         handler: cardController.uploadCard,
         config: {
             description: 'Upload a new card from the file system to google cloud storage.',
-            notes: `You can upload an image(.png, .jpg, .gif) or a video(.mp4).  
+            notes: `You can upload an image(.png, .jpg, .gif) or a video(.mp4) file.  
             After successfull upload it will return the card details.
-            File size is limited to a max of 100 MBs.
+            An image doesn't need any processing, therefore the uri will be reutned but 
+            in case of a video upload, a jobId will be returned. Pass this jobId to /cards/checkEncodingStatus endpoint to get
+            the details of job status. You will have to poll this endpoint to get the url of the encoded video.
+            
+            File size is limited to a max of 100 MBs.  
 
             GOD and JESUS can access this endpoint
             `,
@@ -102,9 +106,11 @@ export default function (server: Hapi.Server, serverConfigs: IServerConfiguratio
             },
             response: {
                 schema: Joi.object({
-                    "mediaUri": Joi.string().uri().required(),
+                    "mediaUri": Joi.string().uri(),
+                    "jobId": Joi.number(),
                     "mediaType": Joi.string().valid(['image', 'video']).required(),
-                })
+                    "isQueued": Joi.boolean().required()
+                }).without('mediaUri', 'jobId')
             },
             plugins: {
                 'hapi-swagger': {
@@ -113,8 +119,55 @@ export default function (server: Hapi.Server, serverConfigs: IServerConfiguratio
                         '201': {
                             'description': 'Successfully uploaded the card and returned the uri.'
                         },
+                        '202': {
+                            'description': 'Started the video transcoding process.'
+                        },
                         '403': {
                             'description': 'file type not supported'
+                        }
+                    }
+                },
+                'hapiAuthorization': { roles: ['GOD', 'JESUS'] }
+            },
+            tags: ['api', 'admin'],
+        }
+    });
+
+    server.route({
+        method: 'GET',
+        path: '/card/checkEncodingStatus',
+        handler: cardController.checkEncodingStatus,
+        config: {
+            description: 'Checks the encoding status of the job whose id is sent in the query params',
+            notes: `
+            This will return true and uri of the uploaded video on successful trnascoding otherwise it will result false.
+            GOD and JESUS can access this endpoint
+            `,
+            auth: 'jwt',
+            validate: {
+                query: {
+                    jobId: Joi.number()
+                        .required()
+                        .description('JobId of the video whose encoding you want to check')
+                }
+            },
+            response: {
+                schema: Joi.object({
+                    "encoded": Joi.boolean().required(),
+                    "mediaUri": Joi.string()
+                })
+            },
+            plugins: {
+                'hapi-swagger': {
+                    responses: {
+                        '201': {
+                            'description': 'Successfully encoded the video and uploaded to gcs.'
+                        },
+                        '200': {
+                            'description': 'Job yet not completed'
+                        },
+                        '404': {
+                            'description': 'No job with the given id'
                         }
                     }
                 },

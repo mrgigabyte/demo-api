@@ -12,6 +12,7 @@ export default class StoryController {
         this.database = database;
         this.configs = configs;
     }
+
     public getLatest(request: Hapi.Request, reply: Hapi.Base_Reply) {
         this.database.user.findById(request.auth.credentials.userId).then((user: any) => {
             if (user) {
@@ -68,11 +69,16 @@ export default class StoryController {
         this.database.story.getStory(request.params.idOrSlug, 'defaultScope')
             .then((story: any) => {
                 if (story) {
-                    return reply({
-                        "story": story.get({
-                            plain: true
-                        })
-                    });
+                    console.log(story.getUsers().then((users: Array<any>) => {
+                        story.views = users.length;
+                        story.getPlainCards().then(() => {
+                            return reply({
+                                "story": story.get({
+                                    plain: true
+                                })
+                            });
+                        });
+                    }));
                 } else {
                     reply(Boom.notFound("Story with give id or slug doesn't exist"));
                 }

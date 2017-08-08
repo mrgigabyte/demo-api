@@ -95,24 +95,24 @@ export default function (sequelize, DataTypes) {
     Story.getLatestStories = function (userInstance: any): Promise<any> {
         return userInstance.getReadStoryIds().then((ids: Array<number>) => {
             return this.scope('published').findAll({
-                order: [["publishedAt", 'DESC']],
-                where: {
-                    id: {
-                        $notIn: ids
-                    },
-                    publishedAt: {
-                        $gt: userInstance.createdAt
-                    }
-                },
-                limit: 2,
-                attributes: ['id', 'title', 'slug', 'by', 'createdAt', 'publishedAt']
+        order: [["publishedAt", 'DESC']],
+        where: {
+            id: {
+                $notIn: ids
+            },
+            publishedAt: {
+                $gt: userInstance.createdAt
+            }
+        },
+        limit: 2,
+        attributes: ['id', 'title', 'slug', 'by', 'createdAt', 'publishedAt']
             });
         });
     };
 
     /**
      * It will return all those stories which are read by the user. 
-     * And, the stories are not latest stories.
+     * And, the stories that are not latest stories.
      */
     Story.getArchivedStories = function (userInstance: any): Promise<Array<any>> {
         return userInstance.getReadStoryIds().then((ids: Array<number>) => {
@@ -228,22 +228,19 @@ export default function (sequelize, DataTypes) {
 
     Story.getAllStories = function (userModel: any): Promise<Array<any>> {
         return this.findAll({
-            attributes: ['id', 'title', 'slug', 'by', 'createdAt', 'publishedAt'],
-            include: [{
-                model: userModel,
-                attributes: ['id'],
-                required: false
-            }]
+            attributes: ['id', 'title', 'slug', 'by', 'createdAt', 'publishedAt']
         }).then((stories: Array<any>) => {
             if (stories.length) {
-                let cardPromises: Array<Promise<any>> = [];
+                let promises: Array<Promise<any>> = [];
                 stories.forEach((story: any) => {
                     if (story.publishedAt) {
-                        story.views = story.users.length;
-                        cardPromises.push(story.getPlainCards());
+                        promises.push(story.getUsers().then((users:Array<any>) => {
+                            story.views = users.length;
+                        }));
+                        promises.push(story.getPlainCards());
                     }
                 });
-                return Promise.all(cardPromises).then(() => {
+                return Promise.all(promises).then(() => {
                     return Story.getPlainStories(stories);
                 });
             } else {

@@ -18,15 +18,17 @@
         "jwtCsvSecret": "CSV",
         "jwtCsvExpiration": "10m",
         "plugins": [
-            "logger",
             "jwt-auth",
             "swagger",
-            "acl-auth"
+            "acl-auth",
+            "logger"
         ],
         "googleCloud": {
             "projectId": "omega-branch-174318",
-            "keyFilename": "config/key.json",
-            "cardsBucket": "abstrct-story-cards"
-        }
+            "keyFilename": "config/googleServiceAccountKey.json",
+            "cardBucket": "story-cards",
+            "encodedVideoBucket": "encoded-video-cards"
+        },
+        "zenCoderApiKey": "988a4d41538476737d752367f803b9ed"
     }
 }

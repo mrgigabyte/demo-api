@@ -211,12 +211,17 @@ export default function (server: Hapi.Server, serverConfigs: IServerConfiguratio
         handler: storyController.updateStory,
         config: {
             description: 'Update details of a previously published/draft story.',
-            notes: `This endpoint can to the following things  :
+            notes: `Pass all the cards in the payload that you want to associate with a story.
+            The order in which cards are passed in the payload will decide the cards order.
+    
+            1) When you pass card details without id in the payload a new card will be created with the details.
 
-            1) Update title and by of a story.
-            2) Add new cards (cards without id).
-            3) Update details of existing cards(cards with id).
-            4) Delete old cards (cards not a part of request payload).
+            2) You can also edit existing cards in the story. The existing cards will have a id associated them.  
+            This id is used to update their details.
+
+            3) Any card that was associated with a story will be deleted if that card is not passed in the payload.
+
+            4) You can also update a story's by and title.
 
             GOD and JESUS can access this endpoint.`,
             auth: 'jwt',

@@ -3,6 +3,7 @@ import * as bcrypt from 'bcryptjs';
 import * as Jwt from "jsonwebtoken";
 import * as moment from 'moment';
 import * as json2csv from "json2csv";
+import * as Boom from 'boom';
 
 export default function (sequelize, DataTypes) {
     let User = sequelize.define('user',
@@ -76,7 +77,7 @@ export default function (sequelize, DataTypes) {
             },
             hooks: {
                 beforeCreate: (user, options) => {
-                    user.password = bcrypt.hashSync(user.password, 8);
+                    user.password = User.hashPassword(user.password);
                 }
             }
         });
@@ -88,28 +89,44 @@ export default function (sequelize, DataTypes) {
         models.user.belongsToMany(models.card, { through: 'favouriteCards' });
     };
 
+
     User.hashPassword = function (password: string): string {
         return bcrypt.hashSync(password, 8);
     };
 
-    User.getAllUsers = function (): Promise<any> {
-        return User.scope(null).findAll({
-            attributes: ['id', 'name', 'email', 'emailNotif', 'pushNotif', ['createdAt', 'joinedOn'], 'status']
-        }).then((users: Array<any>) => {
-            if (users.length) {
-                let data: Array<any> = [];
-                users.forEach((user) => {
-                    data.push(user.get({ plain: true }));
+    /**
+     * Returns user details in paginated fashion.
+     */
+    User.getAllUsers = function (size = 10, page = 0): Promise<any> {
+        return User.scope(null).findAndCountAll({
+            attributes: ['id', 'name', 'email', 'emailNotif', 'pushNotif', ['createdAt', 'joinedOn'], 'status'],
+            limit: size,
+            offset: page * size
+        }).then((res) => {
+            let data: Array<any> = [];
+            res.rows.forEach((user) => {
+                data.push(user.get({ plain: true }));
+            });
+            if (page < Math.ceil(res.count / size) - 1) {  // for pages other than the last page.
+                return ({
+                    users: data,
+                    next: `http://localhost/api/user?page=${page + 1}&size=${size}`
                 });
-                return data;
+            } else if (page === Math.ceil(res.count / size) - 1) { // for last page.
+                return ({
+                    users: data
+                });
             } else {
-                throw 'Users Not found';
+                throw Boom.notFound('No user found on this page.');
             }
         });
     };
 
+    /**
+     * Gets all the favourite cards of a user. 
+     * Convert the cards into JSON and then removes the favouriteCards key.
+     */
     User.prototype.getFavouriteCards = function (cardModel: any): Promise<any> {
-
         return this.getCards({ attributes: ['id', 'storyId', 'mediaUri', 'mediaType', 'externalLink'] })
             .then((cards: Array<any>) => {
                 if (cards.length) {
@@ -120,16 +137,22 @@ export default function (sequelize, DataTypes) {
                     });
                     return Promise.resolve(plainCards);
                 } else {
-                    throw 'No favourite cards';
+                    throw Boom.notFound("User doesn't have any favourite cards");
                 }
             });
     };
 
+    /**
+     * Generates a JWT that will be used to check the validity of the download CSV link.
+     */
     User.generateJwtCsv = function (config: any): string {
         let data: any = { data: 'CSV' };
         return Jwt.sign(data, config.jwtCsvSecret, { expiresIn: config.jwtCsvExpiration });
     };
 
+    /**
+     * Returns a boolean after verifying the jwt sent in the query param of downloadCsv link.
+     */
     User.verifyJwtCsv = function (jwt: string, secret: string): boolean {
         try {
             Jwt.verify(jwt, secret);
@@ -139,11 +162,26 @@ export default function (sequelize, DataTypes) {
         }
     };
 
+    /**
+     * Returns user information in csv format.
+     */
     User.getCsv = function (): Promise<any> {
-        return this.getAllUsers().then((users) => {
-            let fields = ['id', 'name', 'email', 'emailNotif', 'pushNotif'];
-            let res = json2csv({ data: users, fields: fields });
-            return res;
+        let fields: Array<string> = ['id', 'name', 'email', 'emailNotif', 'pushNotif', 'createdAt', 'status'];
+        return this.scope(null).findAll({
+            attributes: fields
+        }).then((users: Array<any>) => {
+            if (users.length) {
+                let data: Array<any> = [];
+                users.forEach((user) => {
+                    data.push(user.get({ plain: true }));
+                });
+                return Promise.resolve(data);
+            } else {
+                throw Boom.notFound('Users Not found');
+            }
+        }).then((users: Array<any>) => {
+            let csv = json2csv({ data: users, fields: fields });
+            return csv;
         });
     };
 
@@ -151,6 +189,9 @@ export default function (sequelize, DataTypes) {
         return bcrypt.compareSync(password, this.password);
     };
 
+    /**
+     * Generates JWT(API_KEY) which will be used for authenticating a user.
+     */
     User.prototype.generateJwt = function (config: any): string {
         let role: string = this.role.toUpperCase();
         let jwtData: any = {
@@ -160,26 +201,28 @@ export default function (sequelize, DataTypes) {
         return Jwt.sign(jwtData, config.jwtSecret, { expiresIn: config.jwtExpiration });
     };
 
-    User.prototype.requestResetPassword = function (resetCodeModel: any): Promise<any> {
+    /**
+     * Generates a unique code that will be used by the user for resetting his/her password.
+     */
+    User.prototype.generatePasswordResetCode = function (resetCodeModel: any): Promise<string> {
         return resetCodeModel.findOne({
             where: {
                 userId: this.id
             }
         }).then((code: any) => {
             if (code) {
-                return code.updateCode();
+                return code.updateCode(); // replaces the old code with a new code in the database. 
             } else {
-                return resetCodeModel.createCode(this.id);
+                return resetCodeModel.createCode(this.id); // creates the code for the first time.
             }
         }).then((code: any) => {
-            return this.sendEmail(code.code);
+            return (code.code);
         });
     };
 
-    User.prototype.sendEmail = function (code: string): void {
-        console.log(code);
-    };
-
+    /**
+     * Updates the password to the one sent in the payload after verifying the unique code.
+     */
     User.prototype.resetPassword = function (resetCodeModel: any, resetCode: string, newPassword: string) {
         return resetCodeModel.findOne({
             where: {
@@ -187,25 +230,17 @@ export default function (sequelize, DataTypes) {
             }
         }).then((code: any) => {
             if (code) {
-                if (code.checkUniqueCode(resetCode)) {
+                if (code.checkUniqueCode(resetCode)) { // checks whether the code sent in the payload is same as that in the database. 
                     return this.updatePassword(newPassword).then(() => {
-                        return code.markCodeInvalid();
+                        return code.markCodeInvalid(); // marks the code as invalid so that it cant be reused.
                     });
                 } else {
-                    throw 'Unique code no longer valid';
+                    throw Boom.badRequest('Link to reset the password is no longer valid.');
                 }
             } else {
-                throw 'User has not requested to reset his password';
+                throw Boom.badRequest('User has not requested to reset his password');
             }
         });
-    };
-
-    User.prototype.checkUniqueCode = function (code: string): boolean {
-        if (this.resetPasswordCode === code && moment().isBefore(this.resetCodeExpiresOn)) {
-            return true;
-        } else {
-            return false;
-        }
     };
 
     User.prototype.updatePassword = function (password: string): Promise<any> {
@@ -215,21 +250,30 @@ export default function (sequelize, DataTypes) {
         });
     };
 
-    User.prototype.deleteUser = function (): Promise<any> {
+    /**
+     * Soft deletes a user by only changing the status from active --> deleted.
+     */
+    User.prototype.softDeleteUser = function (): Promise<any> {
         return this.update({
             status: 'deleted',
             deletedOn: moment().toDate()
         });
     };
 
+    /**
+     * Updates user info with the info sent in the payload.
+     * If password is present in the payload, first hash it and then update the users info.
+     */
     User.prototype.updateUserInfo = function (info: any): Promise<any> {
         if (info.password) {
             info.password = User.hashPassword(info.password);
-            console.log(info);
         }
         return this.update(info);
     };
 
+    /**
+     * Returns an array of all the ids read by a user.
+     */
     User.prototype.getReadStoryIds = function (): Promise<Array<number>> {
         return this.getStories().then((readStories: Array<any>) => {
             let ids: Array<number> = [];
@@ -237,15 +281,6 @@ export default function (sequelize, DataTypes) {
                 ids.push(story.id);
             });
             return ids;
-        });
-    };
-
-    User.prototype.promoteJesus = function (info: any): Promise<any> {
-        return this.update({
-            name: info.name,
-            email: info.email,
-            password: User.hashPassword(info.password),
-            role: info.role
         });
     };
 

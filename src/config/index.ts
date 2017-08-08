@@ -8,7 +8,7 @@ const configs = new nconf.Provider({
     argv: true,
     store: {
         type: 'file',
-        file: path.join(__dirname, `./config.${process.env.NODE_ENV || "dev"}.json`)
+        file: path.join(__dirname, `./config.${process.env.NODE_ENV}.json`)
     }
 });
 
@@ -23,7 +23,9 @@ export interface IServerConfigurations {
         projectId: string;
         keyFilename: string;
         cardBucket: string;
+        encodedVideoBucket: string;
     };
+    zenCoderApiKey: string;
 }
 
 export interface IDb {

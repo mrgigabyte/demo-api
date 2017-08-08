@@ -1,17 +1,17 @@
 import * as chai from "chai";
 // import UserController from "../../src/users/user-controller";
-// import { IUser } from "../../src/users/user";
 import * as Configs from "../../src/config";
-import * as Server from "../../src/server";
+// import database from '../../src/models';
+// import * as Server from "../../src/server";
 import * as Hapi from 'hapi';
-// import * as Database from "../../src/database";
 // import * as Utils from "../utils";
 
 const assert = chai.assert;
 const serverConfig = Configs.getServerConfigs();
-// Server.init(serverConfig, database).then( (server) => {
-//     server.inject
-// };
+// let server: Hapi.Server;
+// Server.init(serverConfig, database).then((Server: Hapi.Server) => {
+//     server = Server;
+// });
 
 describe("UserController Tests", () => {
 
