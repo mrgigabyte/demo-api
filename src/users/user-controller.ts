@@ -46,12 +46,18 @@ export default class UserController {
         this.database.user.findOne({
             where: {
                 email: request.payload.email
-            }
+            },
+            attributes: ['id', 'name', 'email', 'emailNotif', 'pushNotif', ['createdAt', 'joinedOn'], 'password', 'role'],
         }).then((user: any) => {
             if (user) {
                 if (user.checkPassword(request.payload.password)) {
+                    let User: any = user.get({ plain: true });
+                    let jwt = user.generateJwt(this.configs);
+                    delete User['password']; // remove password and role from the user object
+                    delete User['role'];
                     return reply({
-                        "jwt": user.generateJwt(this.configs)
+                        "jwt": jwt,
+                        "user": User
                     });
                 } else {
                     reply(Boom.unauthorized('Password is incorrect.'));
@@ -101,9 +107,25 @@ export default class UserController {
 
     public getUserInfo(request: Hapi.Request, reply: Hapi.Base_Reply) {
         this.database.user.findOne({
-            attributes: ['id', 'name', 'email', 'emailNotif', 'pushNotif', ['createdAt', 'joinedOn']],
+            attributes: ['id', 'name', 'email', 'emailNotif', 'pushNotif', ['createdAt', 'joinedOn'], 'status'],
             where: {
                 id: request.params.userId
+            }
+        }).then((user: any) => {
+            if (user) {
+                return reply({
+                    "user": user.get({ plain: true })
+                });
+            } else {
+                reply(Boom.notFound('User not found'));
+            }
+        }).catch(err => reply(err));
+    }
+    public getMyDetails(request: Hapi.Request, reply: Hapi.Base_Reply) {
+        this.database.user.findOne({
+            attributes: ['id', 'name', 'email', 'emailNotif', 'pushNotif', ['createdAt', 'joinedOn']],
+            where: {
+                id: request.auth.credentials.userId
             }
         }).then((user: any) => {
             if (user) {

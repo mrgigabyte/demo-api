@@ -160,14 +160,17 @@ export default function (server: Hapi.Server, serverConfigs: IServerConfiguratio
             plugins: {
                 'hapi-swagger': {
                     responses: {
-                        '201': {
+                        '200': {
                             'description': 'Successfully encoded the video and uploaded to gcs.'
                         },
-                        '200': {
-                            'description': 'Job yet not completed'
+                        '202': {
+                            'description': 'Video is getting encoded.'
                         },
                         '404': {
                             'description': 'No job with the given id'
+                        },
+                        '417': {
+                            'description': 'Could not enocde the video.'
                         }
                     }
                 },

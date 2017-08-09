@@ -94,7 +94,9 @@ export default function (server: Hapi.Server, serverConfigs: IServerConfiguratio
         config: {
             description: 'Returns a JWT for the user after a successfull login',
             notes: [`This endpoint will return a JWT, generated on the basis of user role that will 
-            be used as the value of authorisation for making requests to protected endpoint.
+            be used as the value of authorisation header for making requests to protected endpoint.
+            
+            Also, it will return user information.
             
             No authorisation header required to access this endpoint.`],
             validate: {
@@ -108,7 +110,8 @@ export default function (server: Hapi.Server, serverConfigs: IServerConfiguratio
             response: {
                 schema: Joi.object({
                     "jwt": Joi.string().required()
-                        .description("The api_key that will be used to authenticate all the future requests.")
+                        .description("The api_key that will be used to authenticate all the future requests."),
+                    "user": userSchema
                 })
             },
             plugins: {
@@ -134,9 +137,9 @@ export default function (server: Hapi.Server, serverConfigs: IServerConfiguratio
         config: {
             description: 'Sends an email to the user with the reset link',
             notes: [
-            //     The reset link will contain a unique code as query parameter, 
-            // this code will be used to check the credibility of the user when he makes a request with the new password.
-            `Returns the reset code that will be used by a user to reset his/her password.
+                //     The reset link will contain a unique code as query parameter, 
+                // this code will be used to check the credibility of the user when he makes a request with the new password.
+                `Returns the reset code that will be used by a user to reset his/her password.
             TODO: Send an email with the reset link after integrating sendgrid.
 
             No authorisation header required to access this endpoint.
@@ -209,18 +212,13 @@ export default function (server: Hapi.Server, serverConfigs: IServerConfiguratio
 
     server.route({
         method: 'GET',
-        path: '/user/{userId}',
-        handler: userController.getUserInfo,
+        path: '/user/me',
+        handler: userController.getMyDetails,
         config: {
-            description: 'GET user information',
-            notes: `  
-            GOD, JESUS and ROMANS can access this endpoints`,
+            description: 'Returns details of the logged in user.',
+            notes: [`  
+            GOD, JESUS and ROMANS can access this endpoints`,],
             auth: 'jwt',
-            validate: {
-                params: {
-                    userId: Joi.number().required().description("UserId of a user"),
-                },
-            },
             response: {
                 schema: Joi.object({
                     "user": userSchema
@@ -230,13 +228,46 @@ export default function (server: Hapi.Server, serverConfigs: IServerConfiguratio
                 'hapi-swagger': {
                     responses: {
                         '200': {
-                            'description': 'Successfully found info of the user with the given id.'
+                            'description': 'Successfully returned the details of the logged in user.'
                         }
                     }
                 },
                 'hapiAuthorization': { roles: ['GOD', 'JESUS', 'ROMANS'] }
             },
-            tags: ['api', 'user']
+            tags: ['api', 'user'],
+        }
+    });
+
+    server.route({
+        method: 'GET',
+        path: '/user/{userId}',
+        handler: userController.getUserInfo,
+        config: {
+            description: 'GET user information',
+            notes: `  
+            GOD and JESUS can access this endpoints`,
+            auth: 'jwt',
+            validate: {
+                params: {
+                    userId: Joi.number().required().description("UserId of a user"),
+                },
+            },
+            response: {
+                schema: Joi.object({
+                    "user": userAdminPannelSchema
+                })
+            },
+            plugins: {
+                'hapi-swagger': {
+                    responses: {
+                        '200': {
+                            'description': 'Successfully returned details of the user with the given id.'
+                        }
+                    }
+                },
+                'hapiAuthorization': { roles: ['GOD', 'JESUS'] }
+            },
+            tags: ['api', 'admin']
         }
     });
 
