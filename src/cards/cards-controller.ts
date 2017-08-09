@@ -89,7 +89,11 @@ export default class CardController {
 
     public checkEncodingStatus(request: Hapi.Request, reply: Hapi.Base_Reply) {
         this.database.card.checkJobStatus(request.query.jobId, this.configs.zenCoderApiKey).then((res: any) => {
-            return reply(res);
+            if (!res.encoded) {
+                return reply(res).code(202);
+            } else {
+                return reply(res);
+            }
         }).catch((err) => {
             if (err.code === 404) {
                 return reply(Boom.notFound('Job with the given id not found.'));
