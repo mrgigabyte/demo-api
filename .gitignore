@@ -1,5 +1,5 @@
 build/
 node_modules/
-src/config/config.local.json
+src/config/config.dev.json
 .DS_Store
 npm-debug.log

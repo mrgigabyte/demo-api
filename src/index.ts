@@ -17,7 +17,7 @@ try {
             });
         });
     } else {
-        throw Error('Set NODE_ENV to "dev", "prod" or "local".');
+        throw Error('Set NODE_ENV to "dev", "prod" or "staging".');
     }
 } catch (error) {
     console.log(error);
