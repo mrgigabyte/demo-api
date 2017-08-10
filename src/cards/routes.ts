@@ -1,8 +1,8 @@
 import * as Hapi from "hapi";
 import * as Joi from "joi";
-import { IServerConfigurations } from "../config";
 import * as Boom from "boom";
 
+import { IServerConfigurations } from "../config";
 import CardController from "./cards-controller";
 import { cardSchema } from "./schemas";
 
@@ -16,7 +16,7 @@ export default function (server: Hapi.Server, serverConfigs: IServerConfiguratio
         path: '/card/{cardId}/favourite',
         handler: cardController.favourite,
         config: {
-            description: 'Favourite/Un-faviourite a card',
+            description: 'Favourite/Un-favourite a card',
             notes: `
             GOD, JESUS and ROMANS can access this endpoint`,
             auth: 'jwt',
@@ -29,7 +29,7 @@ export default function (server: Hapi.Server, serverConfigs: IServerConfiguratio
             },
             response: {
                 schema: Joi.object({
-                    "success": Joi.boolean().required()
+                    "favourited": Joi.boolean().required()
                 })
             },
             plugins: {
@@ -38,7 +38,8 @@ export default function (server: Hapi.Server, serverConfigs: IServerConfiguratio
                         '200': {
                             'description': 'Successfully changed the favourite state of card'
                         }
-                    }
+                    },
+                    order: 1
                 },
                 'hapiAuthorization': { roles: ['GOD', 'JESUS', 'ROMANS'] }
             },
@@ -57,7 +58,7 @@ export default function (server: Hapi.Server, serverConfigs: IServerConfiguratio
             auth: 'jwt',
             response: {
                 schema: Joi.object({
-                    "data": Joi.array().items(cardSchema)
+                    "cards": Joi.array().items(cardSchema).options({ stripUnknown: true })
                 })
             },
             plugins: {
@@ -66,23 +67,28 @@ export default function (server: Hapi.Server, serverConfigs: IServerConfiguratio
                         '200': {
                             'description': 'Successfully returned the favourite cards if any.'
                         }
-                    }
+                    },
+                    order: 2
                 },
                 'hapiAuthorization': { roles: ['GOD', 'JESUS', 'ROMANS'] }
             },
             tags: ['api', 'card'],
         }
     });
-    
+
     server.route({
         method: 'POST',
-        path: '/card/upload',
+        path: '/card/mediaUpload',
         handler: cardController.uploadCard,
         config: {
             description: 'Upload a new card from the file system to google cloud storage.',
-            notes: `You can upload an image(.png, .jpg, .gif) or a video(.mp4).  
+            notes: `You can upload an image(.png, .jpg, .gif) or a video(.mp4) file.  
             After successfull upload it will return the card details.
-            File size is limited to a max of 100 MBs.
+            An image doesn't need any processing, therefore the uri will be reutned but 
+            in case of a video upload, a jobId will be returned. Pass this jobId to /cards/checkEncodingStatus endpoint to get
+            the details of job status. You will have to poll this endpoint to get the url of the encoded video.
+            
+            File size is limited to a max of 100 MBs.  
 
             GOD and JESUS can access this endpoint
             `,
@@ -102,9 +108,11 @@ export default function (server: Hapi.Server, serverConfigs: IServerConfiguratio
             },
             response: {
                 schema: Joi.object({
-                    "link": Joi.string().uri().required(),
+                    "mediaUri": Joi.string().uri(),
+                    "jobId": Joi.number(),
                     "mediaType": Joi.string().valid(['image', 'video']).required(),
-                })
+                    "isQueued": Joi.boolean().required()
+                }).without('mediaUri', 'jobId')
             },
             plugins: {
                 'hapi-swagger': {
@@ -113,10 +121,62 @@ export default function (server: Hapi.Server, serverConfigs: IServerConfiguratio
                         '201': {
                             'description': 'Successfully uploaded the card and returned the uri.'
                         },
+                        '202': {
+                            'description': 'Started the video transcoding process.'
+                        },
                         '403': {
                             'description': 'file type not supported'
                         }
-                    }
+                    },
+                    order: 6
+                },
+                'hapiAuthorization': { roles: ['GOD', 'JESUS'] }
+            },
+            tags: ['api', 'admin'],
+        }
+    });
+
+    server.route({
+        method: 'GET',
+        path: '/card/checkEncodingStatus',
+        handler: cardController.checkEncodingStatus,
+        config: {
+            description: 'Checks the encoding status of the job whose id is sent in the query params',
+            notes: `
+            This will return true and uri of the uploaded video on successful trnascoding otherwise it will result false.
+            GOD and JESUS can access this endpoint
+            `,
+            auth: 'jwt',
+            validate: {
+                query: {
+                    jobId: Joi.number()
+                        .required()
+                        .description('JobId of the video whose encoding you want to check')
+                }
+            },
+            response: {
+                schema: Joi.object({
+                    "encoded": Joi.boolean().required(),
+                    "mediaUri": Joi.string()
+                })
+            },
+            plugins: {
+                'hapi-swagger': {
+                    responses: {
+                        '200': {
+                            'description': 'Successfully encoded the video and uploaded to gcs.'
+                        },
+                        '202': {
+                            'description': 'Video is getting encoded.'
+                        },
+                        '404': {
+                            'description': 'No job with the given id'
+                        },
+                        '417': {
+                            'description': 'Could not enocde the video.'
+                        }
+                    },
+                    order: 7
                 },
                 'hapiAuthorization': { roles: ['GOD', 'JESUS'] }
             },

@@ -3,7 +3,9 @@ import * as bcrypt from 'bcryptjs';
 import * as Jwt from "jsonwebtoken";
 import * as shortid from 'shortid';
 import * as moment from 'moment';
+import * as zen from 'zencoder';
 import * as GoogleCloudStorage from "@google-cloud/storage";
+import * as Boom from 'boom';
 
 export default function (sequelize, DataTypes) {
     let Card = sequelize.define('card',
@@ -46,14 +48,7 @@ export default function (sequelize, DataTypes) {
                 unique: 'compositeOrder',
                 allowNull: false
             }
-        }, {
-            hooks: {
-                beforeCreate: (code, options) => {
-                },
-                beforeUpdate: (code, options) => {
-                }
-            }
-        });
+        }, {});
     Card.associate = function (models) {
         models.card.belongsToMany(models.user, {
             through: 'favouriteCards',
@@ -75,15 +70,18 @@ export default function (sequelize, DataTypes) {
         return firstPart + secondPart;
     };
 
-    Card.uploadCard = function (fileData, config, mediaType) {
+    /**
+     * Uploads a card to the card bucket and returns the url and filename on successful uplooad.
+     */
+    Card.uploadCard = function (fileData, config) {
         let gcs = GoogleCloudStorage({
             projectId: config.projectId,
             keyFilename: __dirname + '/../' + config.keyFilename
         });
 
-        let bucket = gcs.bucket(config.cardsBucket);
-
-        let name = generateUID() + '.' + fileData.hapi.filename;
+        let bucket = gcs.bucket(config.cardBucket);
+        let name: string = generateUID() + '.' + fileData.hapi.filename;
+        name = name.replace(/ /g, '');
         let filePath = 'cards/' + name;
         let file = bucket.file(filePath);
 
@@ -94,15 +92,113 @@ export default function (sequelize, DataTypes) {
                 }
             });
             stream.on('error', (err) => {
-                reject("There was some problem uploading the file. Please try again.");
+                reject(Boom.expectationFailed("There was some problem uploading the file. Please try again."));
             });
             stream.on('finish', () => {
                 resolve({
-                    "link": "https://storage.googleapis.com/" + config.cardsBucket + '/' + filePath,
-                    "mediaType": mediaType
+                    gcsLink: "https://storage.googleapis.com/" + config.cardBucket + '/' + filePath,
+                    fileName: name
                 });
             });
             stream.end(fileData._data);
+        });
+    };
+
+    /**
+     * Encodes and uploads the video to gcs encoded video bucket.
+     */
+    Card.encodeVideo = function (gcsLink: string, fileName: string, apiKey: string, bucketName: string) {
+        let client = zen(apiKey);
+        return new Promise((resolve, reject) => {
+            client.Job.create({
+                "input": gcsLink,
+                "outputs": [
+                    {
+                        "base_url": "gcs://" + bucketName + "/",
+                        "filename": fileName,
+                        "size": "1280x720",
+                        "audio_bitrate": 160,
+                        "max_video_bitrate": 5000,
+                        "h264_profile": "main",
+                        "h264_level": "3.1",
+                        "max_frame_rate": 30
+                    }
+                ]
+            }, (err, data) => {
+                if (err) {
+                    reject(err);
+                } else {
+                    resolve(data.id);
+                }
+            });
+        });
+    };
+
+    /**
+     * Helper function that returns the location of the encoded video.
+     * If a backup server is used then an error is returned. 
+     */
+    let getOutputUrl = function (client: any, id: number) {
+        return new Promise((resolve: any, reject: any) => {
+            client.Output.details(id, (err, data) => {
+                if (err) {
+                    reject(err);
+                } else {
+                    if(!data.backup_server_used) {
+                    resolve(data.url);
+                    } else {
+                        reject(Boom.expectationFailed('Failed to encode the video'));
+                    }
+                }
+            });
+        });
+
+    };
+
+    /**
+     * Returns video location on successful encoding of the video. Else returns false.
+     */
+    Card.checkJobStatus = function (id: number, apiKey: string) {
+        let client = zen(apiKey);
+        return new Promise((resolve: any, reject: any) => {
+            client.Job.progress(id, (err, data) => {
+                if (err) {
+                    reject(err);
+                } else {
+                    if (data.state === 'pending' || data.state === 'waiting' || data.state === 'processing') {
+                        resolve({ "encoded": false });
+                    } else if (data.state === 'finished') {
+                        getOutputUrl(client, data.outputs[0].id).then((url: string) => {
+                            resolve({
+                                "encoded": true,
+                                "mediaUri": url
+                            });
+                        }).catch((err) => {
+                            reject(err);
+                        });
+                    } else {
+                        reject(Boom.expectationFailed('Failed to encode the video'));
+                    }
+                }
+            });
+        });
+    };
+
+    /**
+     * Marks a card as favourite if not favourited by the user.
+     * Removes a card from favourites if already favourited by the user.
+     */
+    Card.prototype.toggleFav = function (userId, userModel): Promise<boolean> {
+        return userModel.findById(userId).then((user) => {
+            return this.hasUser(user).then((result) => {
+                if (result) {
+                    this.removeUser(user);
+                    return Promise.resolve(false);
+                } else {
+                    this.addUser(user);
+                    return Promise.resolve(true);
+                }
+            });
         });
     };
 

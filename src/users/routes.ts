@@ -1,8 +1,8 @@
 import * as Hapi from "hapi";
 import * as Joi from "joi";
-import { IServerConfigurations } from "../config";
 import * as Boom from "boom";
 
+import { IServerConfigurations } from "../config";
 import UserController from "./user-controller";
 import { userSchema, userSchemaWithOptionalKeys, userAdminPannelSchema } from "./schemas";
 
@@ -39,12 +39,13 @@ export default function (server: Hapi.Server, serverConfigs: IServerConfiguratio
                 'hapi-swagger': {
                     responses: {
                         '201': {
-                            'description': 'New User Created Successfully'
+                            'description': 'New User Created Successfully.'
                         },
                         '409': {
-                            'description': 'User with the given details already exists'
+                            'description': 'User with the given email already exist.'
                         }
-                    }
+                    },
+                    order: 1
                 }
             },
             tags: ['api', 'user'],
@@ -80,7 +81,8 @@ export default function (server: Hapi.Server, serverConfigs: IServerConfiguratio
                         '409': {
                             'description': 'User with the given email already exists'
                         }
-                    }
+                    },
+                    order: 2
                 }
             },
             tags: ['api', 'user'],
@@ -94,7 +96,9 @@ export default function (server: Hapi.Server, serverConfigs: IServerConfiguratio
         config: {
             description: 'Returns a JWT for the user after a successfull login',
             notes: [`This endpoint will return a JWT, generated on the basis of user role that will 
-            be used as the value of authorisation for making requests to protected endpoint.
+            be used as the value of authorisation header for making requests to protected endpoint.
+            
+            Also, it will return user information.
             
             No authorisation header required to access this endpoint.`],
             validate: {
@@ -108,7 +112,8 @@ export default function (server: Hapi.Server, serverConfigs: IServerConfiguratio
             response: {
                 schema: Joi.object({
                     "jwt": Joi.string().required()
-                        .description("The api_key that will be used to authenticate all the future requests.")
+                        .description("The api_key that will be used to authenticate all the future requests."),
+                    "user": userSchema
                 })
             },
             plugins: {
@@ -120,7 +125,8 @@ export default function (server: Hapi.Server, serverConfigs: IServerConfiguratio
                         '401': {
                             'description': 'Email or password is incorrect.'
                         }
-                    }
+                    },
+                    order: 5
                 }
             },
             tags: ['api', 'user'],
@@ -133,9 +139,12 @@ export default function (server: Hapi.Server, serverConfigs: IServerConfiguratio
         handler: userController.requestResetPassword,
         config: {
             description: 'Sends an email to the user with the reset link',
-            notes: [`The reset link will contain a unique code as query parameter, 
-            this code will be used to check the credibility of the user when he makes a request with the new password.
-            
+            notes: [
+                //     The reset link will contain a unique code as query parameter, 
+                // this code will be used to check the credibility of the user when he makes a request with the new password.
+                `Returns the reset code that will be used by a user to reset his/her password.
+            TODO: Send an email with the reset link after integrating sendgrid.
+
             No authorisation header required to access this endpoint.
             `],
             validate: {
@@ -145,9 +154,9 @@ export default function (server: Hapi.Server, serverConfigs: IServerConfiguratio
                 })
             },
             response: {
-                schema: Joi.object({
-                    "success": Joi.boolean().required()
-                })
+                // schema: Joi.object({
+                //     "success": Joi.boolean().required()
+                // })
             },
             plugins: {
                 'hapi-swagger': {
@@ -155,7 +164,8 @@ export default function (server: Hapi.Server, serverConfigs: IServerConfiguratio
                         '200': {
                             'description': 'Email with reset link sent successfully'
                         }
-                    }
+                    },
+                    order: 3
                 }
             },
             tags: ['api', 'user'],
@@ -194,10 +204,11 @@ export default function (server: Hapi.Server, serverConfigs: IServerConfiguratio
                             'description': 'Successfully changed the password'
                         },
                         '400': {
-                            'description': 'Cannot verify the unique code'
+                            'description': 'Link to reset the password is no longer valid.'
                         }
 
-                    }
+                    },
+                    order: 4
                 }
             },
             tags: ['api', 'user'],
@@ -206,18 +217,13 @@ export default function (server: Hapi.Server, serverConfigs: IServerConfiguratio
 
     server.route({
         method: 'GET',
-        path: '/user/{userId}',
-        handler: userController.getUserInfo,
+        path: '/user/me',
+        handler: userController.getMyDetails,
         config: {
-            description: 'GET user information',
-            notes: `  
-            GOD, JESUS and ROMANS can access this endpoints`,
+            description: 'Returns details of the logged in user.',
+            notes: [`  
+            GOD, JESUS and ROMANS can access this endpoints`,],
             auth: 'jwt',
-            validate: {
-                params: {
-                    userId: Joi.number().required().description("UserId of a user"),
-                },
-            },
             response: {
                 schema: Joi.object({
                     "user": userSchema
@@ -227,19 +233,20 @@ export default function (server: Hapi.Server, serverConfigs: IServerConfiguratio
                 'hapi-swagger': {
                     responses: {
                         '200': {
-                            'description': 'Successfully found info of the user with the given id.'
+                            'description': 'Successfully returned the details of the logged in user.'
                         }
-                    }
+                    },
+                    order: 6                    
                 },
                 'hapiAuthorization': { roles: ['GOD', 'JESUS', 'ROMANS'] }
             },
-            tags: ['api', 'user']
+            tags: ['api', 'user'],
         }
     });
 
     server.route({
         method: 'PUT',
-        path: '/user/{userId}',
+        path: '/user/me',
         handler: userController.updateUserInfo,
         config: {
             description: 'UPDATE user info with the info sent in the payload.',
@@ -249,9 +256,6 @@ export default function (server: Hapi.Server, serverConfigs: IServerConfiguratio
             auth: 'jwt',
             validate: {
                 payload: userSchemaWithOptionalKeys,
-                params: {
-                    userId: Joi.number().required().description("UserId of a user"),
-                },
             },
             response: {
                 schema: Joi.object({
@@ -264,7 +268,8 @@ export default function (server: Hapi.Server, serverConfigs: IServerConfiguratio
                         '200': {
                             'description': 'User info updated successfully.'
                         }
-                    }
+                    },
+                    order: 7                    
                 },
                 'hapiAuthorization': { roles: ['GOD', 'JESUS', 'ROMANS'] }
             },
@@ -274,19 +279,13 @@ export default function (server: Hapi.Server, serverConfigs: IServerConfiguratio
 
     server.route({
         method: 'DELETE',
-        path: '/user/{userId}',
-        handler: userController.deleteProfile,
+        path: '/user/me',
+        handler: userController.softDeleteUser,
         config: {
-            description: 'DELETE the profile of the user with the given Id',
-            notes: `It will soft delete a users profile  
-
+            description: 'Soft DELETE a users profile',
+            notes: `  
             GOD, JESUS and ROMANS can access this endpoint`,
             auth: 'jwt',
-            validate: {
-                params: {
-                    userId: Joi.number().required().description("UserId of a user"),
-                }
-            },
             response: {
                 schema: Joi.object({
                     "deleted": Joi.boolean().required()
@@ -299,7 +298,8 @@ export default function (server: Hapi.Server, serverConfigs: IServerConfiguratio
                             'description': 'Users profile successfully deleted.'
                         }
 
-                    }
+                    },
+                    order: 10
                 },
                 'hapiAuthorization': { roles: ['GOD', 'JESUS', 'ROMANS'] }
             },
@@ -309,8 +309,8 @@ export default function (server: Hapi.Server, serverConfigs: IServerConfiguratio
 
     server.route({
         method: 'PUT',
-        path: '/user/{userId}/changePushNotifPref',
-        handler: userController.pushNotif,
+        path: '/user/me/changePushNotifPref',
+        handler: userController.updateUserInfo,
         config: {
             description: 'Enable/Disable push-notifications for a user',
             notes: ` Set push notifaction preferences of the user on the basis of the pushNotif key in the payload.  
@@ -323,9 +323,6 @@ export default function (server: Hapi.Server, serverConfigs: IServerConfiguratio
             `,
             auth: 'jwt',
             validate: {
-                params: {
-                    userId: Joi.number().required().description("UserId of a user"),
-                },
                 payload: Joi.object({
                     pushNotif: Joi.string().required()
                         .valid(['disable', 'morning', 'afternoon', 'night'])
@@ -333,7 +330,7 @@ export default function (server: Hapi.Server, serverConfigs: IServerConfiguratio
             },
             response: {
                 schema: Joi.object({
-                    "changed": Joi.boolean().required()
+                    "success": Joi.boolean().required()
                 })
             },
             plugins: {
@@ -342,7 +339,8 @@ export default function (server: Hapi.Server, serverConfigs: IServerConfiguratio
                         '200': {
                             'description': 'PusNotif preference successfully changed.'
                         }
-                    }
+                    },
+                    order: 8
                 },
                 'hapiAuthorization': { roles: ['GOD', 'JESUS', 'ROMANS'] }
             },
@@ -352,8 +350,8 @@ export default function (server: Hapi.Server, serverConfigs: IServerConfiguratio
 
     server.route({
         method: 'PUT',
-        path: '/user/{userId}/changeEmailNotifPref',
-        handler: userController.emailNotif,
+        path: '/user/me/changeEmailNotifPref',
+        handler: userController.updateUserInfo,
         config: {
             description: 'Enable/Disable email-notifications for a user',
             notes: `Enable/disable email notifications on the basis of the emailNotif key in the payload.  
@@ -361,16 +359,13 @@ export default function (server: Hapi.Server, serverConfigs: IServerConfiguratio
             GOD, JESUS and ROMANS can access this endpoint`,
             auth: 'jwt',
             validate: {
-                params: {
-                    userId: Joi.number().required().description("UserId of a user"),
-                },
                 payload: Joi.object({
                     emailNotif: Joi.bool().required()
                 }),
             },
             response: {
                 schema: Joi.object({
-                    "changed": Joi.boolean().required()
+                    "success": Joi.boolean().required()
                 })
             },
             plugins: {
@@ -379,7 +374,8 @@ export default function (server: Hapi.Server, serverConfigs: IServerConfiguratio
                         '200': {
                             'description': 'EmailNotif preference successfully changed.'
                         }
-                    }
+                    },
+                    order: 9
                 },
                 'hapiAuthorization': { roles: ['GOD', 'JESUS', 'ROMANS'] }
             },
@@ -389,19 +385,59 @@ export default function (server: Hapi.Server, serverConfigs: IServerConfiguratio
 
     server.route({
         method: 'GET',
+        path: '/user/{userId}',
+        handler: userController.getUserInfo,
+        config: {
+            description: 'GET user information',
+            notes: `  
+            GOD and JESUS can access this endpoints`,
+            auth: 'jwt',
+            validate: {
+                params: {
+                    userId: Joi.number().required().description("UserId of a user"),
+                },
+            },
+            response: {
+                schema: Joi.object({
+                    "user": userAdminPannelSchema
+                })
+            },
+            plugins: {
+                'hapi-swagger': {
+                    responses: {
+                        '200': {
+                            'description': 'Successfully returned details of the user with the given id.'
+                        }
+                    },
+                    order: 1
+                },
+                'hapiAuthorization': { roles: ['GOD', 'JESUS'] }
+            },
+            tags: ['api', 'admin']
+        }
+    });
+
+    server.route({
+        method: 'GET',
         path: '/user',
-        handler: userController.getAllUsers,
+        handler: userController.getAllPaginatedUsers,
         config: {
             description: 'GET details of all the users',
             notes: `It will return the list of all users (with pagination).   
+            You have to pass the page size(Number of records in one page) and page number in query params.  
 
             GOD and JESUS can access this endpoint.`,
             auth: 'jwt',
             validate: {
+                query: {
+                    page: Joi.number().required(),
+                    size: Joi.number().required()
+                }
             },
             response: {
                 schema: Joi.object({
-                    "data": Joi.array().items(userAdminPannelSchema)
+                    "users": Joi.array().items(userAdminPannelSchema),
+                    "next": Joi.string().uri()
                 })
             },
             plugins: {
@@ -410,7 +446,8 @@ export default function (server: Hapi.Server, serverConfigs: IServerConfiguratio
                         '200': {
                             'description': 'List of all users returned successfully'
                         }
-                    }
+                    },
+                    order: 2
                 },
                 'hapiAuthorization': { roles: ['GOD', 'JESUS'] }
             },
@@ -424,12 +461,9 @@ export default function (server: Hapi.Server, serverConfigs: IServerConfiguratio
         handler: userController.createJesus,
         config: {
             description: 'Create a new account (with Jesus as the role)',
-            notes: `Creates a new user account with the details passed in the payload. 
+            notes: `Creates a new user account with the details passed in the payload.
 
-                If incase a user account with the details already exists, then it updates the role of the same.
-                
-                GOD can access this endpoint.
-                Authorisation header is required to access this endpoint.`,
+                GOD can access this endpoint.`,
             auth: 'jwt',
             validate: {
                 payload: Joi.object({
@@ -450,9 +484,10 @@ export default function (server: Hapi.Server, serverConfigs: IServerConfiguratio
                 'hapi-swagger': {
                     responses: {
                         '200': {
-                            'description': 'User promoted to Jesus'
+                            'description': "Successfully created an account with JESUS privileges."
                         }
-                    }
+                    },
+                    order: 5
                 },
                 'hapiAuthorization': { roles: ['GOD'] }
             },
@@ -483,7 +518,8 @@ export default function (server: Hapi.Server, serverConfigs: IServerConfiguratio
                         '200': {
                             'description': 'Downloadable link generated successfully'
                         }
-                    }
+                    },
+                    order: 3
                 },
                 'hapiAuthorization': { roles: ['GOD', 'JESUS'] }
             },
@@ -498,7 +534,8 @@ export default function (server: Hapi.Server, serverConfigs: IServerConfiguratio
         config: {
             description: 'Download the csv file containing list of all users.',
             notes: `This endpoint doesn't need any authentication headers.  
-            It will verify the credibility of the link by checking the expiry time of the JWT.  
+            It will verify the credibility of the link by checking the expiry time of the JWT passed in the query params.  
+            The JWT will be generated by the getCsvLink endpoint and will be valid for 10m.
 
             No authorisation header required to access this endpoint.`,
             validate: {
@@ -515,9 +552,10 @@ export default function (server: Hapi.Server, serverConfigs: IServerConfiguratio
                             'description': 'CSV Download successfully'
                         },
                         '400': {
-                            'description': 'JWT has expired'
+                            'description': 'This link has expired. Try downloading the file again'
                         }
-                    }
+                    },
+                    order: 4
                 }
             },
             tags: ['api', 'admin']

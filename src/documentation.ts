@@ -8,7 +8,7 @@ export function init(server: Hapi.Server, configs: IServerConfigurations, databa
         path: '/docs',
         config: {
             handler: function (request, reply: any) {
-                reply.view('custom.html', {});
+                reply.view('swaggerDocs.html', {});
             }
         }
     });

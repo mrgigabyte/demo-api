@@ -72,7 +72,7 @@
         "sequelize-cli": "2.7.0",
         "shortid": "2.2.8",
         "sigmund": "1.0.1",
-        "slug": "0.9.1",
+        "slug": "^0.9.1",
         "tunnel-agent": "0.6.0",
         "vise": "2.0.2",
         "vision": "4.1.1",

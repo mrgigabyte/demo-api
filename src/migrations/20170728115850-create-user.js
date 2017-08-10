@@ -22,10 +22,19 @@ module.exports = {
                 validate: {
                     notEmpty: true,
                     isEmail: true
-                }
+                },
+                unique: true
+            },
+            role: {
+                type: Sequelize.ENUM('god', 'jesus', 'romans'),
+                allowNull: false,
+                validate: {
+                    notEmpty: true,
+                },
+                defaultValue: 'romans'
             },
             password: {
-                type: Sequelize.STRING(50),
+                type: Sequelize.STRING(70),
                 allowNull: false,
                 validate: {
                     notEmpty: true
@@ -49,7 +58,7 @@ module.exports = {
                 allowNull: false,
                 defaultValue: 'disable'
             },
-            deleteOn: {
+            deletedOn: {
                 type: Sequelize.DATE,
                 allowNull: true
             },

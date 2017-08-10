@@ -1,10 +1,10 @@
 import * as Hapi from "hapi";
 import * as Joi from "joi";
-import { IServerConfigurations } from "../config";
 import * as Boom from "boom";
 
+import { IServerConfigurations } from "../config";
 import StoryController from "./stories-controller";
-import { storySchema, newStorySchema } from "./schemas";
+import { storySchema, newStorySchema, updateStorySchema } from "./schemas";
 
 export default function (server: Hapi.Server, serverConfigs: IServerConfigurations, database: any) {
 
@@ -35,7 +35,8 @@ export default function (server: Hapi.Server, serverConfigs: IServerConfiguratio
                         '200': {
                             'description': 'successfully returned a list of latest stories.'
                         }
-                    }
+                    },
+                    order: 2
                 },
                 'hapiAuthorization': { roles: ['GOD', 'JESUS', 'ROMANS'] }
             },
@@ -68,7 +69,8 @@ export default function (server: Hapi.Server, serverConfigs: IServerConfiguratio
                         '200': {
                             'description': 'Read the complete story.'
                         }
-                    }
+                    },
+                    order: 1
                 },
                 'hapiAuthorization': { roles: ['GOD', 'JESUS', 'ROMANS'] }
             },
@@ -100,7 +102,8 @@ export default function (server: Hapi.Server, serverConfigs: IServerConfiguratio
                         '200': {
                             'description': 'successfully returned a list of archived stories.'
                         }
-                    }
+                    },
+                    order: 3
                 },
                 'hapiAuthorization': { roles: ['GOD', 'JESUS', 'ROMANS'] }
             },
@@ -133,7 +136,8 @@ export default function (server: Hapi.Server, serverConfigs: IServerConfiguratio
                         '200': {
                             'description': 'Details of the story with id/slug in the payload found.'
                         }
-                    }
+                    },
+                    order: 12
                 },
                 'hapiAuthorization': { roles: ['GOD', 'JESUS'] }
             },
@@ -144,18 +148,25 @@ export default function (server: Hapi.Server, serverConfigs: IServerConfiguratio
     server.route({
         method: 'GET',
         path: '/story',
-        handler: storyController.getAllStories,
+        handler: storyController.getAllPaginatedStories,
         config: {
             description: 'GET all the stories(published/drafts) created so far.',
             notes: `The stories can be of the following two types:  
-            1. draft : Stories that dont have a publishedOn key.  
-            2. published : Stories that have a publishedOn key.
+            1. draft : Stories that have not been published. Hence, there publishedAt key is equal to null.   
+            2. published : Stories that have been published. Hence, there publishedAt key is not null.
             
             GOD and JESUS can access this endpoint.`,
             auth: 'jwt',
+            validate: {
+                query: {
+                    page: Joi.number().required(),
+                    size: Joi.number().required()
+                }
+            },
             response: {
                 schema: Joi.object({
-                    "data": Joi.array().items(storySchema)
+                    "stories": Joi.array().items(storySchema),
+                    "next": Joi.string().uri()
                 })
             },
             plugins: {
@@ -164,7 +175,8 @@ export default function (server: Hapi.Server, serverConfigs: IServerConfiguratio
                         '200': {
                             'description': 'List of all stories returned successfully'
                         }
-                    }
+                    },
+                    order: 13
                 },
                 'hapiAuthorization': { roles: ['GOD', 'JESUS'] }
             },
@@ -178,7 +190,9 @@ export default function (server: Hapi.Server, serverConfigs: IServerConfiguratio
         handler: storyController.newStory,
         config: {
             description: 'Creates a new story using the info sent in the payload.',
-            notes: `
+            notes: `The order of the cards will be decided from the position of cards in the array sent in the payload.
+            And, new cards will be created accordingly.
+
             GOD and JESUS can access this endpoint.`,
             auth: 'jwt',
             validate: {
@@ -195,7 +209,8 @@ export default function (server: Hapi.Server, serverConfigs: IServerConfiguratio
                         '201': {
                             'description': 'new story created successfully'
                         }
-                    }
+                    },
+                    order: 8
                 },
                 'hapiAuthorization': { roles: ['GOD', 'JESUS'] }
             },
@@ -209,14 +224,25 @@ export default function (server: Hapi.Server, serverConfigs: IServerConfiguratio
         handler: storyController.updateStory,
         config: {
             description: 'Update details of a previously published/draft story.',
-            notes: `
+            notes: `Pass all the cards in the payload that you want to associate with a story.
+            The order in which cards are passed in the payload will decide the cards order.
+    
+            1) When you pass card details without id in the payload a new card will be created with the details.
+
+            2) You can also edit existing cards in the story. The existing cards will have a id associated them.  
+            This id is used to update their details.
+
+            3) Any card that was associated with a story will be deleted if that card is not passed in the payload.
+
+            4) You can also update a story's by and title.
+
             GOD and JESUS can access this endpoint.`,
             auth: 'jwt',
             validate: {
                 params: {
                     idOrSlug: Joi.any().required().description("Id/Slug of the story"),
                 },
-                payload: newStorySchema
+                payload: updateStorySchema
             },
             response: {
                 schema: Joi.object({
@@ -227,7 +253,8 @@ export default function (server: Hapi.Server, serverConfigs: IServerConfiguratio
                 'hapi-swagger': {
                     responses: {
                         '200': 'Successfully made the changes.'
-                    }
+                    },
+                    order: 9
                 },
                 'hapiAuthorization': { roles: ['GOD', 'JESUS'] }
             },
@@ -262,7 +289,8 @@ export default function (server: Hapi.Server, serverConfigs: IServerConfiguratio
                         '200': {
                             'description': 'successfully published the story.'
                         }
-                    }
+                    },
+                    order: 10
                 },
                 'hapiAuthorization': { roles: ['GOD', 'JESUS'] }
             },
@@ -275,9 +303,9 @@ export default function (server: Hapi.Server, serverConfigs: IServerConfiguratio
         path: '/story/{idOrSlug}/preview',
         handler: storyController.preview,
         config: {
-            description: 'Makes the story live only for GOD and JESUS.',
-            notes: `This will make a story live only for GOD and JESUS.
-            
+            description: 'Pushes a story only to GOD/JESUS.',
+            notes: `This will send a push notification of a story to GOD/JESUS.    
+
             GOD and JESUS can access this endpoint.`,
             auth: 'jwt',
             validate: {
@@ -296,7 +324,8 @@ export default function (server: Hapi.Server, serverConfigs: IServerConfiguratio
                         '200': {
                             'description': 'successfully made the story live only for GOD/JESUS.'
                         }
-                    }
+                    },
+                    order: 11
                 },
                 'hapiAuthorization': { roles: ['GOD', 'JESUS'] }
             },
@@ -310,7 +339,7 @@ export default function (server: Hapi.Server, serverConfigs: IServerConfiguratio
         handler: storyController.deleteStory,
         config: {
             description: 'Deletes the story.',
-            notes: `It will soft delete a story. 
+            notes: `It will delete a story and all the cards associated with a story. 
             
             GOD and JESUS can access this endpoint.`,
             auth: 'jwt',
@@ -330,7 +359,8 @@ export default function (server: Hapi.Server, serverConfigs: IServerConfiguratio
                         '200': {
                             'description': 'successfully deleted the story.'
                         }
-                    }
+                    },
+                    order: 14
                 },
                 'hapiAuthorization': { roles: ['GOD', 'JESUS'] }
             },

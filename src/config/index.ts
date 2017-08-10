@@ -8,7 +8,7 @@ const configs = new nconf.Provider({
     argv: true,
     store: {
         type: 'file',
-        file: path.join(__dirname, `./config.${process.env.NODE_ENV || "dev"}.json`)
+        file: path.join(__dirname, `./config.${process.env.NODE_ENV}.json`)
     }
 });
 
@@ -19,36 +19,23 @@ export interface IServerConfigurations {
     jwtExpiration: string;
     jwtCsvSecret: string;
     jwtCsvExpiration: string;
+    baseUrl: string;
     googleCloud: {
         projectId: string;
         keyFilename: string;
         cardBucket: string;
+        encodedVideoBucket: string;
     };
+    zenCoderApiKey: string;
 }
 
 export interface IDb {
-    sequelize: Sequelize.Sequelize;
-    Sequelize: Sequelize.SequelizeStatic;
-    user: Sequelize.Model<any, any>;
-    story: Sequelize.Model<any, any>;
-    card: Sequelize.Model<any, any>;
-    resetCode: Sequelize.Model<any, any>;
-}
-
-export interface IDataConfiguration {
-    client: string;
-    database: string;
-    host: string;
-    user: string;
-    password: string;
-    requestTimeout: number;
-    connectionTimeout: number;
-    acquireConnectionTimeout: number;
-    pool: {
-        min: number;
-        max: number;
-    };
-    models: Array<string>;
+    sequelize: any;
+    Sequelize: any;
+    user: any;
+    story: any;
+    card: any;
+    resetCode: any;
 }
 
 export function getServerConfigs(): IServerConfigurations {

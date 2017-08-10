@@ -26,6 +26,7 @@ export default (): IPlugin => {
                             },
                             basePath: "/api",
                             grouping: 'tags',
+                            sortEndpoints: 'ordered',
                             tags: [
                                 {
                                     'name': 'user',
@@ -37,7 +38,7 @@ export default (): IPlugin => {
                                 },
                                 {
                                     'name': 'card',
-                                    'description': 'Card related endpoints for the app.',                                    
+                                    'description': 'Card related endpoints for the app.',
                                 },
                                 {
                                     'name': 'admin',
@@ -47,7 +48,7 @@ export default (): IPlugin => {
                             validatorUrl: null,
                         }
                     }
-                    
+
                 ]
                     , (error) => {
                         if (error) {

@@ -3,10 +3,10 @@
         "exec_mode": "fork",
         "instances": 4,
         "script": "./build/src/index.js",
-        "name": "abstrct-demo-api",
+        "name": "abstrct-staging-api",
         "interpreter": "node",
         "env": {
-            "NODE_ENV": "prod"
+            "NODE_ENV": "staging"
         },
         "out_file": "/logs/abstrct-node-app.log",
         "error_file": "/logs/abstrct-node-app-err.log"

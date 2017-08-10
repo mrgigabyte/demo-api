@@ -1,22 +1,18 @@
 import * as Server from "./server";
 import * as Configs from "./config";
-import database from './models';
 import * as Hapi from "hapi";
+import * as Database from './models';
 
-console.log(`Running enviroment ${process.env.NODE_ENV || "dev"}`);
-
-const serverConfigs = Configs.getServerConfigs();
-database.sequelize.sync().then(() => {
+if (process.env.NODE_ENV) {
+    let database = Database.init(process.env.NODE_ENV);
+    console.log(`Running enviroment ${process.env.NODE_ENV}`);
+    const serverConfigs = Configs.getServerConfigs();
     //Starting Application Server
     Server.init(serverConfigs, database).then((server: Hapi.Server) => {
-        if (!module.parent) {
-            server.start(() => {
-                console.log('Server running at:', server.info.uri);
-                // console.log('Documentaion available at:', server.info.uri + '/docs');
-            });
-            console.log("Running server from parent :)");
-        } else {
-            console.log("Not running the server because it is not run through parent module.");
-        }
+        server.start(() => {
+            console.log('Server running at:', server.info.uri);
+        });
     });
-});
+} else {
+    throw Error('Set NODE_ENV to "dev", "staging" or "prod".');
+}

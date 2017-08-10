@@ -6,6 +6,7 @@ import * as Users from "./users";
 import * as Stories from "./stories";
 import * as Cards from "./cards";
 import * as Documetation from "./documentation";
+import * as Boom from 'boom';
 
 export function init(configs: IServerConfigurations, database: any): Promise<Hapi.Server> {
     return new Promise<Hapi.Server>(resolve => {
@@ -20,6 +21,20 @@ export function init(configs: IServerConfigurations, database: any): Promise<Hap
                 },
                 log: true
             }
+        });
+
+        /**
+         * Pre response handler.
+         * This will throw an internal server error if any unexepected errors come anywhere in the code.
+         * TODO: Integrate loggly.
+         */
+        server.ext('onPreResponse', (request: Hapi.Request, reply: Hapi.ReplyWithContinue) => {
+            const response = request.response;
+            if (!response.isBoom) { // if not error then continue :)
+                return reply.continue();
+            }
+            console.log(response);
+            return reply(response);
         });
 
         //  Setup Hapi Plugins
@@ -39,8 +54,10 @@ export function init(configs: IServerConfigurations, database: any): Promise<Hap
 
         // Register all the routes once all plugins have been initialized
         Promise.all(pluginPromises).then(() => {
+            // Configured handlebars as the template engine.
+            // I have made a custom template for swagger using handlebars.            
             server.views({
-                path: 'src/assets',
+                path: 'src/templates',
                 engines: { html: require('handlebars') },
                 isCached: false
             });

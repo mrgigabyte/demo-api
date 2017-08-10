@@ -1,9 +1,14 @@
 import * as Joi from "joi";
-import { cardSchema } from "../cards/schemas";
+import { cardSchema, newCardSchema } from "../cards/schemas";
+
 
 export const newStorySchema: Joi.ObjectSchema = Joi.object({
     title: Joi.string().required(),
     by: Joi.string().required(),
+    cards: Joi.array().items(newCardSchema)
+});
+
+export const updateStorySchema: Joi.ObjectSchema = newStorySchema.keys({
     cards: Joi.array().items(cardSchema)
 });
 
@@ -14,7 +19,5 @@ export const storySchema: Joi.ObjectSchema = newStorySchema.keys({
     views: Joi.number(),
     publishedAt: Joi.date().allow(null),
     createdAt: Joi.date().required(),
-    // users: Joi.array().items(Joi.number())
-    users: Joi.any(),
     cards: Joi.array().items(cardSchema)
 });
