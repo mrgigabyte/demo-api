@@ -20,7 +20,7 @@ gulp.task('clean', function() {
 /**
  * Lint all custom TypeScript files.
  */
-gulp.task('tslint', () => {
+gulp.task('tslint', ['clean'], () => {
     return gulp.src('src/**/*.ts')
         .pipe(tslint({
             formatter: "verbose"
@@ -43,7 +43,7 @@ function compileTS(args, cb) {
     });
 }
 
-gulp.task('compile', shell.task([
+gulp.task('compile', ['clean'], shell.task([
     'npm run tsc',
 ]))
 
@@ -56,7 +56,7 @@ gulp.task('watch', shell.task([
     /**
      * Copy config files
      */
-gulp.task('configs', (cb) => {
+gulp.task('configs', ['clean'], (cb) => {
     return gulp.src("src/config/*.json")
         .pipe(gulp.dest('./build/src/config'));
 });
@@ -90,12 +90,14 @@ gulp.task('develop', function() {
      */
 gulp.task('test', ['build'], (cb) => {
     const envs = env.set({
-        NODE_ENV: 'test'
+        NODE_ENV: process.env.NODE_ENV
     });
 
     gulp.src(['build/test/**/*.js'])
         .pipe(envs)
-        .pipe(mocha())
+        .pipe(mocha({
+            reporter: 'list'
+        }))
         .once('error', (error) => {
             console.log(error);
             process.exit(1);
