@@ -175,14 +175,14 @@ export default class UserController {
     }
 
     public getAllPaginatedUsers(request: Hapi.Request, reply: Hapi.Base_Reply) {
-        this.database.user.getAllPaginatedUsers(request.query.size, request.query.page).then((response: any) => {
+        this.database.user.getAllPaginatedUsers(request.query.size, request.query.page, this.configs.baseUrl).then((response: any) => {
             return reply(response);
         }).catch(err => reply(err));
     }
 
     public generateCsvLink(request: Hapi.Request, reply: Hapi.Base_Reply) {
         let jwttoken = this.database.user.generateJwtCsv(this.configs);
-        let link: string = request.server.info.uri + '/user/downloadCsv?jwt=' + jwttoken;
+        let link: string = this.configs.baseUrl + '/user/downloadCsv?jwt=' + jwttoken;
         return reply({
             "link": link
         });

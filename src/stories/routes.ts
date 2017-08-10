@@ -303,8 +303,8 @@ export default function (server: Hapi.Server, serverConfigs: IServerConfiguratio
         path: '/story/{idOrSlug}/preview',
         handler: storyController.preview,
         config: {
-            description: 'Makes the story live only for GOD and JESUS.',
-            notes: `This will make a story live only for GOD and JESUS.    
+            description: 'Pushes a story only to GOD/JESUS.',
+            notes: `This will send a push notification of a story to GOD/JESUS.    
 
             GOD and JESUS can access this endpoint.`,
             auth: 'jwt',

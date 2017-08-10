@@ -19,6 +19,7 @@ export interface IServerConfigurations {
     jwtExpiration: string;
     jwtCsvSecret: string;
     jwtCsvExpiration: string;
+    baseUrl: string;
     googleCloud: {
         projectId: string;
         keyFilename: string;

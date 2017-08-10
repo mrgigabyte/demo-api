@@ -97,7 +97,7 @@ export default function (sequelize, DataTypes) {
     /**
      * Returns user details in paginated fashion.
      */
-    User.getAllPaginatedUsers = function (size: number, page: number): Promise<any> {
+    User.getAllPaginatedUsers = function (size: number, page: number, baseUrl: string): Promise<any> {
         if (size > 0 && page >= 0) {
             return User.scope(null).findAndCountAll({
                 attributes: ['id', 'name', 'email', 'emailNotif', 'pushNotif', ['createdAt', 'joinedOn'], 'status'],
@@ -111,7 +111,7 @@ export default function (sequelize, DataTypes) {
                 if (page < Math.ceil(res.count / size) - 1) {  // for pages other than the last page.
                     return ({
                         users: data,
-                        next: `http://localhost/api/user?page=${page + 1}&size=${size}`
+                        next: `${baseUrl}/user?page=${page + 1}&size=${size}`
                     });
                 } else if (page === Math.ceil(res.count / size) - 1) { // for last page.
                     return ({

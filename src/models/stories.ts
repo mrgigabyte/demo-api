@@ -234,7 +234,7 @@ export default function (sequelize, DataTypes) {
         });
     };
 
-    Story.getAllPaginatedStories = function (userModel: any, size: number, page: number): Promise<Array<any>> {
+    Story.getAllPaginatedStories = function (userModel: any, size: number, page: number, baseUrl: string): Promise<Array<any>> {
         if (size > 0 && page >= 0) {
             return this.findAndCountAll({
                 attributes: ['id', 'title', 'slug', 'by', 'createdAt', 'publishedAt'],
@@ -255,7 +255,7 @@ export default function (sequelize, DataTypes) {
                             if (page < Math.ceil(res.count / size) - 1) {  // for pages other than the last page.
                                 return ({
                                     stories: stories,
-                                    next: `http://localhost/api/user?page=${page + 1}&size=${size}`
+                                    next: `${baseUrl}/story?page=${page + 1}&size=${size}`
                                 });
                             } else if (page === Math.ceil(res.count / size) - 1) { // for last page.
                                 return ({

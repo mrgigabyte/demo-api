@@ -2,35 +2,40 @@
 
 module.exports = {
     up: function(queryInterface, Sequelize) {
-        return queryInterface.createTable('resetCodes', {
+        return queryInterface.createTable('stories', {
             id: {
                 type: Sequelize.INTEGER(11),
                 primaryKey: true,
                 autoIncrement: true,
                 allowNull: false,
             },
-            code: {
-                type: Sequelize.STRING(150),
-                allowNull: true,
+            title: {
+                type: Sequelize.STRING(100),
+                allowNull: false,
                 validate: {
                     notEmpty: true
                 }
             },
-            expiresAt: {
+            slug: {
+                type: Sequelize.STRING(100),
+                allowNull: false,
+                unique: true,
+                validate: {
+                    notEmpty: true
+                }
+            },
+            by: {
+                type: Sequelize.STRING(100),
+                allowNull: false,
+                validate: {
+                    notEmpty: true
+                }
+            },
+            publishedAt: {
                 type: Sequelize.DATE,
                 allowNull: true,
                 validate: {
                     notEmpty: true
-                }
-            },
-            userId: {
-                type: Sequelize.INTEGER(11),
-                allowNull: false,
-                onDelete: 'CASCADE',
-                references: {
-                    model: 'users',
-                    key: 'id',
-                    as: 'userId',
                 }
             },
             createdAt: {
@@ -43,7 +48,8 @@ module.exports = {
             }
         });
     },
+
     down: function(queryInterface, Sequelize) {
-        return queryInterface.dropTable('resetCodes');
+        return queryInterface.dropTable('stories');
     }
 };

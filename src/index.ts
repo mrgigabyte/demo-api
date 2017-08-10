@@ -7,14 +7,12 @@ if (process.env.NODE_ENV) {
     let database = Database.init(process.env.NODE_ENV);
     console.log(`Running enviroment ${process.env.NODE_ENV}`);
     const serverConfigs = Configs.getServerConfigs();
-    database.sequelize.sync().then(() => {
-        //Starting Application Server
-        Server.init(serverConfigs, database).then((server: Hapi.Server) => {
-            server.start(() => {
-                console.log('Server running at:', server.info.uri);
-            });
+    //Starting Application Server
+    Server.init(serverConfigs, database).then((server: Hapi.Server) => {
+        server.start(() => {
+            console.log('Server running at:', server.info.uri);
         });
     });
 } else {
-    throw Error('Set NODE_ENV to "dev", "prod" or "local".');
+    throw Error('Set NODE_ENV to "dev", "staging" or "prod".');
 }
