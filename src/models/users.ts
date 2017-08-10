@@ -97,29 +97,31 @@ export default function (sequelize, DataTypes) {
     /**
      * Returns user details in paginated fashion.
      */
-    User.getAllUsers = function (size = 10, page = 0): Promise<any> {
-        return User.scope(null).findAndCountAll({
-            attributes: ['id', 'name', 'email', 'emailNotif', 'pushNotif', ['createdAt', 'joinedOn'], 'status'],
-            limit: size,
-            offset: page * size
-        }).then((res) => {
-            let data: Array<any> = [];
-            res.rows.forEach((user) => {
-                data.push(user.get({ plain: true }));
+    User.getAllPaginatedUsers = function (size: number, page: number): Promise<any> {
+        if (size > 0 && page >= 0) {
+            return User.scope(null).findAndCountAll({
+                attributes: ['id', 'name', 'email', 'emailNotif', 'pushNotif', ['createdAt', 'joinedOn'], 'status'],
+                limit: size,
+                offset: page * size
+            }).then((res) => {
+                let data: Array<any> = [];
+                res.rows.forEach((user) => {
+                    data.push(user.get({ plain: true }));
+                });
+                if (page < Math.ceil(res.count / size) - 1) {  // for pages other than the last page.
+                    return ({
+                        users: data,
+                        next: `http://localhost/api/user?page=${page + 1}&size=${size}`
+                    });
+                } else if (page === Math.ceil(res.count / size) - 1) { // for last page.
+                    return ({
+                        users: data
+                    });
+                }
             });
-            if (page < Math.ceil(res.count / size) - 1) {  // for pages other than the last page.
-                return ({
-                    users: data,
-                    next: `http://localhost/api/user?page=${page + 1}&size=${size}`
-                });
-            } else if (page === Math.ceil(res.count / size) - 1) { // for last page.
-                return ({
-                    users: data
-                });
-            } else {
-                throw Boom.notFound('No user found on this page.');
-            }
-        });
+        } else {
+            return Promise.reject(Boom.badRequest('Page size and page number must be greater than 0'));
+        }
     };
 
     /**

@@ -38,7 +38,8 @@ export default function (server: Hapi.Server, serverConfigs: IServerConfiguratio
                         '200': {
                             'description': 'Successfully changed the favourite state of card'
                         }
-                    }
+                    },
+                    order: 1
                 },
                 'hapiAuthorization': { roles: ['GOD', 'JESUS', 'ROMANS'] }
             },
@@ -66,7 +67,8 @@ export default function (server: Hapi.Server, serverConfigs: IServerConfiguratio
                         '200': {
                             'description': 'Successfully returned the favourite cards if any.'
                         }
-                    }
+                    },
+                    order: 2
                 },
                 'hapiAuthorization': { roles: ['GOD', 'JESUS', 'ROMANS'] }
             },
@@ -125,7 +127,8 @@ export default function (server: Hapi.Server, serverConfigs: IServerConfiguratio
                         '403': {
                             'description': 'file type not supported'
                         }
-                    }
+                    },
+                    order: 6
                 },
                 'hapiAuthorization': { roles: ['GOD', 'JESUS'] }
             },
@@ -172,7 +175,8 @@ export default function (server: Hapi.Server, serverConfigs: IServerConfiguratio
                         '417': {
                             'description': 'Could not enocde the video.'
                         }
-                    }
+                    },
+                    order: 7
                 },
                 'hapiAuthorization': { roles: ['GOD', 'JESUS'] }
             },

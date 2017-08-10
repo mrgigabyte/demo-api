@@ -174,8 +174,8 @@ export default class UserController {
         }).catch(err => reply(err));
     }
 
-    public getAllUsers(request: Hapi.Request, reply: Hapi.Base_Reply) {
-        this.database.user.getAllUsers(request.query.size, request.query.page).then((response: any) => {
+    public getAllPaginatedUsers(request: Hapi.Request, reply: Hapi.Base_Reply) {
+        this.database.user.getAllPaginatedUsers(request.query.size, request.query.page).then((response: any) => {
             return reply(response);
         }).catch(err => reply(err));
     }
