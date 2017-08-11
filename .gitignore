@@ -4,3 +4,4 @@ src/config/config.dev.json
 src/config/googleServiceAccountKey.json
 .DS_Store
 npm-debug.log
+node_modules/
