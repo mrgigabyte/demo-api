@@ -1,6 +1,6 @@
 {
     "dialect": "mysql",
-    "database": "abstrct_staging",
+    "database": "abstrct_prod",
     "host": "104.197.20.135",
     "username": "root",
     "password": "hello123",
@@ -23,6 +23,7 @@
             "acl-auth",
             "logger"
         ],
+        "baseUrl": "",
         "googleCloud": {
             "projectId": "omega-branch-174318",
             "keyFilename": "config/googleServiceAccountKey.json",

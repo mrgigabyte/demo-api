@@ -29,6 +29,7 @@ export default function (sequelize, DataTypes) {
             },
             userId: {
                 type: Sequelize.INTEGER(11),
+                allowNull: false,
                 unique: true
             }
         }, {

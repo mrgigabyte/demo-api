@@ -78,12 +78,11 @@ export default class StoryController {
         }).catch((err) => reply(err));
     }
 
-    public getAllStories(request: Hapi.Request, reply: Hapi.Base_Reply) {
-        this.database.story.getAllStories(this.database.user).then((stories: Array<any>) => {
-            return reply({
-                "data": stories
-            });
-        }).catch((err) => reply(err));
+    public getAllPaginatedStories(request: Hapi.Request, reply: Hapi.Base_Reply) {
+        this.database.story.getAllPaginatedStories(this.database.user, request.query.size, request.query.page, this.configs.baseUrl)
+            .then((response: any) => {
+                return reply(response);
+            }).catch((err) => reply(err));
     }
 
     public newStory(request: Hapi.Request, reply: Hapi.Base_Reply) {

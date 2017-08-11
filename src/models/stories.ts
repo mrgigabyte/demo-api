@@ -234,26 +234,45 @@ export default function (sequelize, DataTypes) {
         });
     };
 
-    Story.getAllStories = function (userModel: any): Promise<Array<any>> {
-        return this.findAll({
-            attributes: ['id', 'title', 'slug', 'by', 'createdAt', 'publishedAt']
-        }).then((stories: Array<any>) => {
-            if (stories.length) {
-                let promises: Array<Promise<any>> = [];
-                stories.forEach((story: any) => {
-                    if (story.publishedAt) {
-                        promises.push(story.getUsers().then((users: Array<any>) => {
-                            story.views = users.length;
-                        }));
-                    }
-                });
-                return Promise.all(promises).then(() => {
-                    return Story.getPlainStories(stories);
-                });
-            } else {
-                throw Boom.notFound('Stories not found');
-            }
-        });
+    Story.getAllPaginatedStories = function (userModel: any, size: number, page: number, baseUrl: string): Promise<Array<any>> {
+        if (size > 0 && page >= 0) {
+            return this.findAndCountAll({
+                attributes: ['id', 'title', 'slug', 'by', 'createdAt', 'publishedAt'],
+                limit: size,
+                offset: page * size
+            }).then((res: any) => {
+                if (res.rows.length) {
+                    let promises: Array<Promise<any>> = [];
+                    res.rows.forEach((story: any) => {
+                        if (story.publishedAt) {
+                            promises.push(story.getUsers().then((users: Array<any>) => {
+                                story.views = users.length;
+                            }));
+                        }
+                    });
+                    return Promise.all(promises).then(() => {
+                        return Story.getPlainStories(res.rows).then((stories: Array<any>) => {
+                            if (page < Math.ceil(res.count / size) - 1) {  // for pages other than the last page.
+                                return ({
+                                    stories: stories,
+                                    next: `${baseUrl}/story?page=${page + 1}&size=${size}`
+                                });
+                            } else if (page === Math.ceil(res.count / size) - 1) { // for last page.
+                                return ({
+                                    stories: stories
+                                });
+                            }
+                        });
+                    });
+                } else {
+                    return ({
+                        stories: res.rows
+                    });
+                }
+            });
+        } else {
+            return Promise.reject(Boom.badRequest('Page size and page number must be greater than 0'));
+        }
     };
 
     Story.prototype.getPlainCards = function (): Promise<any> {
