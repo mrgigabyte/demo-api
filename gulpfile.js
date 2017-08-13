@@ -94,14 +94,14 @@ gulp.task('test', ['build'], (cb) => {
     });
 
     gulp.src(['build/test/**/*.js'])
-        .pipe(envs)
+        // .pipe(envs)
         .pipe(mocha({
             reporter: 'list'
         }))
-        .once('error', (error) => {
-            console.log(error);
-            process.exit(1);
-        })
+        // .once('error', (error) => {
+        //     console.log(error);
+        //     process.exit(1);
+        // })
         .once('end', () => {
             process.exit();
         });

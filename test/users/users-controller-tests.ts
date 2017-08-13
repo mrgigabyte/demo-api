@@ -5,7 +5,7 @@ import * as Database from '../../src/models';
 import * as Server from "../../src/server";
 import { IDb } from "../../src/config";
 import * as Hapi from 'hapi';
-// import * as Utils from "../utils";
+import * as Utils from "../utils";
 
 const assert = chai.assert;
 let database: IDb = Database.init(process.env.NODE_ENV);
@@ -21,92 +21,50 @@ describe("UserController Tests", () => {
     //     Utils.createSeedUserData(database, done);
     // });
 
-    // afterEach((done) => {
-    //     Utils.clearDatabase(database, done);
-    // });
+    afterEach((done) => {
+        Utils.clearDatabase(database, done);
+    });
 
-    it("Create user", (done) => {
-        var user = {
-            email: "user@mail.com",
-            name: "John Robot",
-            password: "123123"
-        };
+    it("Create user", () => {
+        // var user = {
+        //     email: "user@mail.com",
+        //     name: "John Robot",
+        //     password: "123123"
+        // };
 
-        server.inject({ method: 'POST', url: '/user', payload: user }, (res) => {
+        return server.inject({ method: 'POST', url: '/user', payload: Utils.createUserDummy() }).then((res) => {
             // console.log(res);
-            assert.equal(200, res.statusCode);
+            assert.equal(201, res.statusCode);
             var responseBody: any = JSON.parse(res.payload);
+            Promise.resolve();
             // console.log(responseBody);
             // assert.isNotNull(responseBody.token);
             // database.sequelize.close();
- 
         });
     });
 
-    it("Create user already exists", (done) => {
+    it("Create user invalid data", () => {
         var user = {
-            email: "user@mail.com",
+            email: "user",
             name: "John Robot",
             password: "123123"
         };
-        
-        server.inject({ method: 'POST', url: '/user', payload: user }, (res) => {
-            // console.log(res);
+
+        return server.inject({ method: 'POST', url: '/user', payload: user }).then((res) => {
+            assert.equal(400, res.statusCode);
+            Promise.resolve();
+        });
+    });
+
+    it("Create user existing data", () => {
+        Utils.createSeedUserData(database);
+
+        return server.inject({ method: 'POST', url: '/user', payload: Utils.createUserDummy() }).then((res) => {
             assert.equal(409, res.statusCode);
-            var responseBody: any = JSON.parse(res.payload);
-            // console.log(responseBody);
-            // assert.isNotNull(responseBody.token);
-            // database.sequelize.close();
-        done();
+            Promise.resolve();
         });
     });
-
-    it("Create user invalid data", (done) => {
-
-        it("password invalid", (done) => {
-            var user = {
-                email: "user@mail.com",
-                name: "John Robot",
-                password: ""
-            };
-            
-            server.inject({ method: 'POST', url: '/user', payload: user }, (res) => {
-                // console.log(res);
-                assert.equal(400, res.statusCode);
-                var responseBody: any = JSON.parse(res.payload);
-            });
-        });
-
-        it("email invalid", (done) => {
-            var user = {
-                email: "usermailcom",
-                name: "John Robot",
-                password: "123123"
-            };
-            
-            server.inject({ method: 'POST', url: '/user', payload: user }, (res) => {
-                // console.log(res);
-                assert.equal(400, res.statusCode);
-                var responseBody: any = JSON.parse(res.payload);
-            });
-        });
-
-        it("name invalid", (done) => {
-            var user = {
-                email: "user@mail.com",
-                name: "",
-                password: "123123"
-            };
-            
-            server.inject({ method: 'POST', url: '/user', payload: user }, (res) => {
-                // console.log(res);
-                assert.equal(400, res.statusCode);
-                var responseBody: any = JSON.parse(res.payload);
-            });
-        });
-        done();
-    });
-
+    
 
     // it("Create user with same email", (done) => {
     //     server.inject({ method: 'POST', url: '/users', payload: Utils.createUserDummy() }, (res) => {

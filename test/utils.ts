@@ -1,40 +1,37 @@
 // import * as Database from "../src/database";
+// import * as Database from '../src/models';
 
+import * as chai from "chai";
+import UserController from "../src/users/user-controller";
+import * as Configs from "../src/config";
+import * as Database from '../src/models';
+import * as Server from "../src/server";
+import { IDb } from "../src/config";
+import * as Hapi from 'hapi';
 
-// export function createTaskDummy(userId?: string, name?: string, description?: string) {
-//     var user = {
-//         name: name || "dummy task",
-//         description: description || "I'm a dummy task!"
-//     };
+// let database: IDb = Database.init(process.env.NODE_ENV);
 
-//     if (userId) {
-//         user["userId"] = userId;
-//     }
+export function createUserDummy(email?: string) {
+    var user = {
+        email: email || "dummy@mail.com",
+        name: "Dummy Jones",
+        password: "123123"
+    };
 
-//     return user;
-// }
+    return user;
+}
 
-// export function createUserDummy(email?: string) {
-//     var user = {
-//         email: email || "dummy@mail.com",
-//         name: "Dummy Jones",
-//         password: "123123"
-//     };
-
-//     return user;
-// }
-
-
-// export function clearDatabase(database: Database.IDatabase, done: MochaDone) {
-//     var promiseUser = database.userModel.remove({});
-//     var promiseTask = database.taskModel.remove({});
-
-//     Promise.all([promiseUser, promiseTask]).then(() => {
-//         done();
-//     }).catch((error) => {
-//         console.log(error);
-//     });
-// }
+export function clearDatabase(database: IDb, done: MochaDone) {
+    var promiseUser = database.user.destroy({
+  where: {}
+})
+    Promise.all([promiseUser]).then(() => {
+        // Promise.resolve();
+        done();
+    }).catch((error) => {
+        console.log(error);
+    });
+}
 
 // export function createSeedTaskData(database: Database.IDatabase, done: MochaDone) {
 //     return database.userModel.create(createUserDummy())
@@ -51,13 +48,10 @@
 //         });
 // }
 
-// export function createSeedUserData(database: Database.IDatabase, done: MochaDone) {
-//     database.userModel.create(createUserDummy())
-//         .then((user) => {
-//             done();
-//         })
-//         .catch((error) => {
-//             console.log(error);
-//         });
-// }
+export function createSeedUserData(database: IDb) {
+   database.user.create(createUserDummy())
+        .catch((error) => {
+            console.log(error);
+        });
+}
 

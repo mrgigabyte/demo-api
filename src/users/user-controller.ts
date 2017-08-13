@@ -16,7 +16,7 @@ export default class UserController {
         this.database.user.create(request.payload).then((user: any) => {
             return reply({
                 "success": true
-            });
+            }).code(201);
         }).catch((err) => {
             if (err.parent.errno === 1062) {
                 reply(Boom.conflict('User with the given email already exists'));

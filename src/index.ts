@@ -12,7 +12,6 @@ if (process.env.NODE_ENV) {
         server.start(() => {
             console.log('Server running at:', server.info.uri);
         });
-
     });
 } else {
     throw Error('Set NODE_ENV to "dev", "staging" or "prod".');
