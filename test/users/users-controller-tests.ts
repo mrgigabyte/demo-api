@@ -25,21 +25,20 @@ describe("UserController Tests", () => {
     //     Utils.clearDatabase(database, done);
     // });
 
-    it("Create user", (done) => {
+    it("Create user", () => {
         var user = {
             email: "user@mail.com",
             name: "John Robot",
             password: "123123"
         };
 
-        server.inject({ method: 'POST', url: '/user', payload: user }, (res) => {
+        return server.inject({ method: 'POST', url: '/user', payload: user }).then((res) => {
             // console.log(res);
-            assert.equal(200, res.statusCode);
+            assert.equal(201, res.statusCode);
             var responseBody: any = JSON.parse(res.payload);
             // console.log(responseBody);
             // assert.isNotNull(responseBody.token);
             // database.sequelize.close();
-            done();
         });
     });
 

@@ -1,0 +1,35 @@
+{
+    "dialect": "mysql",
+    "database": "abstrct_testing",
+    "host": "localhost",
+    "username": "root",
+    "password": "hello123",
+    "requestTimeout": 90000,
+    "connectionTimeout": 30000,
+    "acquireConnectionTimeout": 30000,
+    "pool": {
+        "min": 4,
+        "max": 10
+    },
+    "server": {
+        "port": 5000,
+        "jwtSecret": "random-secret-password",
+        "jwtExpiration": "1h",
+        "jwtCsvSecret": "CSV",
+        "jwtCsvExpiration": "10m",
+        "plugins": [
+            "jwt-auth",
+            "swagger",
+            "acl-auth",
+            "logger"
+        ],
+        "baseUrl": "http://localhost/api",
+        "googleCloud": {
+            "projectId": "omega-branch-174318",
+            "keyFilename": "config/googleServiceAccountKey.json",
+            "cardBucket": "story-cards",
+            "encodedVideoBucket": "encoded-video-cards"
+        },
+        "zenCoderApiKey": "988a4d41538476737d752367f803b9ed"
+    }
+}
