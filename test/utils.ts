@@ -9,9 +9,14 @@ import * as Server from "../src/server";
 import { IDb } from "../src/config";
 import * as Hapi from 'hapi';
 
-// let database: IDb = Database.init(process.env.NODE_ENV);
+let database: IDb = Database.init(process.env.NODE_ENV);
+const serverConfig = Configs.getServerConfigs();
+let server: Hapi.Server;
+Server.init(serverConfig, database).then((Server: Hapi.Server) => {
+    server = Server;
+});
 
-export function createUserDummy(email?: string) {
+export function getUserDummy(email?: string) {
     var user = {
         email: email || "dummy@mail.com",
         name: "Dummy Jones",
@@ -21,15 +26,46 @@ export function createUserDummy(email?: string) {
     return user;
 }
 
-export function clearDatabase(database: IDb, done: MochaDone) {
-    var promiseUser = database.user.destroy({
-  where: {}
-})
-    Promise.all([promiseUser]).then(() => {
-        // Promise.resolve();
-        done();
-    }).catch((error) => {
-        console.log(error);
+export function getServerInstance() {
+    return server;
+}
+
+// export function createInvalidUserDummy(email?: string, name?: string, password?: string): Promise<any> {
+//     var user = {
+//         email: email || "",
+//         name: name || "",
+//         password: password || ""
+//     };
+
+//     console.log(user);
+
+
+//     // return user;
+// }
+
+export function clearDatabase() {
+    var promiseResetCodes = database.resetCode.destroy({ where: {} })
+    var promiseUser = database.user.destroy({ where: {} })
+    return Promise.all([promiseResetCodes, promiseUser]);
+}
+
+export function createUserDummy(): Promise<any> {
+    return database.user.create(getUserDummy())
+        .catch((error) => {
+            console.log(error);
+        });
+}
+
+export function getRomansjwt() {
+    let user = {
+        email: getUserDummy().email,
+        password: getUserDummy().password
+    };
+    return createUserDummy().then((res) => {
+        console.log('-----------------------------');
+        console.log(res,user);
+         console.log('-----------------------------');       
+        return server.inject({ method: 'POST', url: '/user/login', payload: user });
     });
 }
 
@@ -48,10 +84,4 @@ export function clearDatabase(database: IDb, done: MochaDone) {
 //         });
 // }
 
-export function createSeedUserData(database: IDb) {
-   database.user.create(createUserDummy())
-        .catch((error) => {
-            console.log(error);
-        });
-}
 

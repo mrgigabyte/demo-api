@@ -10,10 +10,10 @@ const nodemon = require('gulp-nodemon');
 /**
  * Remove build directory.
  */
-gulp.task('clean', function() {
+gulp.task('clean', function () {
     return gulp.src('build/*', {
-            read: false
-        })
+        read: false
+    })
         .pipe(rimraf());
 });
 
@@ -51,11 +51,11 @@ gulp.task('compile', ['clean'], shell.task([
  * Watch for changes in TypeScript
  */
 gulp.task('watch', shell.task([
-        'npm run tsc-watch',
-    ]))
-    /**
-     * Copy config files
-     */
+    'npm run tsc-watch',
+]))
+/**
+ * Copy config files
+ */
 gulp.task('configs', ['clean'], (cb) => {
     return gulp.src("src/config/*.json")
         .pipe(gulp.dest('./build/src/config'));
@@ -71,37 +71,36 @@ gulp.task('build', ['tslint', 'compile', 'configs'], () => {
 /**
  * Build the project when there are changes in TypeScript files
  */
-gulp.task('develop', function() {
-        var stream = nodemon({
-            script: 'build/src/index.js',
-            ext: 'ts',
-            tasks: ['build']
-        })
-        stream
-            .on('restart', function() {
-                console.log('restarted the build process')
-            })
-            .on('crash', function() {
-                console.error('Application has crashed!\n')
-            })
+gulp.task('develop', function () {
+    var stream = nodemon({
+        script: 'build/src/index.js',
+        ext: 'ts',
+        tasks: ['build']
     })
-    /**
-     * Run tests.
-     */
+    stream
+        .on('restart', function () {
+            console.log('restarted the build process')
+        })
+        .on('crash', function () {
+            console.error('Application has crashed!\n')
+        })
+})
+/**
+ * Run tests.
+ */
 gulp.task('test', ['build'], (cb) => {
     const envs = env.set({
         NODE_ENV: process.env.NODE_ENV
     });
 
     gulp.src(['build/test/**/*.js'])
-        // .pipe(envs)
+        .pipe(envs)
         .pipe(mocha({
             reporter: 'list'
         }))
-        // .once('error', (error) => {
-        //     console.log(error);
-        //     process.exit(1);
-        // })
+        .once('error', (error) => {
+            process.exit(1);
+        })
         .once('end', () => {
             process.exit();
         });

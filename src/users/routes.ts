@@ -223,7 +223,7 @@ export default function (server: Hapi.Server, serverConfigs: IServerConfiguratio
             description: 'Returns details of the logged in user.',
             notes: [`  
             GOD, JESUS and ROMANS can access this endpoints`,],
-            auth: 'jwt',
+            // auth: 'jwt',
             response: {
                 schema: Joi.object({
                     "user": userSchema
@@ -253,7 +253,7 @@ export default function (server: Hapi.Server, serverConfigs: IServerConfiguratio
             notes: `This endpoint can Update name/email/password of a user with the key values sent in the payload.  
 
             GOD, JESUS and ROMANS can access this endpoint`,
-            auth: 'jwt',
+            // auth: 'jwt',
             validate: {
                 payload: userSchemaWithOptionalKeys,
             },
@@ -285,7 +285,7 @@ export default function (server: Hapi.Server, serverConfigs: IServerConfiguratio
             description: 'Soft DELETE a users profile',
             notes: `  
             GOD, JESUS and ROMANS can access this endpoint`,
-            auth: 'jwt',
+            // auth: 'jwt',
             response: {
                 schema: Joi.object({
                     "deleted": Joi.boolean().required()
@@ -321,7 +321,7 @@ export default function (server: Hapi.Server, serverConfigs: IServerConfiguratio
 
               GOD, JESUS and ROMANS can access this endpoint 
             `,
-            auth: 'jwt',
+            // auth: 'jwt',
             validate: {
                 payload: Joi.object({
                     pushNotif: Joi.string().required()
@@ -357,7 +357,7 @@ export default function (server: Hapi.Server, serverConfigs: IServerConfiguratio
             notes: `Enable/disable email notifications on the basis of the emailNotif key in the payload.  
 
             GOD, JESUS and ROMANS can access this endpoint`,
-            auth: 'jwt',
+            // auth: 'jwt',
             validate: {
                 payload: Joi.object({
                     emailNotif: Joi.bool().required()
@@ -391,7 +391,7 @@ export default function (server: Hapi.Server, serverConfigs: IServerConfiguratio
             description: 'GET user information',
             notes: `  
             GOD and JESUS can access this endpoints`,
-            auth: 'jwt',
+            // auth: 'jwt',
             validate: {
                 params: {
                     userId: Joi.number().required().description("UserId of a user"),
@@ -427,7 +427,7 @@ export default function (server: Hapi.Server, serverConfigs: IServerConfiguratio
             You have to pass the page size(Number of records in one page) and page number in query params.  
 
             GOD and JESUS can access this endpoint.`,
-            auth: 'jwt',
+            // auth: 'jwt',
             validate: {
                 query: {
                     page: Joi.number().required(),
@@ -464,7 +464,7 @@ export default function (server: Hapi.Server, serverConfigs: IServerConfiguratio
             notes: `Creates a new user account with the details passed in the payload.
 
                 GOD can access this endpoint.`,
-            auth: 'jwt',
+            // auth: 'jwt',
             validate: {
                 payload: Joi.object({
                     name: Joi.string().required()
@@ -506,7 +506,7 @@ export default function (server: Hapi.Server, serverConfigs: IServerConfiguratio
             This link will have a jwt in its query parameters which will be used to verify the authenticity of the link.  
 
             GOD and JESUS can access this endpoint`,
-            auth: 'jwt',
+            // auth: 'jwt',
             response: {
                 schema: Joi.object({
                     "link": Joi.string().uri().required()
