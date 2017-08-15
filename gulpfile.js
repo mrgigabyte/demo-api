@@ -99,6 +99,7 @@ gulp.task('test', ['build'], (cb) => {
             reporter: 'list'
         }))
         .once('error', (error) => {
+            // console.log(error);
             process.exit(1);
         })
         .once('end', () => {
