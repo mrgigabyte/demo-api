@@ -116,31 +116,31 @@ describe('user-controller non-admin tests', () => {
         });
     });
 
-    describe("Tests for changePushNotifPref endpoint", () => {
+    // describe("Tests for changePushNotifPref endpoint", () => {
 
-        it("Tries to change the pushNotif with invalid pushNotif value", () => {
-            Utils.getRomansjwt().then((res) => {
-                let login: any = JSON.parse(res.payload);
-                return server.inject({ method: 'PUT', url: '/user/me/changePushNotifPref', headers: { "authorization": login.jwt }, payload: { pushNotif: "evening" } }).then((res) => {
-                    assert.equal(200, res.statusCode);
-                    Promise.resolve();
-                });
-            });
-        });
+    //     it("Tries to change the pushNotif with invalid pushNotif value", () => {
+    //         Utils.getRomansjwt().then((res) => {
+    //             let login: any = JSON.parse(res.payload);
+    //             return server.inject({ method: 'PUT', url: '/user/me/changePushNotifPref', headers: { "authorization": login.jwt }, payload: { pushNotif: "evening" } }).then((res) => {
+    //                 assert.equal(200, res.statusCode);
+    //                 Promise.resolve();
+    //             });
+    //         });
+    //     });
 
-        it("Tries to change the pushNotif with valid pushNotif value", () => {
-            Utils.getRomansjwt().then((res) => {
-                console.log(res)
-                let login: any = JSON.parse(res.payload);
-                return server.inject({ method: 'PUT', url: '/user/me/changePushNotifPref', headers: { "authorization": login.jwt }, payload: { pushNotif: "disable" } }).then((res) => {
-                    let responseBody: any = JSON.parse(res.payload);
-                    responseBody.should.have.property('success');
-                    assert.equal(responseBody.success, true);
-                    assert.equal(201, res.statusCode);
-                    Promise.resolve();
-                });
-            });
-        });
-    });
+    //     it("Tries to change the pushNotif with valid pushNotif value", () => {
+    //         Utils.getRomansjwt().then((res) => {
+    //             console.log(res)
+    //             let login: any = JSON.parse(res.payload);
+    //             return server.inject({ method: 'PUT', url: '/user/me/changePushNotifPref', headers: { "authorization": login.jwt }, payload: { pushNotif: "disable" } }).then((res) => {
+    //                 let responseBody: any = JSON.parse(res.payload);
+    //                 responseBody.should.have.property('success');
+    //                 assert.equal(responseBody.success, true);
+    //                 assert.equal(201, res.statusCode);
+    //                 Promise.resolve();
+    //             });
+    //         });
+    //     });
+    // });
 });
 
