@@ -7,7 +7,10 @@ src/config/googleServiceAccountKey.json
 npm-debug.log
 node_modules/
 test/users/checkEmail-tests.ts
+test/users/createJesus-tests.ts
+test/users/delete-userme-tests.ts
 test/users/emailpref-tests.ts
+test/users/info-userme.ts
 test/users/login-tests.ts
 test/users/notifpref-tests.ts
 test/users/requestResetPassword-tests.ts

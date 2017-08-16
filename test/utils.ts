@@ -45,15 +45,25 @@ export function getServerInstance() {
 
 export function clearDatabase() {
     var promiseResetCodes = database.resetCode.destroy({ where: {} })
+    var promiseDeletedUser = database.user.destroy({ where: {status: 'deleted'} })
     var promiseUser = database.user.destroy({ where: {} })
-    return Promise.all([promiseResetCodes, promiseUser]);
+    return Promise.all([promiseDeletedUser,promiseResetCodes, promiseUser]);
 }
 
-export function createUserDummy(): Promise<any> {
-    return database.user.create(getUserDummy())
-        .catch((error) => {
-            console.log(error);
-        });
+export function createUserDummy(type?: string): Promise<any> {
+    if (type) {
+        if (type === 'createJesus') {
+            return database.user.create(getUserDummy('createjesus@mail.com'))
+                .catch((error) => {
+                    console.log(error);
+                });
+        }
+    } else {
+        return database.user.create(getUserDummy())
+            .catch((error) => {
+                console.log(error);
+            });
+    }
 }
 
 export function getRomansjwt() {
@@ -62,11 +72,22 @@ export function getRomansjwt() {
         password: getUserDummy().password
     };
     return createUserDummy().then((res) => {
-        console.log('-----------------------------');
-        console.log(res,user);
-         console.log('-----------------------------');       
         return server.inject({ method: 'POST', url: '/user/login', payload: user });
     });
+}
+
+export function getGodjwt() {
+    let user = {
+        email: getUserDummy().email,
+        password: getUserDummy().password
+    }
+
+    return createUserDummy().then((res) => {
+        return database.user.update({ role: "god" }, { where: { id: res.id } }).then((raa) => {
+            return server.inject({ method: 'POST', url: '/user/login', payload: user });
+        });
+    });
+
 }
 
 // export function createSeedTaskData(database: Database.IDatabase, done: MochaDone) {

@@ -1,16 +1,9 @@
 {
     "dialect": "mysql",
-<<<<<<< HEAD
     "database": "test",
     "host": "localhost",
     "username": "nandan",
     "password": "nandan123",
-=======
-    "database": "abstrct_testing",
-    "host": "localhost",
-    "username": "root",
-    "password": "hello123",
->>>>>>> vidur/dev
     "requestTimeout": 90000,
     "connectionTimeout": 30000,
     "acquireConnectionTimeout": 30000,
@@ -30,11 +23,7 @@
             "acl-auth",
             "logger"
         ],
-<<<<<<< HEAD
         "baseUrl": "http://mr-gigabyte/api",
-=======
-        "baseUrl": "http://localhost/api",
->>>>>>> vidur/dev
         "googleCloud": {
             "projectId": "omega-branch-174318",
             "keyFilename": "config/googleServiceAccountKey.json",

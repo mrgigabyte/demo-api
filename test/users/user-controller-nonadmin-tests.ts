@@ -15,6 +15,10 @@ describe('user-controller non-admin tests', () => {
         server = Utils.getServerInstance();
     });
 
+    beforeEach(() => {
+        return Utils.clearDatabase();
+    });
+
     afterEach(() => {
         return Utils.clearDatabase();
     });
@@ -116,31 +120,299 @@ describe('user-controller non-admin tests', () => {
         });
     });
 
-    // describe("Tests for changePushNotifPref endpoint", () => {
+    describe("Tests for changePushNotifPref endpoint", () => {
 
-    //     it("Tries to change the pushNotif with invalid pushNotif value", () => {
-    //         Utils.getRomansjwt().then((res) => {
-    //             let login: any = JSON.parse(res.payload);
-    //             return server.inject({ method: 'PUT', url: '/user/me/changePushNotifPref', headers: { "authorization": login.jwt }, payload: { pushNotif: "evening" } }).then((res) => {
-    //                 assert.equal(200, res.statusCode);
-    //                 Promise.resolve();
-    //             });
-    //         });
-    //     });
+        it("Tries to change the pushNotif with invalid pushNotif value", () => {
+            return Utils.getRomansjwt().then((res) => {
+                let login: any = JSON.parse(res.payload);
+                return server.inject({ method: 'PUT', url: '/user/me/changePushNotifPref', headers: { "authorization": login.jwt }, payload: { pushNotif: "evening" } }).then((res) => {
+                    assert.equal(400, res.statusCode);
+                    Promise.resolve();
+                });
+            });
+        });
 
-    //     it("Tries to change the pushNotif with valid pushNotif value", () => {
-    //         Utils.getRomansjwt().then((res) => {
-    //             console.log(res)
-    //             let login: any = JSON.parse(res.payload);
-    //             return server.inject({ method: 'PUT', url: '/user/me/changePushNotifPref', headers: { "authorization": login.jwt }, payload: { pushNotif: "disable" } }).then((res) => {
-    //                 let responseBody: any = JSON.parse(res.payload);
-    //                 responseBody.should.have.property('success');
-    //                 assert.equal(responseBody.success, true);
-    //                 assert.equal(201, res.statusCode);
-    //                 Promise.resolve();
-    //             });
-    //         });
-    //     });
-    // });
+        it("Tries to change the pushNotif with valid pushNotif value", () => {
+            return Utils.getRomansjwt().then((res) => {
+                let login: any = JSON.parse(res.payload);
+                return server.inject({ method: 'PUT', url: '/user/me/changePushNotifPref', headers: { "authorization": login.jwt }, payload: { pushNotif: "disable" } }).then((res) => {
+                    let responseBody: any = JSON.parse(res.payload);
+                    responseBody.should.have.property('success');
+                    assert.equal(responseBody.success, true);
+                    assert.equal(201, res.statusCode);
+                    Promise.resolve();
+                });
+            });
+        });
+    });
+
+    describe("Tests for changeEmailNotifPref endpoint", () => {
+
+        it("Tries to change the emailNotif with invalid emailNotif value", () => {
+            return Utils.getRomansjwt().then((res) => {
+                let login: any = JSON.parse(res.payload);
+                return server.inject({ method: 'PUT', url: '/user/me/changeEmailNotifPref', headers: { "authorization": login.jwt }, payload: { emailNotif: "disable" } }).then((res) => {
+                    assert.equal(400, res.statusCode);
+                    Promise.resolve();
+                });
+            });
+        });
+
+        it("Tries to change the emailNotif with valid emailNotif value", () => {
+            return Utils.getRomansjwt().then((res) => {
+                let login: any = JSON.parse(res.payload);
+                return server.inject({ method: 'PUT', url: '/user/me/changeEmailNotifPref', headers: { "authorization": login.jwt }, payload: { emailNotif: false } }).then((res) => {
+                    let responseBody: any = JSON.parse(res.payload);
+                    responseBody.should.have.property('success');
+                    assert.equal(responseBody.success, true);
+                    assert.equal(201, res.statusCode);
+                    Promise.resolve();
+                });
+            });
+        });
+    });
+
+    describe("Tests for login endpoint", () => {
+
+        it("checks if the account already exists", () => {
+
+            let user = {
+                email: Utils.getUserDummy().email,
+                password: Utils.getUserDummy().password
+            }
+
+            return Utils.createUserDummy().then((res) => {
+                return server.inject({ method: 'POST', url: '/user/login', payload: user }).then((res) => {
+
+                    let responseBody: any = JSON.parse(res.payload);
+                    let userDetails: any = responseBody.user;
+                    assert.equal(userDetails.name, Utils.getUserDummy().name);
+                    assert.equal(userDetails.email, Utils.getUserDummy().email);
+                    assert.isBoolean(userDetails.emailNotif);
+                    assert.isNumber(userDetails.id);
+                    assert.isString(userDetails.joinedOn);
+                    assert.isNotNull(responseBody.jwt);
+                    assert.equal(200, res.statusCode);
+                    Promise.resolve();
+                });
+            });
+        });
+
+        it("checks if the account doesn't exist", () => {
+            let user = {
+                email: Utils.getUserDummy().email,
+                password: Utils.getUserDummy().password
+            }
+
+            return server.inject({ method: 'POST', url: '/user/login', payload: user }).then((res) => {
+                assert.equal(404, res.statusCode);
+                Promise.resolve();
+            });
+
+        });
+
+        it("Tries to login in with wrong credentials", () => {
+
+            let user = {
+                email: "dummydummy@email.com",
+                password: Utils.getUserDummy().password
+            }
+
+            return server.inject({ method: 'POST', url: '/user/login', payload: user }).then((res) => {
+                assert.equal(401, res.statusCode);
+                Promise.resolve();
+            });
+
+        });
+
+        it("Tries to login in with invalid email id", () => {
+
+            let user = {
+                email: "dummyemail.com",
+                password: Utils.getUserDummy().password
+            }
+
+            return server.inject({ method: 'POST', url: '/user/login', payload: user }).then((res) => {
+                assert.equal(400, res.statusCode);
+                Promise.resolve();
+            });
+
+        });
+
+        describe('checks if the data is missing in the payload', () => {
+            it("missing email id", () => {
+
+                let user = {
+                    password: Utils.getUserDummy().password
+                }
+
+                return server.inject({ method: 'POST', url: '/user/login', payload: user }).then((res) => {
+                    assert.equal(400, res.statusCode);
+                    Promise.resolve();
+                });
+            });
+
+            it("missing password", () => {
+
+                let user = {
+                    email: "dummyemail.com"
+                }
+
+                return server.inject({ method: 'POST', url: '/user/login', payload: user }).then((res) => {
+                    assert.equal(400, res.statusCode);
+                    Promise.resolve();
+                });
+
+            });
+
+        });
+
+    });
+
+    describe("Tests for createJesus endpoint", () => {
+
+        it("checks if the account doesn't exist", () => {
+            return Utils.getGodjwt().then((res) => {
+                let login: any = JSON.parse(res.payload);
+                return server.inject({ method: 'POST', url: '/user/createJesus', headers: { "authorization": login.jwt }, payload: Utils.getUserDummy('createjesus@mail.com') }).then((res) => {
+                    let responseBody: any = JSON.parse(res.payload);
+                    responseBody.should.have.property('success');
+                    assert.equal(responseBody.success, true);
+                    assert.equal(201, res.statusCode);
+                    Promise.resolve();
+                });
+            });
+        });
+
+        it("checks if a roman or jesus is accessing the endpoint", () => {
+            return Utils.getRomansjwt().then((res) => {
+                let login: any = JSON.parse(res.payload);
+                return server.inject({ method: 'POST', url: '/user/createJesus', headers: { "authorization": login.jwt }, payload: Utils.getUserDummy('createjesus@mail.com') }).then((res) => {
+                    assert.equal(403, res.statusCode);
+                    Promise.resolve();
+                });
+            });
+        });
+
+        it("checks if the account already exists", () => {
+            return Utils.getGodjwt().then((res) => {
+                let login: any = JSON.parse(res.payload);
+                return Utils.createUserDummy('createJesus').then(() => {
+                    return server.inject({ method: 'POST', url: '/user/createJesus', headers: { "authorization": login.jwt }, payload: Utils.getUserDummy('createjesus@mail.com') }).then((res) => {
+                        assert.equal(409, res.statusCode);
+                        Promise.resolve();
+                    });
+                });
+            });
+        });
+
+        it("Tries to create an account with invalid email", () => {
+            return Utils.getGodjwt().then((res) => {
+                let login: any = JSON.parse(res.payload);
+                let user = Utils.getUserDummy("dummail.com");
+                return server.inject({ method: 'POST', url: '/user/createJesus', headers: { "authorization": login.jwt }, payload: user }).then((res) => {
+                    assert.equal(400, res.statusCode);
+                    Promise.resolve();
+                });
+            });
+        });
+
+        describe('checks if there is missing data in the payload', () => {
+
+            it('Missing Password', () => {
+                return Utils.getGodjwt().then((res) => {
+                    let login: any = JSON.parse(res.payload);
+                    let user = Utils.getUserDummy('createJesus@mail.com');
+                    delete user.password;
+                    return server.inject({ method: 'POST', url: '/user/createJesus', headers: { "authorization": login.jwt }, payload: user }).then((res) => {
+                        assert.equal(400, res.statusCode);
+                        Promise.resolve();
+                    });
+                });
+            });
+
+            it('Missing Email Id', () => {
+                return Utils.getGodjwt().then((res) => {
+                    let login: any = JSON.parse(res.payload);
+                    let user = Utils.getUserDummy('createJesus@mail.com');
+                    delete user.email;
+                    return server.inject({ method: 'POST', url: '/user/createJesus', headers: { "authorization": login.jwt }, payload: user }).then((res) => {
+                        assert.equal(400, res.statusCode);
+                        Promise.resolve();
+                    });
+                });
+            });
+
+            it('Missing name', () => {
+                return Utils.getGodjwt().then((res) => {
+                    let login: any = JSON.parse(res.payload);
+                    let user = Utils.getUserDummy('createJesus@mail.com');
+                    delete user.name;
+                    return server.inject({ method: 'POST', url: '/user/createJesus', headers: { "authorization": login.jwt }, payload: user }).then((res) => {
+                        assert.equal(400, res.statusCode);
+                        Promise.resolve();
+                    });
+                });
+            });
+        });
+    });
+
+    describe("Tests for /user/me DELETE endpoint", () => {
+
+        it('tries to delete an account with valid token', () => {
+            return Utils.getRomansjwt().then((res) => {
+                let login: any = JSON.parse(res.payload);
+                return server.inject({ method: 'DELETE', url: '/user/me', headers: { "authorization": login.jwt } }).then((res) => {
+                    let responseBody: any = JSON.parse(res.payload);
+                    responseBody.should.have.property('deleted');
+                    assert.equal(responseBody.deleted, true);
+                    assert.equal(201, res.statusCode);
+                    Promise.resolve();
+                });
+            });
+        });
+
+        it('tries to delete an account with invalid token', () => {
+            return Utils.getRomansjwt().then((res) => {
+                let login = "dummy token"
+                return server.inject({ method: 'DELETE', url: '/user/me', headers: { "authorization": login } }).then((res) => {
+                    assert.equal(401, res.statusCode);
+                    Promise.resolve();
+                    return Utils.clearDatabase();
+                });
+            });
+        });
+    });
+
+    describe("Tests for /user/me GET endpoint", () => {
+
+        it('tries to get details of the user with valid token', () => {
+            return Utils.getRomansjwt().then((res) => {
+                let login: any = JSON.parse(res.payload);
+                return server.inject({ method: 'GET', url: '/user/me', headers: { "authorization": login.jwt } }).then((res) => {
+                    let responseBody: any = JSON.parse(res.payload);
+                    let userDetails: any = responseBody.user;
+                    assert.equal(userDetails.name, Utils.getUserDummy().name);
+                    assert.equal(userDetails.email, Utils.getUserDummy().email);
+                    assert.isBoolean(userDetails.emailNotif);
+                    assert.isString(userDetails.pushNotif);
+                    assert.isNumber(userDetails.id);
+                    assert.isString(userDetails.joinedOn);
+                    assert.equal(200, res.statusCode);
+                    Promise.resolve();
+                });
+            });
+        });
+
+        it('tries to get details of the user with invalid token', () => {
+            return Utils.getRomansjwt().then((res) => {
+                let login = "dummy token"
+                return server.inject({ method: 'GET', url: '/user/me', headers: { "authorization": login } }).then((res) => {
+                    assert.equal(401, res.statusCode);
+                    Promise.resolve();
+                });
+            });
+        });
+    });
 });
 
