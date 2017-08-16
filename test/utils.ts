@@ -17,7 +17,7 @@ Server.init(serverConfig, database).then((Server: Hapi.Server) => {
 });
 
 export function getUserDummy(email?: string) {
-    var user = {
+    let user = {
         email: email || "dummy@mail.com",
         name: "Dummy Jones",
         password: "123123"
@@ -26,8 +26,18 @@ export function getUserDummy(email?: string) {
     return user;
 }
 
+export function getResetPasswordDetails(code: string, email?: string) {
+    let user = {
+        code: code,
+        email: email || "dummy@mail.com",
+        password: "12223123"
+    };
+
+    return user;
+}
+
 export function UpdatedUserDummy(email?: string) {
-    var user = {
+    let user = {
         email: email || "dummy123@mail.com",
         name: "John Doe",
         password: "321321"
@@ -55,9 +65,9 @@ export function getServerInstance() {
 
 export function clearDatabase() {
     var promiseResetCodes = database.resetCode.destroy({ where: {} })
-    var promiseDeletedUser = database.user.destroy({ where: {status: 'deleted'} })
+    var promiseDeletedUser = database.user.destroy({ where: { status: 'deleted' } })
     var promiseUser = database.user.destroy({ where: {} })
-    return Promise.all([promiseDeletedUser,promiseResetCodes, promiseUser]);
+    return Promise.all([ promiseResetCodes,promiseDeletedUser, promiseUser]);
 }
 
 export function createUserDummy(type?: string): Promise<any> {
@@ -76,7 +86,7 @@ export function createUserDummy(type?: string): Promise<any> {
     }
 }
 
-export function getRomansjwt() {
+export function getRomansjwt(): Promise<any> {
     let user = {
         email: getUserDummy().email,
         password: getUserDummy().password
@@ -86,7 +96,7 @@ export function getRomansjwt() {
     });
 }
 
-export function getGodjwt() {
+export function getGodjwt(): Promise<any> {
     let user = {
         email: getUserDummy().email,
         password: getUserDummy().password
@@ -97,8 +107,14 @@ export function getGodjwt() {
             return server.inject({ method: 'POST', url: '/user/login', payload: user });
         });
     });
-
 }
+
+export function getResetCode(): Promise<any> {
+    return createUserDummy().then(() => {
+        return server.inject({ method: 'POST', url: '/user/requestResetPassword', payload: { email: getUserDummy().email } })
+    });
+}
+
 
 // export function createSeedTaskData(database: Database.IDatabase, done: MochaDone) {
 //     return database.userModel.create(createUserDummy())

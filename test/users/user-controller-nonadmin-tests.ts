@@ -133,8 +133,8 @@ describe('user-controller non-admin tests', () => {
                 let login: any = JSON.parse(res.payload);
                 return server.inject({ method: 'PUT', url: '/user/me/changePushNotifPref', headers: { "authorization": login.jwt }, payload: { pushNotif: "disable" } }).then((res) => {
                     let responseBody: any = JSON.parse(res.payload);
-                    responseBody.should.have.property('success');
-                    assert.equal(responseBody.success, true);
+                    responseBody.should.have.property('updated');
+                    assert.equal(responseBody.updated, true);
                     assert.equal(201, res.statusCode);
                     Promise.resolve();
                 });
@@ -159,8 +159,8 @@ describe('user-controller non-admin tests', () => {
                 let login: any = JSON.parse(res.payload);
                 return server.inject({ method: 'PUT', url: '/user/me/changeEmailNotifPref', headers: { "authorization": login.jwt }, payload: { emailNotif: false } }).then((res) => {
                     let responseBody: any = JSON.parse(res.payload);
-                    responseBody.should.have.property('success');
-                    assert.equal(responseBody.success, true);
+                    responseBody.should.have.property('updated');
+                    assert.equal(responseBody.updated, true);
                     assert.equal(201, res.statusCode);
                     Promise.resolve();
                 });
@@ -482,6 +482,80 @@ describe('user-controller non-admin tests', () => {
             return server.inject({ method: 'POST', url: '/user/requestResetPassword', payload: {} }).then((res) => {
                 assert.equal(400, res.statusCode);
                 Promise.resolve();
+            });
+        });
+    });
+
+    describe("Tests for ResetPassword endpoint", () => {
+
+        it('checks if the code is valid', () => {
+            return Utils.getResetCode().then((res) => {
+                let response: any = JSON.parse(res.payload);
+                return server.inject({ method: 'POST', url: '/user/resetPassword', payload: Utils.getResetPasswordDetails(response.code) }).then((res) => {
+                    let responseBody: any = JSON.parse(res.payload);
+                    responseBody.should.have.property("reset")
+                    assert.equal(responseBody.reset, true);
+                    assert.equal(200, res.statusCode);
+                    Promise.resolve();
+                });
+            });
+        });
+
+        it("checks if the code is invalid", () => {
+            return Utils.createUserDummy().then(() => {
+                return server.inject({ method: 'POST', url: '/user/resetPassword', payload: Utils.getResetPasswordDetails("Invalid Code") }).then((res) => {
+                    assert.equal(400, res.statusCode);
+                    Promise.resolve();
+                });
+            });
+        });
+
+        it('checks for the invalid email when the code is valid', () => {
+            return Utils.getResetCode().then((res) => {
+                let response: any = JSON.parse(res.payload);
+                return server.inject({ method: 'POST', url: '/user/resetPassword', payload: Utils.getResetPasswordDetails(response.code, "dummymail.com") }).then((res) => {
+                    assert.equal(400, res.statusCode);
+                    Promise.resolve();
+                });
+            });
+        });
+
+        describe('checks if there is missing data in the payload', () => {
+
+            it('Missing Code', () => {
+                return Utils.getResetCode().then((res) => {
+                    let response: any = JSON.parse(res.payload);
+                    let user = Utils.getResetPasswordDetails(response.code);
+                    delete user.code;
+                    return server.inject({ method: 'POST', url: '/user/resetPassword', payload: user }).then((res) => {
+                        assert.equal(400, res.statusCode);
+                        Promise.resolve();
+                    });
+                });
+            });
+
+            it('Missing Email Id', () => {
+                return Utils.getResetCode().then((res) => {
+                    let response: any = JSON.parse(res.payload);
+                    let user = Utils.getResetPasswordDetails(response.code);
+                    delete user.email;
+                    return server.inject({ method: 'POST', url: '/user/resetPassword', payload: user }).then((res) => {
+                        assert.equal(400, res.statusCode);
+                        Promise.resolve();
+                    });
+                });
+            });
+
+            it('Missing Password', () => {
+                return Utils.getResetCode().then((res) => {
+                    let response: any = JSON.parse(res.payload);
+                    let user = Utils.getResetPasswordDetails(response.code);
+                    delete user.password;
+                    return server.inject({ method: 'POST', url: '/user/resetPassword', payload: user }).then((res) => {
+                        assert.equal(400, res.statusCode);
+                        Promise.resolve();
+                    });
+                });
             });
         });
     });
