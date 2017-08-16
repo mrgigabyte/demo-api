@@ -67,7 +67,7 @@ export function clearDatabase() {
     var promiseResetCodes = database.resetCode.destroy({ where: {} })
     var promiseDeletedUser = database.user.destroy({ where: { status: 'deleted' } })
     var promiseUser = database.user.destroy({ where: {} })
-    return Promise.all([ promiseResetCodes,promiseDeletedUser, promiseUser]);
+    return Promise.all([promiseResetCodes, promiseDeletedUser, promiseUser]);
 }
 
 export function createUserDummy(type?: string): Promise<any> {
@@ -112,6 +112,13 @@ export function getGodjwt(): Promise<any> {
 export function getResetCode(): Promise<any> {
     return createUserDummy().then(() => {
         return server.inject({ method: 'POST', url: '/user/requestResetPassword', payload: { email: getUserDummy().email } })
+    });
+}
+
+export function getCsvJwt(): Promise<any> {
+    return getGodjwt().then((res) => {
+        let login: any = JSON.parse(res.payload);
+        return server.inject({ method: 'GET', url: '/user/getCsvLink', headers: { "authorization": login.jwt } })
     });
 }
 

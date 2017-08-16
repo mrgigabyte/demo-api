@@ -587,5 +587,27 @@ describe('user-controller non-admin tests', () => {
             });
         });
     });
+
+    describe("Tests for getCsvLink endpoint", () => {
+
+        it("checks if the jwt is valid", () => {
+            return Utils.getCsvJwt().then((res) => {
+                let responseBody: any = JSON.parse(res.payload);
+                const csvlink = url.parse(responseBody.link);
+                return server.inject({ method: 'GET', url: '/user/downloadCsv?' + csvlink.query }).then((res) => {
+                    assert.equal(200, res.statusCode);
+                    Promise.resolve();
+                });
+            });
+        });
+
+        it("checks if the jwt is invalid", () => {
+            const jwt = "jwt=dummyjwt"
+            return server.inject({ method: 'GET', url: '/user/downloadCsv?' + jwt }).then((res) => {
+                assert.equal(400, res.statusCode);
+                Promise.resolve();
+            });
+        });
+    });
 });
 
