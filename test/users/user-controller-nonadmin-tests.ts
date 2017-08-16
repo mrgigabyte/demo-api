@@ -3,7 +3,7 @@ import UserController from "../../src/users/user-controller";
 import { IDb } from "../../src/config";
 import * as Hapi from 'hapi';
 import * as Utils from "../utils";
-
+import * as url from 'url';
 
 const assert = chai.assert;
 const should = chai.should();
@@ -555,6 +555,34 @@ describe('user-controller non-admin tests', () => {
                         assert.equal(400, res.statusCode);
                         Promise.resolve();
                     });
+                });
+            });
+        });
+    });
+
+    describe("Tests for getCsvLink endpoint", () => {
+
+        it("checks if the user is god/jesus and validates the jwt", () => {
+            return Utils.getGodjwt().then((res) => {
+                let login: any = JSON.parse(res.payload);
+                return server.inject({ method: 'GET', url: '/user/getCsvLink', headers: { "authorization": login.jwt } }).then((res) => {
+                    let responseBody: any = JSON.parse(res.payload);
+                    responseBody.should.have.property('link');
+                    const csvlink = url.parse(responseBody.link);
+                    const jwt = csvlink.query.split('jwt=').pop();
+                    assert.isString(jwt);
+                    assert.equal(200, res.statusCode);
+                    Promise.resolve();
+                });
+            });
+        });
+
+        it("checks if romans can access the link", () => {
+            return Utils.getRomansjwt().then((res) => {
+                let login: any = JSON.parse(res.payload);
+                return server.inject({ method: 'GET', url: '/user/getCsvLink', headers: { "authorization": login.jwt } }).then((res) => {
+                    assert.equal(403, res.statusCode);
+                    Promise.resolve();
                 });
             });
         });

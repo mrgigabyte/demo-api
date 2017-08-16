@@ -18,3 +18,4 @@ test/users/signup-tests.ts
 test/users/update-userme-tests.ts
 src/config/config.test.json
 test/users/resetPassword-tests.ts
+test/users/getcsvlink-test.ts
