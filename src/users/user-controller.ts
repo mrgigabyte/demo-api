@@ -169,7 +169,7 @@ export default class UserController {
             }
         }).then((res) => {
             return reply({
-                "success": true
+                "updated": true
             });
         }).catch(err => reply(err));
     }

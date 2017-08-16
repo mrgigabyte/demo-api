@@ -26,6 +26,16 @@ export function getUserDummy(email?: string) {
     return user;
 }
 
+export function UpdatedUserDummy(email?: string) {
+    var user = {
+        email: email || "dummy123@mail.com",
+        name: "John Doe",
+        password: "321321"
+    };
+
+    return user;
+}
+
 export function getServerInstance() {
     return server;
 }
@@ -83,7 +93,7 @@ export function getGodjwt() {
     }
 
     return createUserDummy().then((res) => {
-        return database.user.update({ role: "god" }, { where: { id: res.id } }).then((raa) => {
+        return database.user.update({ role: "god" }, { where: { id: res.id } }).then(() => {
             return server.inject({ method: 'POST', url: '/user/login', payload: user });
         });
     });

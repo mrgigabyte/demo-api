@@ -15,4 +15,5 @@ test/users/login-tests.ts
 test/users/notifpref-tests.ts
 test/users/requestResetPassword-tests.ts
 test/users/signup-tests.ts
+test/users/update-userme-tests.ts
 src/config/config.test.json

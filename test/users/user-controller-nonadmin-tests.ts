@@ -15,10 +15,6 @@ describe('user-controller non-admin tests', () => {
         server = Utils.getServerInstance();
     });
 
-    beforeEach(() => {
-        return Utils.clearDatabase();
-    });
-
     afterEach(() => {
         return Utils.clearDatabase();
     });
@@ -409,6 +405,43 @@ describe('user-controller non-admin tests', () => {
                 let login = "dummy token"
                 return server.inject({ method: 'GET', url: '/user/me', headers: { "authorization": login } }).then((res) => {
                     assert.equal(401, res.statusCode);
+                    Promise.resolve();
+                });
+            });
+        });
+    });
+
+    describe("Tests for /user/me PUT endpoint", () => {
+
+        it("tries to update the user details with valid token and payload keys", () => {
+            return Utils.getRomansjwt().then((res) => {
+                let login: any = JSON.parse(res.payload);
+                return server.inject({ method: 'PUT', url: '/user/me', headers: { "authorization": login.jwt }, payload: Utils.UpdatedUserDummy() }).then((res) => {
+                    let responseBody: any = JSON.parse(res.payload);
+                    responseBody.should.have.property('updated');
+                    assert.equal(responseBody.updated, true);
+                    assert.equal(201, res.statusCode);
+                    Promise.resolve();
+                });
+            });
+        });
+
+        it("tries to update the account with invalid token", () => {
+            return Utils.getRomansjwt().then((res) => {
+                let login = 'dummy token';
+                return server.inject({ method: 'PUT', url: '/user/me', headers: { "authorization": login }, payload: Utils.getUserDummy() }).then((res) => {
+                    assert.equal(401, res.statusCode);
+                    Promise.resolve();
+                });
+            });
+        });
+
+        it("tried to update the account with valid token and invalid email id", () => {
+            return Utils.getRomansjwt().then((res) => {
+                let login: any = JSON.parse(res.payload);
+                let user = Utils.getUserDummy("dummail.com");
+                return server.inject({ method: 'PUT', url: '/user/me', headers: { "authorization": login.jwt }, payload: user }).then((res) => {
+                    assert.equal(400, res.statusCode);
                     Promise.resolve();
                 });
             });
