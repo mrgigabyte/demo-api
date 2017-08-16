@@ -447,5 +447,43 @@ describe('user-controller non-admin tests', () => {
             });
         });
     });
+
+    describe("Tests for requestResetPassword endpoint", () => {
+
+        it('checks if the account exists', () => {
+
+            return Utils.createUserDummy().then(() => {
+                return server.inject({ method: 'POST', url: '/user/requestResetPassword', payload: { email: Utils.getUserDummy().email } }).then((res) => {
+                    let responseBody: any = JSON.parse(res.payload);
+                    responseBody.should.have.property("code")
+                    assert.isString(responseBody.code);
+                    assert.equal(200, res.statusCode);
+                    Promise.resolve();
+                });
+            });
+        });
+
+        it("checks if the account doesn't exist", () => {
+            return server.inject({ method: 'POST', url: '/user/requestResetPassword', payload: { email: Utils.getUserDummy().email } }).then((res) => {
+                assert.equal(404, res.statusCode);
+                Promise.resolve();
+            });
+        });
+
+        it('requests with an invalid email id', () => {
+
+            return server.inject({ method: 'POST', url: '/user/requestResetPassword', payload: { email: "dummymail.com" } }).then((res) => {
+                assert.equal(400, res.statusCode);
+                Promise.resolve();
+            });
+        });
+
+        it('checks if email id key is missing in the payload', () => {
+            return server.inject({ method: 'POST', url: '/user/requestResetPassword', payload: {} }).then((res) => {
+                assert.equal(400, res.statusCode);
+                Promise.resolve();
+            });
+        });
+    });
 });
 
