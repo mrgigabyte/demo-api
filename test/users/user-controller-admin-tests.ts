@@ -9,7 +9,7 @@ const assert = chai.assert;
 const should = chai.should();
 let server: Hapi.Server;
 
-describe('user-controller admin tests', () => {
+describe('Tests for admin panel endpoints', () => {
 
     before(() => {
         server = Utils.getServerInstance();
