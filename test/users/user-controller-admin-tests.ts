@@ -21,7 +21,7 @@ describe('user-controller admin tests', () => {
         });
     });
 
-    describe("Tests for createJesus endpoint", () => {
+    describe("Tests for creating a user account with Jesus role endpoint", () => {
 
         it("checks if the account doesn't exist", () => {
             return Utils.getGodjwt().then((res) => {
@@ -109,9 +109,9 @@ describe('user-controller admin tests', () => {
         });
     });
 
-    describe("Tests for getCsvLink endpoint", () => {
+    describe("Tests for getting jwt for CSV endpoint", () => {
 
-        it("checks if the user is god/jesus and validates the jwt", () => {
+        it("checks if the user is god/jesus", () => {
             return Utils.getGodjwt().then((res) => {
                 let login: any = JSON.parse(res.payload);
                 return server.inject({ method: 'GET', url: '/user/getCsvLink', headers: { "authorization": login.jwt } }).then((res) => {
@@ -137,7 +137,7 @@ describe('user-controller admin tests', () => {
         });
     });
 
-    describe("Tests for getCsvLink endpoint", () => {
+    describe("Tests for downloading the CSV endpoint", () => {
 
         it("checks if the jwt is valid", () => {
             return Utils.getCsvJwt().then((res) => {

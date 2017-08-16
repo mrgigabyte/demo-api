@@ -81,7 +81,7 @@ describe('user-controller non-admin tests', () => {
         });
     });
 
-    describe("Tests for checkEmail endpoint", () => {
+    describe("Tests for checking email endpoint", () => {
 
         it("checks if the email doesn't exists", () => {
             return server.inject({ method: 'POST', url: '/user/checkEmail', payload: { email: "dummy@mail.com" } }).then((res) => {
@@ -118,7 +118,7 @@ describe('user-controller non-admin tests', () => {
         });
     });
 
-    describe("Tests for changePushNotifPref endpoint", () => {
+    describe("Tests for changing push notification preference endpoint", () => {
 
         it("Tries to change the pushNotif with invalid pushNotif value", () => {
             return Utils.getRomansjwt().then((res) => {
@@ -135,8 +135,8 @@ describe('user-controller non-admin tests', () => {
                 let login: any = JSON.parse(res.payload);
                 return server.inject({ method: 'PUT', url: '/user/me/changePushNotifPref', headers: { "authorization": login.jwt }, payload: { pushNotif: "disable" } }).then((res) => {
                     let responseBody: any = JSON.parse(res.payload);
-                    responseBody.should.have.property('updated');
-                    assert.equal(responseBody.updated, true);
+                    responseBody.should.have.property('success');
+                    assert.equal(responseBody.success, true);
                     assert.equal(201, res.statusCode);
                     Promise.resolve();
                 });
@@ -144,7 +144,7 @@ describe('user-controller non-admin tests', () => {
         });
     });
 
-    describe("Tests for changeEmailNotifPref endpoint", () => {
+    describe("Tests for changing email notification preference endpoint", () => {
 
         it("Tries to change the emailNotif with invalid emailNotif value", () => {
             return Utils.getRomansjwt().then((res) => {
@@ -161,8 +161,8 @@ describe('user-controller non-admin tests', () => {
                 let login: any = JSON.parse(res.payload);
                 return server.inject({ method: 'PUT', url: '/user/me/changeEmailNotifPref', headers: { "authorization": login.jwt }, payload: { emailNotif: false } }).then((res) => {
                     let responseBody: any = JSON.parse(res.payload);
-                    responseBody.should.have.property('updated');
-                    assert.equal(responseBody.updated, true);
+                    responseBody.should.have.property('success');
+                    assert.equal(responseBody.success, true);
                     assert.equal(201, res.statusCode);
                     Promise.resolve();
                 });
@@ -267,9 +267,9 @@ describe('user-controller non-admin tests', () => {
 
     });
 
-    describe("Tests for /user/me DELETE endpoint", () => {
+    describe("Tests for deleting the user account (/user/me) endpoint", () => {
 
-        it('tries to delete an account with valid token', () => {
+        it('tries to delete an account with valid jwt', () => {
             return Utils.getRomansjwt().then((res) => {
                 let login: any = JSON.parse(res.payload);
                 return server.inject({ method: 'DELETE', url: '/user/me', headers: { "authorization": login.jwt } }).then((res) => {
@@ -282,9 +282,9 @@ describe('user-controller non-admin tests', () => {
             });
         });
 
-        it('tries to delete an account with invalid token', () => {
+        it('tries to delete an account with invalid jwt', () => {
             return Utils.getRomansjwt().then((res) => {
-                let login = "dummy token"
+                let login = "dummy jwt"
                 return server.inject({ method: 'DELETE', url: '/user/me', headers: { "authorization": login } }).then((res) => {
                     assert.equal(401, res.statusCode);
                     Promise.resolve();
@@ -294,9 +294,9 @@ describe('user-controller non-admin tests', () => {
         });
     });
 
-    describe("Tests for /user/me GET endpoint", () => {
+    describe("Tests for getting user-info (/user/me) endpoint", () => {
 
-        it('tries to get details of the user with valid token', () => {
+        it('tries to get details of the user with valid jwt', () => {
             return Utils.getRomansjwt().then((res) => {
                 let login: any = JSON.parse(res.payload);
                 return server.inject({ method: 'GET', url: '/user/me', headers: { "authorization": login.jwt } }).then((res) => {
@@ -314,9 +314,9 @@ describe('user-controller non-admin tests', () => {
             });
         });
 
-        it('tries to get details of the user with invalid token', () => {
+        it('tries to get details of the user with invalid jwt', () => {
             return Utils.getRomansjwt().then((res) => {
-                let login = "dummy token"
+                let login = "dummy jwt"
                 return server.inject({ method: 'GET', url: '/user/me', headers: { "authorization": login } }).then((res) => {
                     assert.equal(401, res.statusCode);
                     Promise.resolve();
@@ -325,24 +325,24 @@ describe('user-controller non-admin tests', () => {
         });
     });
 
-    describe("Tests for /user/me PUT endpoint", () => {
+    describe("Tests for updating user-info (/user/me) endpoint", () => {
 
-        it("tries to update the user details with valid token and payload keys", () => {
+        it("tries to update the user details with valid jwt and payload keys", () => {
             return Utils.getRomansjwt().then((res) => {
                 let login: any = JSON.parse(res.payload);
-                return server.inject({ method: 'PUT', url: '/user/me', headers: { "authorization": login.jwt }, payload: Utils.UpdatedUserDummy() }).then((res) => {
+                return server.inject({ method: 'PUT', url: '/user/me', headers: { "authorization": login.jwt }, payload: Utils.successUserDummy() }).then((res) => {
                     let responseBody: any = JSON.parse(res.payload);
-                    responseBody.should.have.property('updated');
-                    assert.equal(responseBody.updated, true);
+                    responseBody.should.have.property('success');
+                    assert.equal(responseBody.success, true);
                     assert.equal(201, res.statusCode);
                     Promise.resolve();
                 });
             });
         });
 
-        it("tries to update the account with invalid token", () => {
+        it("tries to update the account with invalid jwt", () => {
             return Utils.getRomansjwt().then((res) => {
-                let login = 'dummy token';
+                let login = 'dummy jwt';
                 return server.inject({ method: 'PUT', url: '/user/me', headers: { "authorization": login }, payload: Utils.getUserDummy() }).then((res) => {
                     assert.equal(401, res.statusCode);
                     Promise.resolve();
@@ -350,7 +350,7 @@ describe('user-controller non-admin tests', () => {
             });
         });
 
-        it("tried to update the account with valid token and invalid email id", () => {
+        it("tried to update the account with valid jwt and invalid email id", () => {
             return Utils.getRomansjwt().then((res) => {
                 let login: any = JSON.parse(res.payload);
                 let user = Utils.getUserDummy("dummail.com");
@@ -362,7 +362,7 @@ describe('user-controller non-admin tests', () => {
         });
     });
 
-    describe("Tests for requestResetPassword endpoint", () => {
+    describe("Tests for requesting reset password code endpoint", () => {
 
         it('checks if the account exists', () => {
 
@@ -400,7 +400,7 @@ describe('user-controller non-admin tests', () => {
         });
     });
 
-    describe("Tests for ResetPassword endpoint", () => {
+    describe("Tests for resetting the password endpoint", () => {
 
         it('checks if the code is valid', () => {
             return Utils.getResetCode().then((res) => {

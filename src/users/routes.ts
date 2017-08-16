@@ -259,7 +259,7 @@ export default function (server: Hapi.Server, serverConfigs: IServerConfiguratio
             },
             response: {
                 schema: Joi.object({
-                    "updated": Joi.boolean().required()
+                    "success": Joi.boolean().required()
                 })
             },
             plugins: {
@@ -330,7 +330,7 @@ export default function (server: Hapi.Server, serverConfigs: IServerConfiguratio
             },
             response: {
                 schema: Joi.object({
-                    "updated": Joi.boolean().required()
+                    "success": Joi.boolean().required()
                 })
             },
             plugins: {
@@ -365,7 +365,7 @@ export default function (server: Hapi.Server, serverConfigs: IServerConfiguratio
             },
             response: {
                 schema: Joi.object({
-                    "updated": Joi.boolean().required()
+                    "success": Joi.boolean().required()
                 })
             },
             plugins: {
