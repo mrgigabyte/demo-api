@@ -25,7 +25,7 @@ describe("UserController Tests", () => {
     //     Utils.clearDatabase(database, done);
     // });
 
-    it("Create user", () => {
+    it("Create user", function() {
         var user = {
             email: "user@mail.com",
             name: "John Robot",
@@ -34,7 +34,7 @@ describe("UserController Tests", () => {
 
         return server.inject({ method: 'POST', url: '/user', payload: user }).then((res) => {
             // console.log(res);
-            assert.equal(201, res.statusCode);
+            assert.equal(200, res.statusCode);
             var responseBody: any = JSON.parse(res.payload);
             // console.log(responseBody);
             // assert.isNotNull(responseBody.token);
@@ -42,18 +42,70 @@ describe("UserController Tests", () => {
         });
     });
 
-    // it("Create user invalid data", (done) => {
+    // it("Create user already exists", (done) => {
     //     var user = {
-    //         email: "user",
+    //         email: "user@mail.com",
     //         name: "John Robot",
     //         password: "123123"
     //     };
 
-    //     server.inject({ method: 'POST', url: '/users', payload: user }, (res) => {
-    //         assert.equal(400, res.statusCode);
+    //     server.inject({ method: 'POST', url: '/user', payload: user }, (res) => {
+    //         // console.log(res);
+    //         assert.equal(409, res.statusCode);
+    //         var responseBody: any = JSON.parse(res.payload);
+    //         // console.log(responseBody);
+    //         // assert.isNotNull(responseBody.token);
+    //         // database.sequelize.close();
     //         done();
     //     });
     // });
+
+    // it("Create user invalid data", (done) => {
+
+    //     it("password invalid", (done) => {
+    //         var user = {
+    //             email: "user@mail.com",
+    //             name: "John Robot",
+    //             password: ""
+    //         };
+
+    //         server.inject({ method: 'POST', url: '/user', payload: user }, (res) => {
+    //             // console.log(res);
+    //             assert.equal(400, res.statusCode);
+    //             var responseBody: any = JSON.parse(res.payload);
+    //         });
+    //     });
+
+    //     it("email invalid", (done) => {
+    //         var user = {
+    //             email: "usermailcom",
+    //             name: "John Robot",
+    //             password: "123123"
+    //         };
+
+    //         server.inject({ method: 'POST', url: '/user', payload: user }, (res) => {
+    //             // console.log(res);
+    //             assert.equal(400, res.statusCode);
+    //             var responseBody: any = JSON.parse(res.payload);
+    //         });
+    //     });
+
+    //     it("name invalid", (done) => {
+    //         var user = {
+    //             email: "user@mail.com",
+    //             name: "",
+    //             password: "123123"
+    //         };
+
+    //         server.inject({ method: 'POST', url: '/user', payload: user }, (res) => {
+    //             // console.log(res);
+    //             assert.equal(400, res.statusCode);
+    //             var responseBody: any = JSON.parse(res.payload);
+    //         });
+    //     });
+    //     done();
+    // });
+
 
     // it("Create user with same email", (done) => {
     //     server.inject({ method: 'POST', url: '/users', payload: Utils.createUserDummy() }, (res) => {

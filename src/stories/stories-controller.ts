@@ -79,7 +79,9 @@ export default class StoryController {
     }
 
     public getAllPaginatedStories(request: Hapi.Request, reply: Hapi.Base_Reply) {
-        this.database.story.getAllPaginatedStories(this.database.user, request.query.size, request.query.page, this.configs.baseUrl)
+        this.database.story.getAllPaginatedStories(
+            this.database.user, request.query.size, request.query.page, request.query.type, this.configs.baseUrl
+        )
             .then((response: any) => {
                 return reply(response);
             }).catch((err) => reply(err));

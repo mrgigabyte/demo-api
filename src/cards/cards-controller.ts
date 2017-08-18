@@ -82,7 +82,6 @@ export default class CardController {
                     });
             }).catch(err => reply(err));
         } else {
-            // TODO: Code never reaches here.
             return reply(Boom.badRequest('File type not supported'));
         }
     }

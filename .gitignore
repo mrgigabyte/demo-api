@@ -2,6 +2,8 @@ build/
 node_modules/
 src/config/config.local.json
 src/config/config.dev.json
+src/config/config.test.json
+src/config/nginx.dev.config
 src/config/googleServiceAccountKey.json
 .DS_Store
 npm-debug.log
