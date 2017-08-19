@@ -151,22 +151,29 @@ export default function (server: Hapi.Server, serverConfigs: IServerConfiguratio
         handler: storyController.getAllPaginatedStories,
         config: {
             description: 'GET all the stories(published/drafts) created so far.',
-            notes: `The stories can be of the following two types:  
+            notes: `You can select the type of stories you want based on a story's state. You can pass the state in the query param.
+            The state can be of the following two types:  
             1. draft : Stories that have not been published. Hence, there publishedAt key is equal to null.   
-            2. published : Stories that have been published. Hence, there publishedAt key is not null.
+            2. published : Stories that have been published. Hence, there publishedAt key is not null. 
+               They have a "views" key in response which is the number of users who have read the story. 
             
             GOD and JESUS can access this endpoint.`,
             auth: 'jwt',
             validate: {
                 query: {
                     page: Joi.number().required(),
-                    size: Joi.number().required()
+                    size: Joi.number().required(),
+                    type: Joi.string().required()
+                        .valid(['published', 'drafts'])
+                        .description('Send the type(publised/drafts) of stories you want.')
                 }
             },
             response: {
                 schema: Joi.object({
+                    "noOfPages": Joi.number(),
+                    "currentPageNo": Joi.number(),
                     "stories": Joi.array().items(storySchema),
-                    "next": Joi.string().uri()
+                    "next": Joi.string().uri().allow(null)
                 })
             },
             plugins: {

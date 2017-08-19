@@ -5,6 +5,7 @@ export default (): IPlugin => {
     return {
         register: (server: Hapi.Server): Promise<any> => {
             return new Promise<void>(resolve => {
+
                 const opts = {
                     opsInterval: 1000,
                     reporters: [{

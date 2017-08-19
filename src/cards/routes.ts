@@ -124,7 +124,7 @@ export default function (server: Hapi.Server, serverConfigs: IServerConfiguratio
                         '202': {
                             'description': 'Started the video transcoding process.'
                         },
-                        '403': {
+                        '400': {
                             'description': 'file type not supported'
                         }
                     },

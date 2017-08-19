@@ -33,7 +33,7 @@ export function init(configs: IServerConfigurations, database: any): Promise<Hap
             if (!response.isBoom) { // if not error then continue :)
                 return reply.continue();
             }
-            console.log(response);
+            // console.log(response);
             return reply(response);
         });
 

@@ -16,12 +16,16 @@ Server.init(serverConfig, database).then((Server: Hapi.Server) => {
     server = Server;
 });
 
-export function getUserDummy(email?: string) {
+export function getUserDummy(email?: string, role?: string, password?: string, name?: string) {
     let user = {
         email: email || "dummy@mail.com",
-        name: "Dummy Jones",
-        password: "123123"
+        name: name || "Dummy Jones",
+        password: password ||  "123123",
+        role: role || 'romans'
     };
+    if(!role){
+        delete user.role;
+    }
 
     return user;
 }
@@ -31,16 +35,6 @@ export function getResetPasswordDetails(code: string, email?: string) {
         code: code,
         email: email || "dummy@mail.com",
         password: "12223123"
-    };
-
-    return user;
-}
-
-export function UpdatedUserDummy(email?: string) {
-    let user = {
-        email: email || "dummy123@mail.com",
-        name: "John Doe",
-        password: "321321"
     };
 
     return user;
@@ -70,42 +64,40 @@ export function clearDatabase() {
     return Promise.all([promiseResetCodes, promiseDeletedUser, promiseUser]);
 }
 
-export function createUserDummy(type?: string): Promise<any> {
-    if (type) {
-        if (type === 'createJesus') {
-            return database.user.create(getUserDummy('createjesus@mail.com'))
-                .catch((error) => {
-                    console.log(error);
-                });
-        }
-    } else {
-        return database.user.create(getUserDummy())
-            .catch((error) => {
-                console.log(error);
-            });
-    }
+export function createUserDummy(email?: string, role?: string): Promise<any> {
+    role = role || 'romans';
+    return database.user.create(getUserDummy(email, role))
 }
 
-export function getRomansjwt(): Promise<any> {
+export function getRomansjwt(email?: string): Promise<any> {
     let user = {
-        email: getUserDummy().email,
+        email: email || getUserDummy().email,
         password: getUserDummy().password
     };
-    return createUserDummy().then((res) => {
+    return createUserDummy(user.email).then((res) => {
         return server.inject({ method: 'POST', url: '/user/login', payload: user });
     });
 }
 
-export function getGodjwt(): Promise<any> {
+export function getGodjwt(email?: string): Promise<any> {
     let user = {
-        email: getUserDummy().email,
+        email: email || 'god@mail.com',
         password: getUserDummy().password
     }
 
-    return createUserDummy().then((res) => {
-        return database.user.update({ role: "god" }, { where: { id: res.id } }).then(() => {
-            return server.inject({ method: 'POST', url: '/user/login', payload: user });
-        });
+    return createUserDummy(user.email, 'god').then((res) => {
+        return server.inject({ method: 'POST', url: '/user/login', payload: user });
+    });
+}
+
+export function getJesusjwt(email?: string): Promise<any> {
+    let user = {
+        email: email || 'jesus@mail.com',
+        password: getUserDummy().password
+    }
+
+    return createUserDummy(user.email, 'jesus').then((res) => {
+        return server.inject({ method: 'POST', url: '/user/login', payload: user });
     });
 }
 
@@ -122,20 +114,57 @@ export function getCsvJwt(): Promise<any> {
     });
 }
 
+export function checkEndpointAccess(httpMethod, httpUrl): Promise<any> {
 
-// export function createSeedTaskData(database: Database.IDatabase, done: MochaDone) {
-//     return database.userModel.create(createUserDummy())
-//         .then((user) => {
-//             return Promise.all([
-//                 database.taskModel.create(createTaskDummy(user._id, "Task 1", "Some dummy data 1")),
-//                 database.taskModel.create(createTaskDummy(user._id, "Task 2", "Some dummy data 2")),
-//                 database.taskModel.create(createTaskDummy(user._id, "Task 3", "Some dummy data 3")),
-//             ]);
-//         }).then((task) => {
-//             done();
-//         }).catch((error) => {
-//             console.log(error);
-//         });
-// }
+    return new Promise((resolve, reject) => {
+        let accessStatus = {
+            romans: true,
+            god: true,
+            jesus: true
+        };
+        var PromiseRomans = getRomansjwt().then((res) => {
+            let login: any = JSON.parse(res.payload);
+            return server.inject({ method: httpMethod, url: httpUrl, headers: { "authorization": login.jwt } }).then((res) => {
+                if (res.statusCode === 403) {
+                    accessStatus.romans = false;
+                }
+            });
+
+        });
+
+        var PromiseGod = getGodjwt().then((res) => {
+            let login: any = JSON.parse(res.payload);
+            return server.inject({ method: httpMethod, url: httpUrl, headers: { "authorization": login.jwt } }).then((res) => {
+                if (res.statusCode === 403) {
+                    accessStatus.god = false;
+                }
+            });
+        });
+
+        var PromiseJesus = getJesusjwt().then((res) => {
+            let login: any = JSON.parse(res.payload);
+            return server.inject({ method: httpMethod, url: httpUrl, headers: { "authorization": login.jwt } }).then((res) => {
+                if (res.statusCode === 403) {
+                    accessStatus.jesus = false;
+                }
+            });
+        });
+
+        return Promise.all([PromiseRomans, PromiseGod, PromiseJesus]).then(() => {
+            return resolve(accessStatus);
+        }).catch((err) => {
+            console.log("err", err);
+        });
+    })
+}
+
+export function createSeedUserData() {
+    return Promise.all([
+        database.user.create(createUserDummy("user1@mail.com")),
+        database.user.create(createUserDummy("user2@mail.com")),
+        database.user.create(createUserDummy("user3@mail.com")),
+    ]);
+
+}
 
 

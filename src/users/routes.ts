@@ -236,7 +236,7 @@ export default function (server: Hapi.Server, serverConfigs: IServerConfiguratio
                             'description': 'Successfully returned the details of the logged in user.'
                         }
                     },
-                    order: 6                    
+                    order: 6
                 },
                 'hapiAuthorization': { roles: ['GOD', 'JESUS', 'ROMANS'] }
             },
@@ -269,7 +269,7 @@ export default function (server: Hapi.Server, serverConfigs: IServerConfiguratio
                             'description': 'User info updated successfully.'
                         }
                     },
-                    order: 7                    
+                    order: 7
                 },
                 'hapiAuthorization': { roles: ['GOD', 'JESUS', 'ROMANS'] }
             },
@@ -436,8 +436,10 @@ export default function (server: Hapi.Server, serverConfigs: IServerConfiguratio
             },
             response: {
                 schema: Joi.object({
+                    "noOfPages": Joi.number(),
+                    "currentPageNo": Joi.number(),
                     "users": Joi.array().items(userAdminPannelSchema),
-                    "next": Joi.string().uri()
+                    "next": Joi.string().uri().allow(null)
                 })
             },
             plugins: {

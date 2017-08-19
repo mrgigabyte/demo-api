@@ -82,7 +82,7 @@ gulp.task('develop', function () {
             console.log('restarted the build process')
         })
         .on('crash', function () {
-            console.error('Application has crashed!\n')
+            console.error('\nApplication has crashed!\n')
         })
 })
 /**
@@ -90,14 +90,12 @@ gulp.task('develop', function () {
  */
 gulp.task('test', ['build'], (cb) => {
     const envs = env.set({
-        NODE_ENV: process.env.NODE_ENV
+        NODE_ENV: 'test'
     });
 
     gulp.src(['build/test/**/*.js'])
         .pipe(envs)
-        .pipe(mocha({
-            reporter: 'list'
-        }))
+        .pipe(mocha())
         .once('error', (error) => {
             // console.log(error);
             process.exit(1);

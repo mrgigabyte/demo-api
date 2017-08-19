@@ -144,8 +144,10 @@ export default function (sequelize, DataTypes) {
                 if (err) {
                     reject(err);
                 } else {
-                    if(!data.backup_server_used) {
-                    resolve(data.url);
+                    if (!data.backup_server_used) {
+                        let outputUrl = data.url;
+                        outputUrl = outputUrl.replace('gcs://', 'https://storage.googleapis.com/');
+                        resolve(outputUrl);
                     } else {
                         reject(Boom.expectationFailed('Failed to encode the video'));
                     }

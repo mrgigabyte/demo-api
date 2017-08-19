@@ -108,14 +108,20 @@ export default function (sequelize, DataTypes) {
                 res.rows.forEach((user) => {
                     data.push(user.get({ plain: true }));
                 });
-                if (page < Math.ceil(res.count / size) - 1) {  // for pages other than the last page.
+                let totalPages = Math.ceil(res.count / size) - 1;
+                if (page < totalPages) {  // for pages other than the last page.
                     return ({
+                        noOfPages: totalPages + 1,
+                        currentPageNo: page + 1,
                         users: data,
                         next: `${baseUrl}/user?page=${page + 1}&size=${size}`
                     });
-                } else if (page === Math.ceil(res.count / size) - 1) { // for last page.
+                } else if (page >= totalPages) { // for last page and any page number that doesn't exist.
                     return ({
-                        users: data
+                        noOfPages: totalPages + 1,
+                        currentPageNo: page + 1,
+                        users: data,
+                        next: null,                        
                     });
                 }
             });
