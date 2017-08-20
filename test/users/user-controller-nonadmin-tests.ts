@@ -8,9 +8,9 @@ import * as url from 'url';
 const assert = chai.assert;
 const should = chai.should();
 let server: Hapi.Server;
-let romanslogin: any;
+let romansJwt: any;
 
-describe('Tests for the endpoints in the app for normal users', () => {
+describe('Tests for app-side user related endoints.', () => {
 
     before(() => {
         server = Utils.getServerInstance();
@@ -123,21 +123,21 @@ describe('Tests for the endpoints in the app for normal users', () => {
 
         beforeEach(() => {
             return Utils.getRomansjwt().then((res) => {
-                romanslogin = JSON.parse(res.payload);
+                romansJwt = JSON.parse(res.payload);
             });
         });
 
         describe("Tests for changing push notification preference endpoint", () => {
 
             it("Tries to change the pushNotif with invalid pushNotif value", () => {
-                return server.inject({ method: 'PUT', url: '/user/me/changePushNotifPref', headers: { "authorization": romanslogin.jwt }, payload: { pushNotif: "evening" } }).then((res) => {
+                return server.inject({ method: 'PUT', url: '/user/me/changePushNotifPref', headers: { "authorization": romansJwt.jwt }, payload: { pushNotif: "evening" } }).then((res) => {
                     assert.equal(400, res.statusCode);
                     Promise.resolve();
                 });
             });
 
             it("Tries to change the pushNotif with valid pushNotif value", () => {
-                return server.inject({ method: 'PUT', url: '/user/me/changePushNotifPref', headers: { "authorization": romanslogin.jwt }, payload: { pushNotif: "disable" } }).then((res) => {
+                return server.inject({ method: 'PUT', url: '/user/me/changePushNotifPref', headers: { "authorization": romansJwt.jwt }, payload: { pushNotif: "disable" } }).then((res) => {
                     let responseBody: any = JSON.parse(res.payload);
                     responseBody.should.have.property('success');
                     assert.equal(responseBody.success, true);
@@ -150,14 +150,14 @@ describe('Tests for the endpoints in the app for normal users', () => {
         describe("Tests for changing email notification preference endpoint", () => {
 
             it("Tries to change the emailNotif with invalid emailNotif value", () => {
-                return server.inject({ method: 'PUT', url: '/user/me/changeEmailNotifPref', headers: { "authorization": romanslogin.jwt }, payload: { emailNotif: "disable" } }).then((res) => {
+                return server.inject({ method: 'PUT', url: '/user/me/changeEmailNotifPref', headers: { "authorization": romansJwt.jwt }, payload: { emailNotif: "disable" } }).then((res) => {
                     assert.equal(400, res.statusCode);
                     Promise.resolve();
                 });
             });
 
             it("Tries to change the emailNotif with valid emailNotif value", () => {
-                return server.inject({ method: 'PUT', url: '/user/me/changeEmailNotifPref', headers: { "authorization": romanslogin.jwt }, payload: { emailNotif: false } }).then((res) => {
+                return server.inject({ method: 'PUT', url: '/user/me/changeEmailNotifPref', headers: { "authorization": romansJwt.jwt }, payload: { emailNotif: false } }).then((res) => {
                     let responseBody: any = JSON.parse(res.payload);
                     responseBody.should.have.property('success');
                     assert.equal(responseBody.success, true);
@@ -170,7 +170,7 @@ describe('Tests for the endpoints in the app for normal users', () => {
         describe("Tests for deleting the user account (/user/me) endpoint", () => {
 
             it('tries to delete an account with valid jwt', () => {
-                return server.inject({ method: 'DELETE', url: '/user/me', headers: { "authorization": romanslogin.jwt } }).then((res) => {
+                return server.inject({ method: 'DELETE', url: '/user/me', headers: { "authorization": romansJwt.jwt } }).then((res) => {
                     let responseBody: any = JSON.parse(res.payload);
                     responseBody.should.have.property('deleted');
                     assert.equal(responseBody.deleted, true);
@@ -192,7 +192,7 @@ describe('Tests for the endpoints in the app for normal users', () => {
         describe("Tests for getting user-info (/user/me) endpoint", () => {
 
             it('tries to get details of the user with valid jwt', () => {
-                return server.inject({ method: 'GET', url: '/user/me', headers: { "authorization": romanslogin.jwt } }).then((res) => {
+                return server.inject({ method: 'GET', url: '/user/me', headers: { "authorization": romansJwt.jwt } }).then((res) => {
                     let responseBody: any = JSON.parse(res.payload);
                     let userDetails: any = responseBody.user;
                     assert.equal(userDetails.name, Utils.getUserDummy().name);
@@ -218,7 +218,7 @@ describe('Tests for the endpoints in the app for normal users', () => {
         describe("Tests for updating user-info (/user/me) endpoint", () => {
 
             it("tries to update the user details with valid jwt and payload keys", () => {
-                return server.inject({ method: 'PUT', url: '/user/me', headers: { "authorization": romanslogin.jwt }, payload: Utils.getUserDummy('dummy123@gmail.com', undefined, '312321', 'John Doe') }).then((res) => {
+                return server.inject({ method: 'PUT', url: '/user/me', headers: { "authorization": romansJwt.jwt }, payload: Utils.getUserDummy('dummy123@gmail.com', undefined, '312321', 'John Doe') }).then((res) => {
                     let responseBody: any = JSON.parse(res.payload);
                     responseBody.should.have.property('success');
                     assert.equal(responseBody.success, true);
@@ -237,7 +237,7 @@ describe('Tests for the endpoints in the app for normal users', () => {
 
             it("tried to update the account with valid jwt and invalid email id", () => {
                 let user = Utils.getUserDummy("dummail.com");
-                return server.inject({ method: 'PUT', url: '/user/me', headers: { "authorization": romanslogin.jwt }, payload: user }).then((res) => {
+                return server.inject({ method: 'PUT', url: '/user/me', headers: { "authorization": romansJwt.jwt }, payload: user }).then((res) => {
                     assert.equal(400, res.statusCode);
                     Promise.resolve();
                 });

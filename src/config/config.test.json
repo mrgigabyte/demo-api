@@ -1,9 +1,9 @@
 {
     "dialect": "mysql",
-    "database": "test",
+    "database": "abstrct_testing",
     "host": "localhost",
-    "username": "nandan",
-    "password": "nandan123",
+    "username": "root",
+    "password": "hello123",
     "requestTimeout": 90000,
     "connectionTimeout": 30000,
     "acquireConnectionTimeout": 30000,
@@ -23,7 +23,7 @@
             "acl-auth",
             "logger"
         ],
-        "baseUrl": "http://mr-gigabyte/api",
+        "baseUrl": "http://localhost/api",
         "googleCloud": {
             "projectId": "omega-branch-174318",
             "keyFilename": "config/googleServiceAccountKey.json",
