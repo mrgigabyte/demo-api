@@ -23,6 +23,7 @@ export function getUserDummy(email?: string, role?: string, password?: string, n
         password: password || "123123",
         role: role || 'romans'
     };
+
     if (!role) {
         delete user.role;
     }
@@ -58,15 +59,15 @@ export function getServerInstance() {
 // }
 
 export function clearDatabase() {
-    var promiseResetCodes = database.resetCode.destroy({ where: {} })
-    var promiseDeletedUser = database.user.destroy({ where: { status: 'deleted' } })
-    var promiseUser = database.user.destroy({ where: {} })
+    var promiseResetCodes = database.resetCode.destroy({ where: {} });
+    var promiseDeletedUser = database.user.destroy({ where: { status: 'deleted' } });
+    var promiseUser = database.user.destroy({ where: {} });
     return Promise.all([promiseResetCodes, promiseDeletedUser, promiseUser]);
 }
 
 export function createUserDummy(email?: string, role?: string): Promise<any> {
     role = role || 'romans';
-    return database.user.create(getUserDummy(email, role))
+    return database.user.create(getUserDummy(email, role));
 }
 
 export function getRomansjwt(email?: string): Promise<any> {
@@ -79,13 +80,27 @@ export function getRomansjwt(email?: string): Promise<any> {
     });
 }
 
+export function getUserInfo(email: string) {
+    return database.user.findOne({ where: { email: email } });
+}
+
 export function getGodjwt(email?: string): Promise<any> {
     let user = {
         email: email || 'god@mail.com',
         password: getUserDummy().password
-    }
+    };
 
     return createUserDummy(user.email, 'god').then((res) => {
+        return server.inject({ method: 'POST', url: '/user/login', payload: user });
+    });
+}
+
+export function getRoleBasedjwt(role: string, email?: string) {
+    let user = {
+        email: email || `${role}@mail.com`,
+        password: getUserDummy().password
+    };
+    return createUserDummy(user.email, role).then((res) => {
         return server.inject({ method: 'POST', url: '/user/login', payload: user });
     });
 }
@@ -94,7 +109,7 @@ export function getJesusjwt(email?: string): Promise<any> {
     let user = {
         email: email || 'jesus@mail.com',
         password: getUserDummy().password
-    }
+    };
 
     return createUserDummy(user.email, 'jesus').then((res) => {
         return server.inject({ method: 'POST', url: '/user/login', payload: user });
@@ -103,16 +118,17 @@ export function getJesusjwt(email?: string): Promise<any> {
 
 export function getResetCode(): Promise<any> {
     return createUserDummy().then(() => {
-        return server.inject({ method: 'POST', url: '/user/requestResetPassword', payload: { email: getUserDummy().email } })
+        return server.inject({ method: 'POST', url: '/user/requestResetPassword', payload: { email: getUserDummy().email } });
     });
 }
 
 export function getCsvJwt(): Promise<any> {
     return getGodjwt().then((res) => {
         let login: any = JSON.parse(res.payload);
-        return server.inject({ method: 'GET', url: '/user/getCsvLink', headers: { "authorization": login.jwt } })
+        return server.inject({ method: 'GET', url: '/user/getCsvLink', headers: { "authorization": login.jwt } });
     });
 }
+
 
 export function checkEndpointAccess(httpMethod, httpUrl): Promise<any> {
 
@@ -150,19 +166,17 @@ export function checkEndpointAccess(httpMethod, httpUrl): Promise<any> {
             });
         });
 
-        return Promise.all([PromiseRomans, PromiseGod, PromiseJesus]).then(() => {
+        Promise.all([PromiseRomans, PromiseGod, PromiseJesus]).then(() => {
             return resolve(accessStatus);
-        }).catch((err) => {
-            console.log("err", err);
         });
-    })
+    });
 }
 
 export function createSeedUserData() {
     return Promise.all([
-        database.user.create(createUserDummy("user1@mail.com")),
-        database.user.create(createUserDummy("user2@mail.com")),
-        database.user.create(createUserDummy("user3@mail.com")),
+        createUserDummy("user1@mail.com"),
+        createUserDummy("user2@mail.com"),
+        createUserDummy("user3@mail.com"),
     ]);
 
 }

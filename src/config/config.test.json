@@ -1,9 +1,9 @@
 {
     "dialect": "mysql",
-    "database": "abstrct_testing",
+    "database": "test",
     "host": "localhost",
-    "username": "root",
-    "password": "hello123",
+    "username": "nandan",
+    "password": "nandan123",
     "requestTimeout": 90000,
     "connectionTimeout": 30000,
     "acquireConnectionTimeout": 30000,

@@ -13,8 +13,8 @@ export function init(nodeEnv: string): any {
     let sequelize = new Sequelize(config.database, config.username, config.password, {
         host: config.host,
         dialect: config.dialect,
-        pool: config.pool,
-        logging: false
+        pool: config.pool
+        // logging: false
     });
     /**
      * Looks for js files in the directory and adds a key with the name of a model to the db object.

@@ -93,7 +93,11 @@
 //     //                 description: task.description
 //     //             };
 
-//     //             server.inject({ method: 'PUT', url: '/tasks/' + task._id, payload: updateTask, headers: { "authorization": login.token } },
+//     //             server.inject({ 
+//         method: 'PUT', 
+//         url: '/tasks/' + task._id, 
+//         payload: updateTask, 
+//         headers: { "authorization": login.token } },
 //     //                 (res) => {
 //     //                     assert.equal(200, res.statusCode);
 //     //                     console.log(res.payload);

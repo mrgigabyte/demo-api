@@ -8,7 +8,7 @@ import * as url from 'url';
 const assert = chai.assert;
 const should = chai.should();
 let server: Hapi.Server;
-let romansJwt: any;
+let romansJwt: string;
 
 describe('Tests for app-side user related endoints.', () => {
 
@@ -25,7 +25,7 @@ describe('Tests for app-side user related endoints.', () => {
     describe("Tests for creating a new account.", () => {
 
         it("Creates an account with role ROMANS.", () => {
-            return server.inject({ method: 'POST', url: '/user', payload: Utils.getUserDummy() }).then((res) => {
+            return server.inject({ method: 'POST', url: '/user', payload: Utils.getUserDummy() }).then((res: any) => {
                 let responseBody: any = JSON.parse(res.payload);
                 responseBody.should.have.property('success');
                 assert.equal(responseBody.success, true);
@@ -36,7 +36,7 @@ describe('Tests for app-side user related endoints.', () => {
 
         it("Creates an account with existing email and role ROMANS.", () => {
             Utils.createUserDummy().then(() => {
-                return server.inject({ method: 'POST', url: '/user', payload: Utils.getUserDummy() }).then((res) => {
+                return server.inject({ method: 'POST', url: '/user', payload: Utils.getUserDummy() }).then((res: any) => {
                     assert.equal(409, res.statusCode);
                     Promise.resolve();
                 });
@@ -45,7 +45,7 @@ describe('Tests for app-side user related endoints.', () => {
 
         it("Creates an account with invalid email and role ROMANS.", () => {
             let user = Utils.getUserDummy("dummail.com");
-            return server.inject({ method: 'POST', url: '/user', payload: user }).then((res) => {
+            return server.inject({ method: 'POST', url: '/user', payload: user }).then((res: any) => {
                 assert.equal(400, res.statusCode);
                 Promise.resolve();
             });
@@ -56,7 +56,7 @@ describe('Tests for app-side user related endoints.', () => {
             it('Missing Password.', () => {
                 let user = Utils.getUserDummy();
                 delete user.password;
-                return server.inject({ method: 'POST', url: '/user', payload: user }).then((res) => {
+                return server.inject({ method: 'POST', url: '/user', payload: user }).then((res: any) => {
                     assert.equal(400, res.statusCode);
                     Promise.resolve();
                 });
@@ -65,7 +65,7 @@ describe('Tests for app-side user related endoints.', () => {
             it('Missing Email Id.', () => {
                 let user = Utils.getUserDummy();
                 delete user.email;
-                return server.inject({ method: 'POST', url: '/user', payload: user }).then((res) => {
+                return server.inject({ method: 'POST', url: '/user', payload: user }).then((res: any) => {
                     assert.equal(400, res.statusCode);
                     Promise.resolve();
                 });
@@ -74,7 +74,7 @@ describe('Tests for app-side user related endoints.', () => {
             it('Missing name.', () => {
                 let user = Utils.getUserDummy();
                 delete user.name;
-                return server.inject({ method: 'POST', url: '/user', payload: user }).then((res) => {
+                return server.inject({ method: 'POST', url: '/user', payload: user }).then((res: any) => {
                     assert.equal(400, res.statusCode);
                     Promise.resolve();
                 });
@@ -85,7 +85,7 @@ describe('Tests for app-side user related endoints.', () => {
     describe("Tests for checking email endpoint", () => {
 
         it("checks if the email doesn't exists", () => {
-            return server.inject({ method: 'POST', url: '/user/checkEmail', payload: { email: "dummy@mail.com" } }).then((res) => {
+            return server.inject({ method: 'POST', url: '/user/checkEmail', payload: { email: "dummy@mail.com" } }).then((res: any) => {
                 let responseBody: any = JSON.parse(res.payload);
                 responseBody.should.have.property('valid');
                 assert.equal(responseBody.valid, true);
@@ -97,7 +97,7 @@ describe('Tests for app-side user related endoints.', () => {
 
         it('checks if the email already exists', () => {
             Utils.createUserDummy().then(() => {
-                return server.inject({ method: 'POST', url: '/user/checkEmail', payload: { email: "dummy@mail.com" } }).then((res) => {
+                return server.inject({ method: 'POST', url: '/user/checkEmail', payload: { email: "dummy@mail.com" } }).then((res: any) => {
                     assert.equal(409, res.statusCode);
                     Promise.resolve();
                 });
@@ -105,14 +105,14 @@ describe('Tests for app-side user related endoints.', () => {
         });
 
         it('checks if the email id is invalid ', () => {
-            return server.inject({ method: 'POST', url: '/user/checkEmail', payload: { email: "dummymail.com" } }).then((res) => {
+            return server.inject({ method: 'POST', url: '/user/checkEmail', payload: { email: "dummymail.com" } }).then((res: any) => {
                 assert.equal(400, res.statusCode);
                 Promise.resolve();
             });
         });
 
         it('check for the missing email key in payload', () => {
-            return server.inject({ method: 'POST', url: '/user/checkEmail', payload: {} }).then((res) => {
+            return server.inject({ method: 'POST', url: '/user/checkEmail', payload: {} }).then((res: any) => {
                 assert.equal(400, res.statusCode);
                 Promise.resolve();
             });
@@ -122,22 +122,33 @@ describe('Tests for app-side user related endoints.', () => {
     describe("Tests which need authorization header", () => {
 
         beforeEach(() => {
-            return Utils.getRomansjwt().then((res) => {
-                romansJwt = JSON.parse(res.payload);
+            return Utils.getRoleBasedjwt('romans').then((res: any) => {
+                romansJwt = JSON.parse(res.payload).jwt;
+
             });
         });
 
         describe("Tests for changing push notification preference endpoint", () => {
 
             it("Tries to change the pushNotif with invalid pushNotif value", () => {
-                return server.inject({ method: 'PUT', url: '/user/me/changePushNotifPref', headers: { "authorization": romansJwt.jwt }, payload: { pushNotif: "evening" } }).then((res) => {
+                return server.inject({
+                    method: 'PUT',
+                    url: '/user/me/changePushNotifPref',
+                    headers: { "authorization": romansJwt },
+                    payload: { pushNotif: "evening" }
+                }).then((res: any) => {
                     assert.equal(400, res.statusCode);
                     Promise.resolve();
                 });
             });
 
             it("Tries to change the pushNotif with valid pushNotif value", () => {
-                return server.inject({ method: 'PUT', url: '/user/me/changePushNotifPref', headers: { "authorization": romansJwt.jwt }, payload: { pushNotif: "disable" } }).then((res) => {
+                return server.inject({
+                    method: 'PUT',
+                    url: '/user/me/changePushNotifPref',
+                    headers: { "authorization": romansJwt },
+                    payload: { pushNotif: "disable" }
+                }).then((res: any) => {
                     let responseBody: any = JSON.parse(res.payload);
                     responseBody.should.have.property('success');
                     assert.equal(responseBody.success, true);
@@ -150,14 +161,24 @@ describe('Tests for app-side user related endoints.', () => {
         describe("Tests for changing email notification preference endpoint", () => {
 
             it("Tries to change the emailNotif with invalid emailNotif value", () => {
-                return server.inject({ method: 'PUT', url: '/user/me/changeEmailNotifPref', headers: { "authorization": romansJwt.jwt }, payload: { emailNotif: "disable" } }).then((res) => {
+                return server.inject({
+                    method: 'PUT',
+                    url: '/user/me/changeEmailNotifPref',
+                    headers: { "authorization": romansJwt },
+                    payload: { emailNotif: "disable" }
+                }).then((res: any) => {
                     assert.equal(400, res.statusCode);
                     Promise.resolve();
                 });
             });
 
             it("Tries to change the emailNotif with valid emailNotif value", () => {
-                return server.inject({ method: 'PUT', url: '/user/me/changeEmailNotifPref', headers: { "authorization": romansJwt.jwt }, payload: { emailNotif: false } }).then((res) => {
+                return server.inject({
+                    method: 'PUT',
+                    url: '/user/me/changeEmailNotifPref',
+                    headers: { "authorization": romansJwt },
+                    payload: { emailNotif: false }
+                }).then((res: any) => {
                     let responseBody: any = JSON.parse(res.payload);
                     responseBody.should.have.property('success');
                     assert.equal(responseBody.success, true);
@@ -170,7 +191,7 @@ describe('Tests for app-side user related endoints.', () => {
         describe("Tests for deleting the user account (/user/me) endpoint", () => {
 
             it('tries to delete an account with valid jwt', () => {
-                return server.inject({ method: 'DELETE', url: '/user/me', headers: { "authorization": romansJwt.jwt } }).then((res) => {
+                return server.inject({ method: 'DELETE', url: '/user/me', headers: { "authorization": romansJwt } }).then((res: any) => {
                     let responseBody: any = JSON.parse(res.payload);
                     responseBody.should.have.property('deleted');
                     assert.equal(responseBody.deleted, true);
@@ -180,8 +201,8 @@ describe('Tests for app-side user related endoints.', () => {
             });
 
             it('tries to delete an account with invalid jwt', () => {
-                let login: string = "dummy jwt"
-                return server.inject({ method: 'DELETE', url: '/user/me', headers: { "authorization": login } }).then((res) => {
+                let login: string = "dummy jwt";
+                return server.inject({ method: 'DELETE', url: '/user/me', headers: { "authorization": login } }).then((res: any) => {
                     assert.equal(401, res.statusCode);
                     Promise.resolve();
                     return Utils.clearDatabase();
@@ -192,11 +213,11 @@ describe('Tests for app-side user related endoints.', () => {
         describe("Tests for getting user-info (/user/me) endpoint", () => {
 
             it('tries to get details of the user with valid jwt', () => {
-                return server.inject({ method: 'GET', url: '/user/me', headers: { "authorization": romansJwt.jwt } }).then((res) => {
+                return server.inject({ method: 'GET', url: '/user/me', headers: { "authorization": romansJwt } }).then((res: any) => {
                     let responseBody: any = JSON.parse(res.payload);
                     let userDetails: any = responseBody.user;
                     assert.equal(userDetails.name, Utils.getUserDummy().name);
-                    assert.equal(userDetails.email, Utils.getUserDummy().email);
+                    assert.equal(userDetails.email, 'romans@mail.com');
                     assert.isBoolean(userDetails.emailNotif);
                     assert.isString(userDetails.pushNotif);
                     assert.isNumber(userDetails.id);
@@ -207,8 +228,8 @@ describe('Tests for app-side user related endoints.', () => {
             });
 
             it('tries to get details of the user with invalid jwt', () => {
-                let login: string = "dummy jwt"
-                return server.inject({ method: 'GET', url: '/user/me', headers: { "authorization": login } }).then((res) => {
+                let login: string = "dummy jwt";
+                return server.inject({ method: 'GET', url: '/user/me', headers: { "authorization": login } }).then((res: any) => {
                     assert.equal(401, res.statusCode);
                     Promise.resolve();
                 });
@@ -218,7 +239,12 @@ describe('Tests for app-side user related endoints.', () => {
         describe("Tests for updating user-info (/user/me) endpoint", () => {
 
             it("tries to update the user details with valid jwt and payload keys", () => {
-                return server.inject({ method: 'PUT', url: '/user/me', headers: { "authorization": romansJwt.jwt }, payload: Utils.getUserDummy('dummy123@gmail.com', undefined, '312321', 'John Doe') }).then((res) => {
+                return server.inject({
+                    method: 'PUT',
+                    url: '/user/me',
+                    headers: { "authorization": romansJwt },
+                    payload: Utils.getUserDummy('dummy123@gmail.com', undefined, '312321', 'John Doe')
+                }).then((res: any) => {
                     let responseBody: any = JSON.parse(res.payload);
                     responseBody.should.have.property('success');
                     assert.equal(responseBody.success, true);
@@ -229,7 +255,12 @@ describe('Tests for app-side user related endoints.', () => {
 
             it("tries to update the account with invalid jwt", () => {
                 let login: string = 'dummy jwt';
-                return server.inject({ method: 'PUT', url: '/user/me', headers: { "authorization": login }, payload: Utils.getUserDummy() }).then((res) => {
+                return server.inject({
+                    method: 'PUT',
+                    url: '/user/me',
+                    headers: { "authorization": login },
+                    payload: Utils.getUserDummy()
+                }).then((res: any) => {
                     assert.equal(401, res.statusCode);
                     Promise.resolve();
                 });
@@ -237,7 +268,12 @@ describe('Tests for app-side user related endoints.', () => {
 
             it("tried to update the account with valid jwt and invalid email id", () => {
                 let user = Utils.getUserDummy("dummail.com");
-                return server.inject({ method: 'PUT', url: '/user/me', headers: { "authorization": romansJwt.jwt }, payload: user }).then((res) => {
+                return server.inject({
+                    method: 'PUT',
+                    url: '/user/me',
+                    headers: { "authorization": romansJwt },
+                    payload: user
+                }).then((res: any) => {
                     assert.equal(400, res.statusCode);
                     Promise.resolve();
                 });
@@ -252,10 +288,10 @@ describe('Tests for app-side user related endoints.', () => {
             let user = {
                 email: Utils.getUserDummy().email,
                 password: Utils.getUserDummy().password
-            }
+            };
 
-            return Utils.createUserDummy().then((res) => {
-                return server.inject({ method: 'POST', url: '/user/login', payload: user }).then((res) => {
+            return Utils.createUserDummy().then((res: any) => {
+                return server.inject({ method: 'POST', url: '/user/login', payload: user }).then((res: any) => {
 
                     let responseBody: any = JSON.parse(res.payload);
                     let userDetails: any = responseBody.user;
@@ -275,9 +311,9 @@ describe('Tests for app-side user related endoints.', () => {
             let user = {
                 email: Utils.getUserDummy().email,
                 password: Utils.getUserDummy().password
-            }
+            };
 
-            return server.inject({ method: 'POST', url: '/user/login', payload: user }).then((res) => {
+            return server.inject({ method: 'POST', url: '/user/login', payload: user }).then((res: any) => {
                 assert.equal(404, res.statusCode);
                 Promise.resolve();
             });
@@ -289,9 +325,9 @@ describe('Tests for app-side user related endoints.', () => {
             let user = {
                 email: "dummydummy@email.com",
                 password: Utils.getUserDummy().password
-            }
+            };
 
-            return server.inject({ method: 'POST', url: '/user/login', payload: user }).then((res) => {
+            return server.inject({ method: 'POST', url: '/user/login', payload: user }).then((res: any) => {
                 assert.equal(401, res.statusCode);
                 Promise.resolve();
             });
@@ -303,9 +339,9 @@ describe('Tests for app-side user related endoints.', () => {
             let user = {
                 email: "dummyemail.com",
                 password: Utils.getUserDummy().password
-            }
+            };
 
-            return server.inject({ method: 'POST', url: '/user/login', payload: user }).then((res) => {
+            return server.inject({ method: 'POST', url: '/user/login', payload: user }).then((res: any) => {
                 assert.equal(400, res.statusCode);
                 Promise.resolve();
             });
@@ -317,9 +353,9 @@ describe('Tests for app-side user related endoints.', () => {
 
                 let user = {
                     password: Utils.getUserDummy().password
-                }
+                };
 
-                return server.inject({ method: 'POST', url: '/user/login', payload: user }).then((res) => {
+                return server.inject({ method: 'POST', url: '/user/login', payload: user }).then((res: any) => {
                     assert.equal(400, res.statusCode);
                     Promise.resolve();
                 });
@@ -329,9 +365,9 @@ describe('Tests for app-side user related endoints.', () => {
 
                 let user = {
                     email: "dummyemail.com"
-                }
+                };
 
-                return server.inject({ method: 'POST', url: '/user/login', payload: user }).then((res) => {
+                return server.inject({ method: 'POST', url: '/user/login', payload: user }).then((res: any) => {
                     assert.equal(400, res.statusCode);
                     Promise.resolve();
                 });
@@ -347,9 +383,13 @@ describe('Tests for app-side user related endoints.', () => {
         it('checks if the account exists', () => {
 
             return Utils.createUserDummy().then(() => {
-                return server.inject({ method: 'POST', url: '/user/requestResetPassword', payload: { email: Utils.getUserDummy().email } }).then((res) => {
+                return server.inject({
+                    method: 'POST',
+                    url: '/user/requestResetPassword',
+                    payload: { email: Utils.getUserDummy().email }
+                }).then((res: any) => {
                     let responseBody: any = JSON.parse(res.payload);
-                    responseBody.should.have.property("code")
+                    responseBody.should.have.property("code");
                     assert.isString(responseBody.code);
                     assert.equal(200, res.statusCode);
                     Promise.resolve();
@@ -358,7 +398,11 @@ describe('Tests for app-side user related endoints.', () => {
         });
 
         it("checks if the account doesn't exist", () => {
-            return server.inject({ method: 'POST', url: '/user/requestResetPassword', payload: { email: Utils.getUserDummy().email } }).then((res) => {
+            return server.inject({
+                method: 'POST',
+                url: '/user/requestResetPassword',
+                payload: { email: Utils.getUserDummy().email }
+            }).then((res: any) => {
                 assert.equal(404, res.statusCode);
                 Promise.resolve();
             });
@@ -366,14 +410,18 @@ describe('Tests for app-side user related endoints.', () => {
 
         it('requests with an invalid email id', () => {
 
-            return server.inject({ method: 'POST', url: '/user/requestResetPassword', payload: { email: "dummymail.com" } }).then((res) => {
+            return server.inject({
+                method: 'POST',
+                url: '/user/requestResetPassword',
+                payload: { email: "dummymail.com" }
+            }).then((res: any) => {
                 assert.equal(400, res.statusCode);
                 Promise.resolve();
             });
         });
 
         it('checks if email id key is missing in the payload', () => {
-            return server.inject({ method: 'POST', url: '/user/requestResetPassword', payload: {} }).then((res) => {
+            return server.inject({ method: 'POST', url: '/user/requestResetPassword', payload: {} }).then((res: any) => {
                 assert.equal(400, res.statusCode);
                 Promise.resolve();
             });
@@ -383,11 +431,15 @@ describe('Tests for app-side user related endoints.', () => {
     describe("Tests for resetting the password endpoint", () => {
 
         it('checks if the code is valid', () => {
-            return Utils.getResetCode().then((res) => {
+            return Utils.getResetCode().then((res: any) => {
                 let response: any = JSON.parse(res.payload);
-                return server.inject({ method: 'POST', url: '/user/resetPassword', payload: Utils.getResetPasswordDetails(response.code) }).then((res) => {
+                return server.inject({
+                    method: 'POST',
+                    url: '/user/resetPassword',
+                    payload: Utils.getResetPasswordDetails(response.code)
+                }).then((res: any) => {
                     let responseBody: any = JSON.parse(res.payload);
-                    responseBody.should.have.property("reset")
+                    responseBody.should.have.property("reset");
                     assert.equal(responseBody.reset, true);
                     assert.equal(200, res.statusCode);
                     Promise.resolve();
@@ -397,7 +449,11 @@ describe('Tests for app-side user related endoints.', () => {
 
         it("checks if the code is invalid", () => {
             return Utils.createUserDummy().then(() => {
-                return server.inject({ method: 'POST', url: '/user/resetPassword', payload: Utils.getResetPasswordDetails("Invalid Code") }).then((res) => {
+                return server.inject({
+                    method: 'POST',
+                    url: '/user/resetPassword',
+                    payload: Utils.getResetPasswordDetails("Invalid Code")
+                }).then((res: any) => {
                     assert.equal(400, res.statusCode);
                     Promise.resolve();
                 });
@@ -405,9 +461,13 @@ describe('Tests for app-side user related endoints.', () => {
         });
 
         it('checks for the invalid email when the code is valid', () => {
-            return Utils.getResetCode().then((res) => {
+            return Utils.getResetCode().then((res: any) => {
                 let response: any = JSON.parse(res.payload);
-                return server.inject({ method: 'POST', url: '/user/resetPassword', payload: Utils.getResetPasswordDetails(response.code, "dummymail.com") }).then((res) => {
+                return server.inject({
+                    method: 'POST',
+                    url: '/user/resetPassword',
+                    payload: Utils.getResetPasswordDetails(response.code, "dummymail.com")
+                }).then((res: any) => {
                     assert.equal(400, res.statusCode);
                     Promise.resolve();
                 });
@@ -417,11 +477,11 @@ describe('Tests for app-side user related endoints.', () => {
         describe('checks if there is missing data in the payload', () => {
 
             it('Missing Code', () => {
-                return Utils.getResetCode().then((res) => {
+                return Utils.getResetCode().then((res: any) => {
                     let response: any = JSON.parse(res.payload);
                     let user = Utils.getResetPasswordDetails(response.code);
                     delete user.code;
-                    return server.inject({ method: 'POST', url: '/user/resetPassword', payload: user }).then((res) => {
+                    return server.inject({ method: 'POST', url: '/user/resetPassword', payload: user }).then((res: any) => {
                         assert.equal(400, res.statusCode);
                         Promise.resolve();
                     });
@@ -429,11 +489,11 @@ describe('Tests for app-side user related endoints.', () => {
             });
 
             it('Missing Email Id', () => {
-                return Utils.getResetCode().then((res) => {
+                return Utils.getResetCode().then((res: any) => {
                     let response: any = JSON.parse(res.payload);
                     let user = Utils.getResetPasswordDetails(response.code);
                     delete user.email;
-                    return server.inject({ method: 'POST', url: '/user/resetPassword', payload: user }).then((res) => {
+                    return server.inject({ method: 'POST', url: '/user/resetPassword', payload: user }).then((res: any) => {
                         assert.equal(400, res.statusCode);
                         Promise.resolve();
                     });
@@ -441,11 +501,11 @@ describe('Tests for app-side user related endoints.', () => {
             });
 
             it('Missing Password', () => {
-                return Utils.getResetCode().then((res) => {
+                return Utils.getResetCode().then((res: any) => {
                     let response: any = JSON.parse(res.payload);
                     let user = Utils.getResetPasswordDetails(response.code);
                     delete user.password;
-                    return server.inject({ method: 'POST', url: '/user/resetPassword', payload: user }).then((res) => {
+                    return server.inject({ method: 'POST', url: '/user/resetPassword', payload: user }).then((res: any) => {
                         assert.equal(400, res.statusCode);
                         Promise.resolve();
                     });
