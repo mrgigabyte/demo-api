@@ -101,6 +101,7 @@ export default function (sequelize, DataTypes) {
         if (size > 0 && page >= 0) {
             return User.scope(null).findAndCountAll({
                 attributes: ['id', 'name', 'email', 'emailNotif', 'pushNotif', ['createdAt', 'joinedOn'], 'status'],
+                order: [['createdAt', 'DESC']],
                 limit: size,
                 offset: page * size
             }).then((res) => {
@@ -176,7 +177,8 @@ export default function (sequelize, DataTypes) {
     User.getCsv = function (): Promise<any> {
         let fields: Array<string> = ['id', 'name', 'email', 'emailNotif', 'pushNotif', 'createdAt', 'status'];
         return this.scope(null).findAll({
-            attributes: fields
+            attributes: fields,
+            order: [['createdAt', 'DESC']]
         }).then((users: Array<any>) => {
             if (users.length) {
                 let data: Array<any> = [];

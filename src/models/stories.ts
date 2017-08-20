@@ -243,6 +243,7 @@ export default function (sequelize, DataTypes) {
                 storiesPromise = this.findAndCountAll({
                     attributes: ['id', 'title', 'slug', 'by', 'createdAt', 'publishedAt'],
                     limit: size,
+
                     offset: page * size,
                     where: {
                         publishedAt: {
@@ -251,7 +252,7 @@ export default function (sequelize, DataTypes) {
                     },
                     order: [["publishedAt", 'DESC']]
                 });
-            } else if(type === 'drafts') {
+            } else if (type === 'drafts') {
                 storiesPromise = this.findAndCountAll({
                     attributes: ['id', 'title', 'slug', 'by', 'createdAt', 'publishedAt'],
                     limit: size,
@@ -289,7 +290,7 @@ export default function (sequelize, DataTypes) {
                                 noOfPages: totalPages + 1,
                                 currentPageNo: page + 1,
                                 stories: stories,
-                                next: null                                
+                                next: null
                             });
                         }
                     });
@@ -389,19 +390,17 @@ export default function (sequelize, DataTypes) {
      * Helper function that update card details.
      */
     let updateCardAttributes = function (card: any, cardModel: any, storyId: number, t: any): Promise<any> {
-        return sequelize.transaction((t) => {
-            return cardModel.findOne({
-                where: {
-                    id: card.id,
-                    storyId: storyId
-                }
-            }).then((oldCard: any) => {
-                if (oldCard) {
-                    return oldCard.update(card, { transaction: t });
-                } else {
-                    throw Boom.notFound('Card with ' + card.id + ' not found');
-                }
-            });
+        return cardModel.findOne({
+            where: {
+                id: card.id,
+                storyId: storyId
+            }
+        }).then((oldCard: any) => {
+            if (oldCard) {
+                return oldCard.update(card, { transaction: t });
+            } else {
+                throw Boom.notFound('Card with id ' + card.id + ' not found');
+            }
         });
     };
 
@@ -410,26 +409,25 @@ export default function (sequelize, DataTypes) {
      */
     Story.prototype.deleteOldCards = function (t: any, newCards?: Array<any>): Promise<any> {
         // TDOD use where clause to destroy.
-        return sequelize.transaction((t) => {
-            let promises: Array<Promise<any>> = [];
-            return this.getCards().then((oldCards: Array<any>) => {
-                oldCards.forEach(oldCard => {
-                    if (newCards) {
-                        let found = false;
-                        newCards.forEach(newCard => {
-                            if (newCard.id === oldCard.id) {
-                                found = true;
-                            }
-                        });
-                        if (!found) {
-                            promises.push(oldCard.destroy({ transaction: t }));
+        let promises: Array<Promise<any>> = [];
+        return this.getCards({ order: [['order', 'ASC']] }).then((oldCards: Array<any>) => {
+            oldCards.forEach(oldCard => {
+                if (newCards) {
+                    let found = false;
+                    newCards.forEach((newCard: any, index: number) => {
+                        if (newCard.id === oldCard.id && oldCard.order === index) {
+                            found = true;
+                            newCard.update = found;
                         }
-                    } else {
+                    });
+                    if (!found) {
                         promises.push(oldCard.destroy({ transaction: t }));
                     }
-                });
-                return Promise.all(promises);
+                } else {
+                    promises.push(oldCard.destroy({ transaction: t }));
+                }
             });
+            return Promise.all(promises);
         });
     };
 
@@ -451,13 +449,13 @@ export default function (sequelize, DataTypes) {
                     return this.deleteOldCards(t, story.cards).then(() => {
                         addStoryIdAndOrder(story.cards, this.id);
                         story.cards.forEach(card => {
-                            if (!card.id) {
+                            if (!card.update) {
                                 createPromises.push(cardModel.create(card, { transaction: t }));
                             } else {
                                 updatePromises.push(updateCardAttributes(card, cardModel, this.id, t));
                             }
                         });
-                        return Promise.all(updatePromises).then(() => {
+                        return Promise.all(updatePromises).then((res) => {
                             return Promise.all(createPromises);
                         });
                     });
