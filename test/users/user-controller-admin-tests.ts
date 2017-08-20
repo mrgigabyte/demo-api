@@ -69,9 +69,9 @@ describe('Tests for admin-panel user related endpoints.', () => {
             });
         });
 
-        describe('checks if there is missing data in the payload', () => {
+        describe('Checks if there is missing data in the payload', () => {
 
-            it('Missing Password', () => {
+            it('Missing Password.', () => {
                 let user = Utils.getUserDummy('createJesus@mail.com');
                 delete user.password;
                 return server.inject({ method: 'POST', url: '/user/createJesus', headers: { "authorization": godJwt.jwt }, payload: user }).then((res) => {
@@ -80,7 +80,7 @@ describe('Tests for admin-panel user related endpoints.', () => {
                 });
             });
 
-            it('Missing Email Id', () => {
+            it('Missing Email Id.', () => {
                 let user = Utils.getUserDummy('createJesus@mail.com');
                 delete user.email;
                 return server.inject({ method: 'POST', url: '/user/createJesus', headers: { "authorization": godJwt.jwt }, payload: user }).then((res) => {
@@ -90,7 +90,7 @@ describe('Tests for admin-panel user related endpoints.', () => {
 
             });
 
-            it('Missing name', () => {
+            it('Missing name.', () => {
                 let user = Utils.getUserDummy('createJesus@mail.com');
                 delete user.name;
                 return server.inject({ method: 'POST', url: '/user/createJesus', headers: { "authorization": godJwt.jwt }, payload: user }).then((res) => {

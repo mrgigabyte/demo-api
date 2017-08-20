@@ -22,9 +22,9 @@ describe('Tests for app-side user related endoints.', () => {
         });
     });
 
-    describe("Tests for signup endpoint", () => {
+    describe("Tests for creating a new account.", () => {
 
-        it("checks if the account doesn't exist", () => {
+        it("Creates an account with role ROMANS.", () => {
             return server.inject({ method: 'POST', url: '/user', payload: Utils.getUserDummy() }).then((res) => {
                 let responseBody: any = JSON.parse(res.payload);
                 responseBody.should.have.property('success');
@@ -34,7 +34,7 @@ describe('Tests for app-side user related endoints.', () => {
             });
         });
 
-        it("checks if the account already exists", () => {
+        it("Creates an account with existing email and role ROMANS.", () => {
             Utils.createUserDummy().then(() => {
                 return server.inject({ method: 'POST', url: '/user', payload: Utils.getUserDummy() }).then((res) => {
                     assert.equal(409, res.statusCode);
@@ -43,7 +43,7 @@ describe('Tests for app-side user related endoints.', () => {
             });
         });
 
-        it("Tries to create an account with invalid email", () => {
+        it("Creates an account with invalid email and role ROMANS.", () => {
             let user = Utils.getUserDummy("dummail.com");
             return server.inject({ method: 'POST', url: '/user', payload: user }).then((res) => {
                 assert.equal(400, res.statusCode);
@@ -51,9 +51,9 @@ describe('Tests for app-side user related endoints.', () => {
             });
         });
 
-        describe('checks if there is missing data in the payload', () => {
+        describe('Checks if there is missing data in the payload.', () => {
 
-            it('Missing Password', () => {
+            it('Missing Password.', () => {
                 let user = Utils.getUserDummy();
                 delete user.password;
                 return server.inject({ method: 'POST', url: '/user', payload: user }).then((res) => {
@@ -62,7 +62,7 @@ describe('Tests for app-side user related endoints.', () => {
                 });
             });
 
-            it('Missing Email Id', () => {
+            it('Missing Email Id.', () => {
                 let user = Utils.getUserDummy();
                 delete user.email;
                 return server.inject({ method: 'POST', url: '/user', payload: user }).then((res) => {
@@ -71,7 +71,7 @@ describe('Tests for app-side user related endoints.', () => {
                 });
             });
 
-            it('Missing name', () => {
+            it('Missing name.', () => {
                 let user = Utils.getUserDummy();
                 delete user.name;
                 return server.inject({ method: 'POST', url: '/user', payload: user }).then((res) => {
