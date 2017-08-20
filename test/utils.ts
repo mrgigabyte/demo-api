@@ -20,10 +20,10 @@ export function getUserDummy(email?: string, role?: string, password?: string, n
     let user = {
         email: email || "dummy@mail.com",
         name: name || "Dummy Jones",
-        password: password ||  "123123",
+        password: password || "123123",
         role: role || 'romans'
     };
-    if(!role){
+    if (!role) {
         delete user.role;
     }
 
