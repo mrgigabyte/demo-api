@@ -27,6 +27,7 @@ export interface IServerConfigurations {
         encodedVideoBucket: string;
     };
     zenCoderApiKey: string;
+    logglyToken: string;
 }
 
 export interface IDb {
