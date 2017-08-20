@@ -16,7 +16,7 @@ export default class UserController {
         this.database.user.create(request.payload).then((user: any) => {
             return reply({
                 "success": true
-            });
+            }).code(201);
         }).catch((err) => {
             if (err.parent.errno === 1062) {
                 reply(Boom.conflict('User with the given email already exists'));
@@ -176,6 +176,10 @@ export default class UserController {
 
     public getAllPaginatedUsers(request: Hapi.Request, reply: Hapi.Base_Reply) {
         this.database.user.getAllPaginatedUsers(request.query.size, request.query.page, this.configs.baseUrl).then((response: any) => {
+            console.log('-----------------------------');
+            console.log(response);
+            console.log('-----------------------------');
+            
             return reply(response);
         }).catch(err => reply(err));
     }
