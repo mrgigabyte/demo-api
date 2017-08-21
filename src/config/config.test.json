@@ -16,7 +16,7 @@
         "jwtSecret": "random-secret-password",
         "jwtExpiration": "1h",
         "jwtCsvSecret": "CSV",
-        "jwtCsvExpiration": "10m",
+        "jwtCsvExpiration": "1m",
         "plugins": [
             "jwt-auth",
             "swagger",

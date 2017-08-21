@@ -179,6 +179,23 @@ describe('Tests for admin-panel user related endpoints.', () => {
                 Promise.resolve();
             });
         });
+
+        it("Downloads users CSV with an expired JWT.", () => {
+            return Utils.getCsvJwt().then((res: any) => {
+                let responseBody: any = JSON.parse(res.payload);
+                const csvlink = url.parse(responseBody.link);
+                setTimeout(function () {
+                    return server.inject({ method: 'GET', url: '/user/downloadCsv?' + csvlink.query }).then((res: any) => {
+                        // assert.equal(400, res.statusCode);
+                        console.log('$$$$$$$$$$$$$$$$$$$$$$$$$');
+                        console.log(res);
+                        console.log('$$$$$$$$$$$$$$$$$$$$$$$$$');
+                        assert.equal(400,res.statusCode);
+                        Promise.resolve();
+                    });
+                }, 1000);
+            });
+        });
     });
 
     describe("Tests for getting info of all the users", () => {
