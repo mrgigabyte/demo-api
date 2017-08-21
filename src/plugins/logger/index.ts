@@ -7,11 +7,15 @@ export default (): IPlugin => {
             return new Promise<void>(resolve => {
 
                 const opts = {
-                    opsInterval: 1000,
-                    reporters: [{
-                        reporter: require('good-console'),
-                        events: { error: '*', log: '*', response: '*', request: '*' }
-                    }]
+                    reporters: {
+                        myConsoleReporter: [{
+                            module: 'good-squeeze',
+                            name: 'Squeeze',
+                            args: [{ error: '*', response: '*', log: '*', request: '*' }]
+                        }, {
+                            module: 'good-console'
+                        }, 'stdout']
+                    }
                 };
 
                 server.register({
@@ -21,7 +25,7 @@ export default (): IPlugin => {
                     if (error) {
                         console.log('error', error);
                     }
-                resolve();
+                    resolve();
                 });
             });
         },

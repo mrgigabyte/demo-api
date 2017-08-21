@@ -42,7 +42,6 @@ export function init(configs: IServerConfigurations, database: any): Promise<Hap
          * This will log an internal server error to loggly if any internal error come in the code.
          */
         server.on('request-error', (request, err) => {
-            console.log(err);
             logger.error(err.message, {
                 method: request.method,
                 path: request.url.href,
