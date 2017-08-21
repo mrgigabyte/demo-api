@@ -17,11 +17,11 @@ describe('Tests for admin-panel user related endpoints.', () => {
     before(() => {
         server = Utils.getServerInstance();
         return Utils.getRoleBasedjwt('romans').then((res: any) => {
-            romansJwt = JSON.parse(res.payload).jwt;
+            romansJwt = res;
             return Utils.getRoleBasedjwt('god').then((res: any) => {
-                godJwt = JSON.parse(res.payload).jwt;
+                godJwt = res;
                 return Utils.getRoleBasedjwt('jesus').then((res: any) => {
-                    jesusJwt = JSON.parse(res.payload).jwt;
+                    jesusJwt = res;
                 });
             });
         });
@@ -160,10 +160,8 @@ describe('Tests for admin-panel user related endpoints.', () => {
     describe("Tests for downloading the users CSV.", () => {
 
         it("Downloads users CSV with a valid JWT.", () => {
-            return Utils.getCsvJwt().then((res: any) => {
-                let responseBody: any = JSON.parse(res.payload);
-                const csvlink = url.parse(responseBody.link);
-                return server.inject({ method: 'GET', url: '/user/downloadCsv?' + csvlink.query }).then((res: any) => {
+            return Utils.getCsvJwt().then((jwt: string) => {
+                return server.inject({ method: 'GET', url: '/user/downloadCsv?' + jwt }).then((res: any) => {
                     let responseHeader: any = res.headers;
                     assert.equal(responseHeader["content-type"], "text/csv; charset=utf-8");
                     assert.equal(200, res.statusCode);
@@ -181,11 +179,9 @@ describe('Tests for admin-panel user related endpoints.', () => {
         });
 
         it("Downloads users CSV with an expired JWT.", () => {
-            return Utils.getCsvJwt().then((res: any) => {
-                let responseBody: any = JSON.parse(res.payload);
-                const csvlink = url.parse(responseBody.link);
+            return Utils.getCsvJwt().then((jwt: string) => {
                 setTimeout(function () {
-                    return server.inject({ method: 'GET', url: '/user/downloadCsv?' + csvlink.query }).then((res: any) => {
+                    return server.inject({ method: 'GET', url: '/user/downloadCsv?' + jwt}).then((res: any) => {
                         // assert.equal(400, res.statusCode);
                         console.log('$$$$$$$$$$$$$$$$$$$$$$$$$');
                         console.log(res);

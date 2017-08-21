@@ -8,6 +8,7 @@ import * as Database from '../src/models';
 import * as Server from "../src/server";
 import { IDb } from "../src/config";
 import * as Hapi from 'hapi';
+import * as url from 'url';
 
 let database: IDb = Database.init(process.env.NODE_ENV);
 const serverConfig = Configs.getServerConfigs();
@@ -70,49 +71,21 @@ export function createUserDummy(email?: string, role?: string): Promise<any> {
     return database.user.create(getUserDummy(email, role));
 }
 
-export function getRomansjwt(email?: string): Promise<any> {
-    let user = {
-        email: email || getUserDummy().email,
-        password: getUserDummy().password
-    };
-    return createUserDummy(user.email).then((res) => {
-        return server.inject({ method: 'POST', url: '/user/login', payload: user });
-    });
-}
-
 export function getUserInfo(email: string) {
     return database.user.findOne({ where: { email: email } });
 }
 
-export function getGodjwt(email?: string): Promise<any> {
-    let user = {
-        email: email || 'god@mail.com',
-        password: getUserDummy().password
-    };
-
-    return createUserDummy(user.email, 'god').then((res) => {
-        return server.inject({ method: 'POST', url: '/user/login', payload: user });
-    });
-}
 
 export function getRoleBasedjwt(role: string, email?: string) {
     let user = {
         email: email || `${role}@mail.com`,
         password: getUserDummy().password
     };
-    return createUserDummy(user.email, role).then((res) => {
-        return server.inject({ method: 'POST', url: '/user/login', payload: user });
-    });
-}
-
-export function getJesusjwt(email?: string): Promise<any> {
-    let user = {
-        email: email || 'jesus@mail.com',
-        password: getUserDummy().password
-    };
-
-    return createUserDummy(user.email, 'jesus').then((res) => {
-        return server.inject({ method: 'POST', url: '/user/login', payload: user });
+    return createUserDummy(user.email, role).then((res: any) => {
+        return server.inject({ method: 'POST', url: '/user/login', payload: user }).then((res: any) => {
+            let login: any = JSON.parse(res.payload);
+            return login.jwt;
+        });
     });
 }
 
@@ -123,9 +96,12 @@ export function getResetCode(): Promise<any> {
 }
 
 export function getCsvJwt(): Promise<any> {
-    return getGodjwt().then((res) => {
-        let login: any = JSON.parse(res.payload);
-        return server.inject({ method: 'GET', url: '/user/getCsvLink', headers: { "authorization": login.jwt } });
+    return getRoleBasedjwt('god').then((jwt: string) => {
+        return server.inject({ method: 'GET', url: '/user/getCsvLink', headers: { "authorization": jwt } }).then((res: any) => {
+            const jwt: any = JSON.parse(res.payload);
+            const csvlink: string = url.parse(jwt.link).query;
+            return csvlink;
+        });
     });
 }
 
@@ -138,9 +114,8 @@ export function checkEndpointAccess(httpMethod, httpUrl): Promise<any> {
             god: true,
             jesus: true
         };
-        var PromiseRomans = getRomansjwt().then((res) => {
-            let login: any = JSON.parse(res.payload);
-            return server.inject({ method: httpMethod, url: httpUrl, headers: { "authorization": login.jwt } }).then((res) => {
+        var PromiseRomans = getRoleBasedjwt('romans').then((jwt: string) => {
+            return server.inject({ method: httpMethod, url: httpUrl, headers: { "authorization": jwt } }).then((res) => {
                 if (res.statusCode === 403) {
                     accessStatus.romans = false;
                 }
@@ -148,18 +123,16 @@ export function checkEndpointAccess(httpMethod, httpUrl): Promise<any> {
 
         });
 
-        var PromiseGod = getGodjwt().then((res) => {
-            let login: any = JSON.parse(res.payload);
-            return server.inject({ method: httpMethod, url: httpUrl, headers: { "authorization": login.jwt } }).then((res) => {
+        var PromiseGod = getRoleBasedjwt('god').then((jwt: string) => {
+            return server.inject({ method: httpMethod, url: httpUrl, headers: { "authorization": jwt } }).then((res) => {
                 if (res.statusCode === 403) {
                     accessStatus.god = false;
                 }
             });
         });
 
-        var PromiseJesus = getJesusjwt().then((res) => {
-            let login: any = JSON.parse(res.payload);
-            return server.inject({ method: httpMethod, url: httpUrl, headers: { "authorization": login.jwt } }).then((res) => {
+        var PromiseJesus = getRoleBasedjwt('jesus').then((jwt: string) => {
+            return server.inject({ method: httpMethod, url: httpUrl, headers: { "authorization": jwt } }).then((res) => {
                 if (res.statusCode === 403) {
                     accessStatus.jesus = false;
                 }

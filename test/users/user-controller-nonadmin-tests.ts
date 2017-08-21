@@ -24,6 +24,8 @@ describe('Tests for app-side user related endoints.', () => {
 
     describe("Tests for creating a new account.", () => {
 
+
+
         it("Creates an account with role ROMANS.", () => {
             return server.inject({ method: 'POST', url: '/user', payload: Utils.getUserDummy() }).then((res: any) => {
                 let responseBody: any = JSON.parse(res.payload);
@@ -123,12 +125,21 @@ describe('Tests for app-side user related endoints.', () => {
 
         beforeEach(() => {
             return Utils.getRoleBasedjwt('romans').then((res: any) => {
-                romansJwt = JSON.parse(res.payload).jwt;
+                romansJwt = res;
 
             });
         });
 
         describe("Tests for changing push notification preference endpoint", () => {
+
+            it("checks if god, jesus and romans can access the endpoint", () => {
+                return Utils.checkEndpointAccess('PUT', '/user/me/changePushNotifPref').then((res: any) => {
+                    assert.equal(res.romans, true);
+                    assert.equal(res.god, true);
+                    assert.equal(res.jesus, true);
+                    Promise.resolve();
+                });
+            });
 
             it("Tries to change the pushNotif with invalid pushNotif value", () => {
                 return server.inject({
