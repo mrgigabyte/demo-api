@@ -16,11 +16,11 @@ describe('Tests for admin-panel user related endpoints.', () => {
 
     before(() => {
         server = Utils.getServerInstance();
-        return Utils.getRoleBasedjwt('romans').then((res: any) => {
+        return Utils.getRoleBasedjwt('romans').then((res: string) => {
             romansJwt = res;
-            return Utils.getRoleBasedjwt('god').then((res: any) => {
+            return Utils.getRoleBasedjwt('god').then((res: string) => {
                 godJwt = res;
-                return Utils.getRoleBasedjwt('jesus').then((res: any) => {
+                return Utils.getRoleBasedjwt('jesus').then((res: string) => {
                     jesusJwt = res;
                 });
             });

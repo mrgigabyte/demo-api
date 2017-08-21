@@ -24,8 +24,6 @@ describe('Tests for app-side user related endoints.', () => {
 
     describe("Tests for creating a new account.", () => {
 
-
-
         it("Creates an account with role ROMANS.", () => {
             return server.inject({ method: 'POST', url: '/user', payload: Utils.getUserDummy() }).then((res: any) => {
                 let responseBody: any = JSON.parse(res.payload);
@@ -124,7 +122,7 @@ describe('Tests for app-side user related endoints.', () => {
     describe("Tests which need authorization header", () => {
 
         beforeEach(() => {
-            return Utils.getRoleBasedjwt('romans').then((res: any) => {
+            return Utils.getRoleBasedjwt('romans').then((res: string) => {
                 romansJwt = res;
 
             });
