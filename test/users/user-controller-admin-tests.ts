@@ -17,11 +17,11 @@ describe('Tests for admin-panel user related endpoints.', () => {
 
     before(() => {
         server = Utils.getServerInstance();
-        return Utils.getRoleBasedjwt('romans').then((res: any) => {
+        return Utils.getRoleBasedjwt('romans').then((res: string) => {
             romansJwt = res;
-            return Utils.getRoleBasedjwt('god').then((res: any) => {
+            return Utils.getRoleBasedjwt('god').then((res: string) => {
                 godJwt = res;
-                return Utils.getRoleBasedjwt('jesus').then((res: any) => {
+                return Utils.getRoleBasedjwt('jesus').then((res: string) => {
                     jesusJwt = res;
                 });
             });
@@ -105,7 +105,7 @@ describe('Tests for admin-panel user related endpoints.', () => {
             });
 
             it('Missing email.', () => {
-                let user = Utils.getUserDummy('createJesus@mail.com');
+                let user: any = Utils.getUserDummy('createJesus@mail.com');
                 delete user.email;
                 return server.inject({
                     method: 'POST',
@@ -120,7 +120,7 @@ describe('Tests for admin-panel user related endpoints.', () => {
             });
 
             it('Missing name.', () => {
-                let user = Utils.getUserDummy('createJesus@mail.com');
+                let user: any = Utils.getUserDummy('createJesus@mail.com');
                 delete user.name;
                 return server.inject({
                     method: 'POST',
@@ -143,7 +143,7 @@ describe('Tests for admin-panel user related endpoints.', () => {
                 let responseBody: any = JSON.parse(res.payload);
                 responseBody.should.have.property('link');
                 const csvlink = url.parse(responseBody.link);
-                const jwt = csvlink.query.split('jwt=').pop();
+                const jwt: string = csvlink.query.split('jwt=').pop();
                 assert.isString(jwt);
                 assert.equal(200, res.statusCode);
                 Promise.resolve();
@@ -172,7 +172,7 @@ describe('Tests for admin-panel user related endpoints.', () => {
         });
 
         it("Downloads users CSV with a invalid JWT.", () => {
-            const jwt = "jwt=dummyjwt";
+            const jwt: string = "jwt=dummyjwt";
             return server.inject({ method: 'GET', url: '/user/downloadCsv?' + jwt }).then((res: any) => {
                 assert.equal(400, res.statusCode);
                 Promise.resolve();
@@ -212,7 +212,7 @@ describe('Tests for admin-panel user related endpoints.', () => {
                 }).then((res: any) => {
                     let responseBody: any = JSON.parse(res.payload);
                     let counter: number = 1;
-                    responseBody.users.forEach((element) => {
+                    responseBody.users.forEach((element: any) => {
                         assert.equal(element.name, "Dummy Jones");
                         assert.equal(element.email, `user${counter}@mail.com`);
                         counter++;

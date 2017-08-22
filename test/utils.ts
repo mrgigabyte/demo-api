@@ -1,8 +1,4 @@
-// import * as Database from "../src/database";
-// import * as Database from '../src/models';
-
 import * as chai from "chai";
-import UserController from "../src/users/user-controller";
 import * as Configs from "../src/config";
 import * as Database from '../src/models';
 import * as Server from "../src/server";
@@ -17,7 +13,7 @@ Server.init(serverConfig, database).then((Server: Hapi.Server) => {
     server = Server;
 });
 
-export function getUserDummy(email?: string, role?: string, password?: string, name?: string) {
+export function getUserDummy(email?: string, role?: string, password?: string, name?: string): any {
     let user = {
         email: email || "dummy@mail.com",
         name: name || "Dummy Jones",
@@ -32,7 +28,7 @@ export function getUserDummy(email?: string, role?: string, password?: string, n
     return user;
 }
 
-export function getResetPasswordDetails(code: string, email?: string) {
+export function getResetPasswordDetails(code: string, email?: string): any {
     let user = {
         code: code,
         email: email || "dummy@mail.com",
@@ -42,24 +38,11 @@ export function getResetPasswordDetails(code: string, email?: string) {
     return user;
 }
 
-export function getServerInstance() {
+export function getServerInstance(): any {
     return server;
 }
 
-// export function createInvalidUserDummy(email?: string, name?: string, password?: string): Promise<any> {
-//     var user = {
-//         email: email || "",
-//         name: name || "",
-//         password: password || ""
-//     };
-
-//     console.log(user);
-
-
-//     // return user;
-// }
-
-export function clearDatabase() {
+export function clearDatabase(): Promise<any> {
     var promiseResetCodes = database.resetCode.destroy({ where: {} });
     var promiseDeletedUser = database.user.destroy({ where: { status: 'deleted' } });
     var promiseUser = database.user.destroy({ where: {} });
@@ -71,17 +54,17 @@ export function createUserDummy(email?: string, role?: string): Promise<any> {
     return database.user.create(getUserDummy(email, role));
 }
 
-export function getUserInfo(email: string) {
+export function getUserInfo(email: string): Promise<any> {
     return database.user.findOne({ where: { email: email } });
 }
 
 
-export function getRoleBasedjwt(role: string, email?: string) {
+export function getRoleBasedjwt(role: string, email?: string): Promise<string> {
     let user = {
         email: email || `${role}@mail.com`,
         password: getUserDummy().password
     };
-    return createUserDummy(user.email, role).then((res: any) => {
+    return createUserDummy(user.email, role).then(() => {
         return server.inject({ method: 'POST', url: '/user/login', payload: user }).then((res: any) => {
             let login: any = JSON.parse(res.payload);
             return login.jwt;
@@ -106,7 +89,7 @@ export function getCsvJwt(): Promise<any> {
 }
 
 
-export function checkEndpointAccess(httpMethod, httpUrl): Promise<any> {
+export function checkEndpointAccess(httpMethod:string, httpUrl: string): Promise<any> {
 
     return new Promise((resolve, reject) => {
         let accessStatus = {
@@ -115,7 +98,7 @@ export function checkEndpointAccess(httpMethod, httpUrl): Promise<any> {
             jesus: true
         };
         var PromiseRomans = getRoleBasedjwt('romans').then((jwt: string) => {
-            return server.inject({ method: httpMethod, url: httpUrl, headers: { "authorization": jwt } }).then((res) => {
+            return server.inject({ method: httpMethod, url: httpUrl, headers: { "authorization": jwt } }).then((res: any) => {
                 if (res.statusCode === 403) {
                     accessStatus.romans = false;
                 }
@@ -124,7 +107,7 @@ export function checkEndpointAccess(httpMethod, httpUrl): Promise<any> {
         });
 
         var PromiseGod = getRoleBasedjwt('god').then((jwt: string) => {
-            return server.inject({ method: httpMethod, url: httpUrl, headers: { "authorization": jwt } }).then((res) => {
+            return server.inject({ method: httpMethod, url: httpUrl, headers: { "authorization": jwt } }).then((res: any) => {
                 if (res.statusCode === 403) {
                     accessStatus.god = false;
                 }
@@ -132,7 +115,7 @@ export function checkEndpointAccess(httpMethod, httpUrl): Promise<any> {
         });
 
         var PromiseJesus = getRoleBasedjwt('jesus').then((jwt: string) => {
-            return server.inject({ method: httpMethod, url: httpUrl, headers: { "authorization": jwt } }).then((res) => {
+            return server.inject({ method: httpMethod, url: httpUrl, headers: { "authorization": jwt } }).then((res: any) => {
                 if (res.statusCode === 403) {
                     accessStatus.jesus = false;
                 }
@@ -145,7 +128,7 @@ export function checkEndpointAccess(httpMethod, httpUrl): Promise<any> {
     });
 }
 
-export function createSeedUserData() {
+export function createSeedUserData(): Promise<any> {
     return Promise.all([
         createUserDummy("user1@mail.com"),
         createUserDummy("user2@mail.com"),
