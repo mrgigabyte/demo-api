@@ -64,7 +64,7 @@ export function getRoleBasedjwt(role: string, email?: string): Promise<string> {
         email: email || `${role}@mail.com`,
         password: getUserDummy().password
     };
-    return createUserDummy(user.email, role).then((res: any) => {
+    return createUserDummy(user.email, role).then(() => {
         return server.inject({ method: 'POST', url: '/user/login', payload: user }).then((res: any) => {
             let login: any = JSON.parse(res.payload);
             return login.jwt;
