@@ -77,9 +77,10 @@ export default class UserController {
             if (user) {
                 return user.generatePasswordResetCode(this.database.resetCode);
             } else {
-                reply(Boom.notFound('Email not registered on platform'));
+                throw (Boom.notFound('Email not registered on platform'));
             }
         }).then((code: string) => {
+            console.log('hey111222');
             // TODO: send email to the user after generating the code.
             return reply({
                 "code": code
@@ -175,11 +176,9 @@ export default class UserController {
     }
 
     public getAllPaginatedUsers(request: Hapi.Request, reply: Hapi.Base_Reply) {
-        this.database.user.getAllPaginatedUsers(request.query.size, request.query.page, this.configs.baseUrl).then((response: any) => {
-            console.log('-----------------------------');
-            console.log(response);
-            console.log('-----------------------------');
-            
+        this.database.user.getAllPaginatedUsers(
+            request.query.size, request.query.page, this.configs.baseUrl
+        ).then((response: any) => {
             return reply(response);
         }).catch(err => reply(err));
     }
@@ -208,7 +207,7 @@ export default class UserController {
         this.database.user.create(request.payload).then((user: any) => {
             return reply({
                 "success": true
-            });
+            }).code(201);
         }).catch((err) => {
             return reply(Boom.conflict('User data already exists.'));
         });

@@ -1,6 +1,7 @@
 import * as chai from "chai";
 import UserController from "../../src/users/user-controller";
 import { IDb } from "../../src/config";
+import * as config from '../../src/config';
 import * as Hapi from 'hapi';
 import * as Utils from "../utils";
 import * as url from 'url';
@@ -33,9 +34,9 @@ describe('Tests for admin-panel user related endpoints.', () => {
         });
     });
 
-    describe("Tests for creating a user account with role JESUS.", () => {
+    describe("Tests for creating an account with role JESUS.", () => {
 
-        it("Creates an account with role JESUS through GOD's account.", () => {
+        it("Creates an account through GOD's account.", () => {
             return server.inject({
                 method: 'POST', url: '/user/createJesus',
                 headers: { "authorization": godJwt },
@@ -49,7 +50,7 @@ describe('Tests for admin-panel user related endpoints.', () => {
             });
         });
 
-        it("Creates an account with role JESUS through ROMANS's account.", () => {
+        it("Creates an account through ROMANS's account.", () => {
             return server.inject({
                 method: 'POST', url: '/user/createJesus',
                 headers: { "authorization": romansJwt },
@@ -60,7 +61,7 @@ describe('Tests for admin-panel user related endpoints.', () => {
             });
         });
 
-        it("Creates an account with existing email and role JESUS.", () => {
+        it("Creates an account with existing email.", () => {
             return Utils.createUserDummy('createjesus@mail.com', 'jesus').then(() => {
                 return server.inject({
                     method: 'POST',
@@ -74,7 +75,7 @@ describe('Tests for admin-panel user related endpoints.', () => {
             });
         });
 
-        it("Creates an account with invalid email and role JESUS.", () => {
+        it("Creates an account with invalid email.", () => {
             let user = Utils.getUserDummy("dummail.com");
             return server.inject({
                 method: 'POST',
@@ -87,9 +88,9 @@ describe('Tests for admin-panel user related endpoints.', () => {
             });
         });
 
-        describe('Checks if there is missing data in the payload', () => {
+        describe('Sends missing data in the payload.', () => {
 
-            it('Missing Password.', () => {
+            it('Missing password.', () => {
                 let user = Utils.getUserDummy('createJesus@mail.com');
                 delete user.password;
                 return server.inject({
@@ -103,7 +104,7 @@ describe('Tests for admin-panel user related endpoints.', () => {
                 });
             });
 
-            it('Missing Email Id.', () => {
+            it('Missing email.', () => {
                 let user = Utils.getUserDummy('createJesus@mail.com');
                 delete user.email;
                 return server.inject({
@@ -180,23 +181,20 @@ describe('Tests for admin-panel user related endpoints.', () => {
 
         it("Downloads users CSV with an expired JWT.", () => {
             return Utils.getCsvJwt().then((jwt: string) => {
-                setTimeout(function () {
-                    return server.inject({ method: 'GET', url: '/user/downloadCsv?' + jwt}).then((res: any) => {
-                        // assert.equal(400, res.statusCode);
-                        console.log('$$$$$$$$$$$$$$$$$$$$$$$$$');
-                        console.log(res);
-                        console.log('$$$$$$$$$$$$$$$$$$$$$$$$$');
-                        assert.equal(400,res.statusCode);
+                return new Promise((resolve, reject) => setTimeout(() => {
+                    resolve();
+                }, 1100)).then(() => {
+                    return (server.inject({ method: 'GET', url: '/user/downloadCsv?' + jwt }).then((res: any) => {
+                        assert.equal(400, res.statusCode);
                         Promise.resolve();
-                    });
-                }, 1000);
+                    }));
+                });
             });
         });
     });
 
-    describe("Tests for getting info of all the users", () => {
-
-        it("checks if god & jesus can access the endpoint and romans cant", () => {
+    describe("Tests for getting user info in paginated fashion.", () => {
+        it("Checks if GOD & JESUS can access the endpoint and ROMANS cant.", () => {
             return Utils.checkEndpointAccess('GET', '/user?page=6&size=3').then((res: any) => {
                 assert.equal(res.romans, false);
                 assert.equal(res.god, true);
@@ -205,7 +203,7 @@ describe('Tests for admin-panel user related endpoints.', () => {
             });
         });
 
-        it("tries to send valid page and size in the payload", () => {
+        it("Gets user info by sending valid query params.", () => {
             return Utils.createSeedUserData().then((res: any) => {
                 return server.inject({
                     method: 'GET',
@@ -226,24 +224,26 @@ describe('Tests for admin-panel user related endpoints.', () => {
             });
         });
 
-        it("tries to get the user info with invalid size value", () => {
-            return server.inject({ method: 'GET', url: '/user?page=6&size=3a', headers: { "authorization": godJwt } }).then((res: any) => {
-                let responseBody: any = JSON.parse(res.payload);
-                assert.equal(400, res.statusCode);
-                Promise.resolve();
-            });
+        it("Gets user info by sending invalid size in query params.", () => {
+            return server.inject({ method: 'GET', url: '/user?page=6&size=3a', headers: { "authorization": godJwt } })
+                .then((res: any) => {
+                    let responseBody: any = JSON.parse(res.payload);
+                    assert.equal(400, res.statusCode);
+                    Promise.resolve();
+                });
         });
 
-        it("tries to get the user info with invalid page value", () => {
-            return server.inject({ method: 'GET', url: '/user?page=6a&size=3', headers: { "authorization": godJwt } }).then((res: any) => {
-                let responseBody: any = JSON.parse(res.payload);
-                assert.equal(400, res.statusCode);
-                Promise.resolve();
-            });
+        it("Gets user info by sending invalid page in query params.", () => {
+            return server.inject({ method: 'GET', url: '/user?page=6a&size=3', headers: { "authorization": godJwt } })
+                .then((res: any) => {
+                    let responseBody: any = JSON.parse(res.payload);
+                    assert.equal(400, res.statusCode);
+                    Promise.resolve();
+                });
         });
 
-        describe('checks if there is missing data in the payload', () => {
-            it("missing size", () => {
+        describe('Sends missing data in the payload.', () => {
+            it("Missing size.", () => {
                 return server.inject({ method: 'GET', url: '/user?page=6', headers: { "authorization": godJwt } }).then((res: any) => {
                     let responseBody: any = JSON.parse(res.payload);
                     assert.equal(400, res.statusCode);
@@ -251,7 +251,7 @@ describe('Tests for admin-panel user related endpoints.', () => {
                 });
             });
 
-            it("missing value", () => {
+            it("Missing page.", () => {
                 return server.inject({ method: 'GET', url: '/user?size=3', headers: { "authorization": godJwt } }).then((res: any) => {
                     let responseBody: any = JSON.parse(res.payload);
                     assert.equal(400, res.statusCode);
@@ -261,8 +261,8 @@ describe('Tests for admin-panel user related endpoints.', () => {
         });
     });
 
-    describe("tests for getting info of all users by user id", () => {
-        it("checks if god & jesus can access the endpoint and romans cant", () => {
+    describe("Tests for getting info of a user from userId.", () => {
+        it("Checks if GOD & JESUS can access the endpoint and ROMANS cant.", () => {
             return Utils.checkEndpointAccess('GET', '/user/1').then((res: any) => {
                 assert.equal(res.romans, false);
                 assert.equal(res.god, true);
@@ -271,38 +271,29 @@ describe('Tests for admin-panel user related endpoints.', () => {
             });
         });
 
-        it("tries to send valid user id in the payload", () => {
-            return Utils.createUserDummy().then((res1: any) => {
+        it("Gets info of an existing user.", () => {
+            return Utils.createUserDummy().then((user: any) => {
                 return server.inject({
                     method: 'GET',
-                    url: `/user/${res1.id}`,
+                    url: `/user/${user.id}`,
                     headers: { "authorization": godJwt }
                 }).then((res: any) => {
                     let responseBody: any = JSON.parse(res.payload);
                     let userinfo: any = responseBody.user;
-                    assert.equal(res1.id, userinfo.id);
-                    assert.equal(res1.name, userinfo.name);
+                    assert.equal(user.id, userinfo.id);
+                    assert.equal(user.name, userinfo.name);
                     assert.equal(200, res.statusCode);
                     Promise.resolve();
                 });
             });
         });
 
-        it("tries to get the user info with invalid user id", () => {
-            return server.inject({ method: 'GET', url: '/user/aa', headers: { "authorization": godJwt } }).then((res: any) => {
+        it("Gets info of a non-existant user.", () => {
+            return server.inject({ method: 'GET', url: '/user/-1', headers: { "authorization": godJwt } }).then((res: any) => {
                 let responseBody: any = JSON.parse(res.payload);
-                assert.equal(400, res.statusCode);
+                assert.equal(404, res.statusCode);
                 Promise.resolve();
             });
-        });
-
-        it('checks if there is missing user id in the payload', () => {
-            return server.inject({ method: 'GET', url: '/user/', headers: { "authorization": godJwt } }).then((res: any) => {
-                let responseBody: any = JSON.parse(res.payload);
-                assert.equal(400, res.statusCode);
-                Promise.resolve();
-            });
-
         });
     });
 });
