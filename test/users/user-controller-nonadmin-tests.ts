@@ -4,8 +4,8 @@ import { IDb } from "../../src/config";
 import * as Hapi from 'hapi';
 import * as Utils from "../utils";
 import * as url from 'url';
-const assert = chai.assert;
-const should = chai.should();
+const assert: Chai.Assert = chai.assert;
+const should: Chai.Should = chai.should();
 let server: Hapi.Server;
 let romansJwt: string;
 
@@ -42,7 +42,7 @@ describe('Tests for app-side user related endoints.', () => {
             });
 
             it("Creates an account with invalid email.", () => {
-                let user = Utils.getUserDummy("dummail.com");
+                let user: any = Utils.getUserDummy("dummail.com");
                 return server.inject({ method: 'POST', url: '/user', payload: user }).then((res: any) => {
                     assert.equal(400, res.statusCode);
                     Promise.resolve();
@@ -51,7 +51,7 @@ describe('Tests for app-side user related endoints.', () => {
 
             describe('Sends missing data in the payload', () => {
                 it('Missing password.', () => {
-                    let user = Utils.getUserDummy();
+                    let user: any = Utils.getUserDummy();
                     delete user.password;
                     return server.inject({ method: 'POST', url: '/user', payload: user }).then((res: any) => {
                         assert.equal(400, res.statusCode);
@@ -60,7 +60,7 @@ describe('Tests for app-side user related endoints.', () => {
                 });
 
                 it('Missing email.', () => {
-                    let user = Utils.getUserDummy();
+                    let user: any = Utils.getUserDummy();
                     delete user.email;
                     return server.inject({ method: 'POST', url: '/user', payload: user }).then((res: any) => {
                         assert.equal(400, res.statusCode);
@@ -69,7 +69,7 @@ describe('Tests for app-side user related endoints.', () => {
                 });
 
                 it('Missing name.', () => {
-                    let user = Utils.getUserDummy();
+                    let user: any = Utils.getUserDummy();
                     delete user.name;
                     return server.inject({ method: 'POST', url: '/user', payload: user }).then((res: any) => {
                         assert.equal(400, res.statusCode);
