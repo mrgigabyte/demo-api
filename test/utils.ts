@@ -89,7 +89,7 @@ export function getCsvJwt(): Promise<any> {
 }
 
 
-export function checkEndpointAccess(httpMethod:string, httpUrl: string): Promise<any> {
+export function checkEndpointAccess(httpMethod: string, httpUrl: string): Promise<any> {
 
     return new Promise((resolve, reject) => {
         let accessStatus = {
