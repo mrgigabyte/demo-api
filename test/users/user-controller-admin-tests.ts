@@ -23,6 +23,7 @@ describe('Tests for admin-panel user related endpoints.', () => {
                 godJwt = res;
                 return Utils.getRoleBasedjwt('jesus').then((res: string) => {
                     jesusJwt = res;
+                    Promise.resolve();
                 });
             });
         });
