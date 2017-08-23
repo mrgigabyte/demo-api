@@ -1,63 +1,138 @@
-// import * as Database from "../src/database";
+import * as chai from "chai";
+import * as Configs from "../src/config";
+import * as Database from '../src/models';
+import * as Server from "../src/server";
+import { IDb } from "../src/config";
+import * as Hapi from 'hapi';
+import * as url from 'url';
+
+let database: IDb = Database.init(process.env.NODE_ENV);
+const serverConfig = Configs.getServerConfigs();
+let server: Hapi.Server;
+Server.init(serverConfig, database).then((Server: Hapi.Server) => {
+    server = Server;
+});
+
+export function getUserDummy(email?: string, role?: string, password?: string, name?: string): any {
+    let user = {
+        email: email || "dummy@mail.com",
+        name: name || "Dummy Jones",
+        password: password || "123123",
+        role: role || 'romans'
+    };
+
+    if (!role) {
+        delete user.role;
+    }
+
+    return user;
+}
+
+export function getResetPasswordDetails(code: string, email?: string): any {
+    let user = {
+        code: code,
+        email: email || "dummy@mail.com",
+        password: "12223123"
+    };
+
+    return user;
+}
+
+export function getServerInstance(): any {
+    return server;
+}
+
+export function clearDatabase(): Promise<any> {
+    var promiseResetCodes = database.resetCode.destroy({ where: {} });
+    var promiseDeletedUser = database.user.destroy({ where: { status: 'deleted' } });
+    var promiseUser = database.user.destroy({ where: {} });
+    return Promise.all([promiseResetCodes, promiseDeletedUser, promiseUser]);
+}
+
+export function createUserDummy(email?: string, role?: string): Promise<any> {
+    role = role || 'romans';
+    return database.user.create(getUserDummy(email, role));
+}
+
+export function getUserInfo(email: string): Promise<any> {
+    return database.user.findOne({ where: { email: email } });
+}
 
 
-// export function createTaskDummy(userId?: string, name?: string, description?: string) {
-//     var user = {
-//         name: name || "dummy task",
-//         description: description || "I'm a dummy task!"
-//     };
+export function getRoleBasedjwt(role: string, email?: string): Promise<string> {
+    let user = {
+        email: email || `${role}@mail.com`,
+        password: getUserDummy().password
+    };
+    return createUserDummy(user.email, role).then(() => {
+        return server.inject({ method: 'POST', url: '/user/login', payload: user }).then((res: any) => {
+            let login: any = JSON.parse(res.payload);
+            return login.jwt;
+        });
+    });
+}
 
-//     if (userId) {
-//         user["userId"] = userId;
-//     }
+export function getResetCode(): Promise<any> {
+    return createUserDummy().then(() => {
+        return server.inject({ method: 'POST', url: '/user/requestResetPassword', payload: { email: getUserDummy().email } });
+    });
+}
 
-//     return user;
-// }
-
-// export function createUserDummy(email?: string) {
-//     var user = {
-//         email: email || "dummy@mail.com",
-//         name: "Dummy Jones",
-//         password: "123123"
-//     };
-
-//     return user;
-// }
+export function getCsvJwt(): Promise<any> {
+    return getRoleBasedjwt('god').then((jwt: string) => {
+        return server.inject({ method: 'GET', url: '/user/getCsvLink', headers: { "authorization": jwt } }).then((res: any) => {
+            const jwt: any = JSON.parse(res.payload);
+            const csvlink: string = url.parse(jwt.link).query;
+            return csvlink;
+        });
+    });
+}
 
 
-// export function clearDatabase(database: Database.IDatabase, done: MochaDone) {
-//     var promiseUser = database.userModel.remove({});
-//     var promiseTask = database.taskModel.remove({});
+export function checkEndpointAccess(httpMethod: string, httpUrl: string): Promise<any> {
 
-//     Promise.all([promiseUser, promiseTask]).then(() => {
-//         done();
-//     }).catch((error) => {
-//         console.log(error);
-//     });
-// }
+    return new Promise((resolve, reject) => {
+        let accessStatus = {
+            romans: true,
+            god: true,
+            jesus: true
+        };
+        var PromiseRomans = getRoleBasedjwt('romans').then((jwt: string) => {
+            return server.inject({ method: httpMethod, url: httpUrl, headers: { "authorization": jwt } }).then((res: any) => {
+                if (res.statusCode === 403) {
+                    accessStatus.romans = false;
+                }
+            });
 
-// export function createSeedTaskData(database: Database.IDatabase, done: MochaDone) {
-//     return database.userModel.create(createUserDummy())
-//         .then((user) => {
-//             return Promise.all([
-//                 database.taskModel.create(createTaskDummy(user._id, "Task 1", "Some dummy data 1")),
-//                 database.taskModel.create(createTaskDummy(user._id, "Task 2", "Some dummy data 2")),
-//                 database.taskModel.create(createTaskDummy(user._id, "Task 3", "Some dummy data 3")),
-//             ]);
-//         }).then((task) => {
-//             done();
-//         }).catch((error) => {
-//             console.log(error);
-//         });
-// }
+        });
 
-// export function createSeedUserData(database: Database.IDatabase, done: MochaDone) {
-//     database.userModel.create(createUserDummy())
-//         .then((user) => {
-//             done();
-//         })
-//         .catch((error) => {
-//             console.log(error);
-//         });
-// }
+        var PromiseGod = getRoleBasedjwt('god').then((jwt: string) => {
+            return server.inject({ method: httpMethod, url: httpUrl, headers: { "authorization": jwt } }).then((res: any) => {
+                if (res.statusCode === 403) {
+                    accessStatus.god = false;
+                }
+            });
+        });
 
+        var PromiseJesus = getRoleBasedjwt('jesus').then((jwt: string) => {
+            return server.inject({ method: httpMethod, url: httpUrl, headers: { "authorization": jwt } }).then((res: any) => {
+                if (res.statusCode === 403) {
+                    accessStatus.jesus = false;
+                }
+            });
+        });
+
+        Promise.all([PromiseRomans, PromiseGod, PromiseJesus]).then(() => {
+            return resolve(accessStatus);
+        });
+    });
+}
+
+export function createSeedUserData(): Promise<any> {
+    return Promise.all([
+        createUserDummy("user1@mail.com"),
+        createUserDummy("user2@mail.com"),
+        createUserDummy("user3@mail.com"),
+    ]);
+
+}

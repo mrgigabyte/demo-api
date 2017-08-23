@@ -224,51 +224,77 @@ export default function (sequelize, DataTypes) {
                 "by": story.by,
                 "slug": story.title
             }, { transaction: t }).then((newStory) => {
+                let cardPromise: Promise<any>;
                 if (story.cards) {
                     addStoryIdAndOrder(story.cards, newStory.id);
-                    return cardModel.bulkCreate(story.cards, { transaction: t });
-                } else {
-                    return Promise.resolve();
+                    cardPromise = cardModel.bulkCreate(story.cards, { transaction: t });
                 }
+                return Promise.all([cardPromise]).then(() => Promise.resolve(newStory.id));
             });
         });
     };
 
-    Story.getAllPaginatedStories = function (userModel: any, size: number, page: number, baseUrl: string): Promise<Array<any>> {
+    Story.getAllPaginatedStories = function (
+        userModel: any, size: number, page: number, type: string, baseUrl: string
+    ): Promise<Array<any>> {
         if (size > 0 && page >= 0) {
-            return this.findAndCountAll({
-                attributes: ['id', 'title', 'slug', 'by', 'createdAt', 'publishedAt'],
-                limit: size,
-                offset: page * size
-            }).then((res: any) => {
-                if (res.rows.length) {
-                    let promises: Array<Promise<any>> = [];
-                    res.rows.forEach((story: any) => {
-                        if (story.publishedAt) {
-                            promises.push(story.getUsers().then((users: Array<any>) => {
-                                story.views = users.length;
-                            }));
+            let storiesPromise: Promise<any>;
+            if (type === 'published') {
+                storiesPromise = this.findAndCountAll({
+                    attributes: ['id', 'title', 'slug', 'by', 'createdAt', 'publishedAt'],
+                    limit: size,
+
+                    offset: page * size,
+                    where: {
+                        publishedAt: {
+                            $ne: null
+                        }
+                    },
+                    order: [["publishedAt", 'DESC']]
+                });
+            } else if (type === 'drafts') {
+                storiesPromise = this.findAndCountAll({
+                    attributes: ['id', 'title', 'slug', 'by', 'createdAt', 'publishedAt'],
+                    limit: size,
+                    offset: page * size,
+                    where: {
+                        publishedAt: {
+                            $eq: null
+                        }
+                    },
+                    order: [["createdAt", 'DESC']]
+                });
+            }
+
+            return storiesPromise.then((res: any) => {
+                let promises: Array<Promise<any>> = [];
+                res.rows.forEach((story: any) => {
+                    if (story.publishedAt && type === 'published') {
+                        promises.push(story.getUsers().then((users: Array<any>) => {
+                            story.views = users.length;
+                        }));
+                    }
+                });
+                return Promise.all(promises).then(() => {
+                    return Story.getPlainStories(res.rows).then((stories: Array<any>) => {
+                        let totalPages = Math.ceil(res.count / size) - 1;
+                        if (page < totalPages) {  // for pages other than the last page.
+                            return ({
+                                noOfPages: totalPages + 1,
+                                currentPageNo: page + 1,
+                                stories: stories,
+                                next: `${baseUrl}/story?page=${page + 1}&size=${size}`
+                            });
+                        } else if (page >= totalPages) { // for last page and any page number that doesn't exist.
+                            return ({
+                                noOfPages: totalPages + 1,
+                                currentPageNo: page + 1,
+                                stories: stories,
+                                next: null
+                            });
                         }
                     });
-                    return Promise.all(promises).then(() => {
-                        return Story.getPlainStories(res.rows).then((stories: Array<any>) => {
-                            if (page < Math.ceil(res.count / size) - 1) {  // for pages other than the last page.
-                                return ({
-                                    stories: stories,
-                                    next: `${baseUrl}/story?page=${page + 1}&size=${size}`
-                                });
-                            } else if (page === Math.ceil(res.count / size) - 1) { // for last page.
-                                return ({
-                                    stories: stories
-                                });
-                            }
-                        });
-                    });
-                } else {
-                    return ({
-                        stories: res.rows
-                    });
-                }
+                });
             });
         } else {
             return Promise.reject(Boom.badRequest('Page size and page number must be greater than 0'));
@@ -364,19 +390,17 @@ export default function (sequelize, DataTypes) {
      * Helper function that update card details.
      */
     let updateCardAttributes = function (card: any, cardModel: any, storyId: number, t: any): Promise<any> {
-        return sequelize.transaction((t) => {
-            return cardModel.findOne({
-                where: {
-                    id: card.id,
-                    storyId: storyId
-                }
-            }).then((oldCard: any) => {
-                if (oldCard) {
-                    return oldCard.update(card, { transaction: t });
-                } else {
-                    throw Boom.notFound('Card with ' + card.id + ' not found');
-                }
-            });
+        return cardModel.findOne({
+            where: {
+                id: card.id,
+                storyId: storyId
+            }
+        }).then((oldCard: any) => {
+            if (oldCard) {
+                return oldCard.update(card, { transaction: t });
+            } else {
+                throw Boom.notFound('Card with id ' + card.id + ' not found');
+            }
         });
     };
 
@@ -385,26 +409,25 @@ export default function (sequelize, DataTypes) {
      */
     Story.prototype.deleteOldCards = function (t: any, newCards?: Array<any>): Promise<any> {
         // TDOD use where clause to destroy.
-        return sequelize.transaction((t) => {
-            let promises: Array<Promise<any>> = [];
-            return this.getCards().then((oldCards: Array<any>) => {
-                oldCards.forEach(oldCard => {
-                    if (newCards) {
-                        let found = false;
-                        newCards.forEach(newCard => {
-                            if (newCard.id === oldCard.id) {
-                                found = true;
-                            }
-                        });
-                        if (!found) {
-                            promises.push(oldCard.destroy({ transaction: t }));
+        let promises: Array<Promise<any>> = [];
+        return this.getCards({ order: [['order', 'ASC']] }).then((oldCards: Array<any>) => {
+            oldCards.forEach(oldCard => {
+                if (newCards) {
+                    let found = false;
+                    newCards.forEach((newCard: any, index: number) => {
+                        if (newCard.id === oldCard.id && oldCard.order === index) {
+                            found = true;
+                            newCard.update = found;
                         }
-                    } else {
+                    });
+                    if (!found) {
                         promises.push(oldCard.destroy({ transaction: t }));
                     }
-                });
-                return Promise.all(promises);
+                } else {
+                    promises.push(oldCard.destroy({ transaction: t }));
+                }
             });
+            return Promise.all(promises);
         });
     };
 
@@ -417,22 +440,27 @@ export default function (sequelize, DataTypes) {
     Story.prototype.updateStory = function (story: any, cardModel: any): Promise<any> {
         let updatePromises: Array<any> = [];
         let createPromises: Array<any> = [];
+        let slugPromise: Promise<any>;
         return sequelize.transaction((t) => {
-            this.title = story.title;
-            this.by = story.by;
-            return this.getSlug().then((slug) => {
-                this.slug = slug;
+            if (this.title !== story.title) {
+                slugPromise = this.getSlug().then((slug) => {
+                    this.slug = slug;
+                });
+            }
+            return Promise.all([slugPromise]).then(() => {
+                this.title = story.title;
+                this.by = story.by;
                 if (story.cards) {
                     return this.deleteOldCards(t, story.cards).then(() => {
                         addStoryIdAndOrder(story.cards, this.id);
                         story.cards.forEach(card => {
-                            if (!card.id) {
+                            if (!card.update) {
                                 createPromises.push(cardModel.create(card, { transaction: t }));
                             } else {
                                 updatePromises.push(updateCardAttributes(card, cardModel, this.id, t));
                             }
                         });
-                        return Promise.all(updatePromises).then(() => {
+                        return Promise.all(updatePromises).then((res) => {
                             return Promise.all(createPromises);
                         });
                     });

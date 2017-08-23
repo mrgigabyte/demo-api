@@ -47,8 +47,8 @@ export default class StoryController {
         }).catch((err) => reply(err));
     }
 
-    public getStoryByIdOrSlug(request: Hapi.Request, reply: Hapi.Base_Reply) {
-        this.database.story.getStory(request.params.idOrSlug, 'defaultScope').then((story: any) => {
+    private getStory(idOrSlug: any) {
+        return this.database.story.getStory(idOrSlug, 'defaultScope').then((story: any) => {
             if (story) {
                 return story.getUsers().then((users: Array<any>) => {
                     story.views = users.length;
@@ -59,7 +59,11 @@ export default class StoryController {
             } else {
                 throw Boom.notFound("Story with give id or slug doesn't exist");
             }
-        }).then((story: any) => {
+        });
+    }
+
+    public getStoryByIdOrSlug(request: Hapi.Request, reply: Hapi.Base_Reply) {
+        this.getStory(request.params.idOrSlug).then((story: any) => {
             return reply({ "story": story });
         }).catch((err) => reply(err));
     }
@@ -79,19 +83,18 @@ export default class StoryController {
     }
 
     public getAllPaginatedStories(request: Hapi.Request, reply: Hapi.Base_Reply) {
-        this.database.story.getAllPaginatedStories(this.database.user, request.query.size, request.query.page, this.configs.baseUrl)
+        this.database.story.getAllPaginatedStories(
+            this.database.user, request.query.size, request.query.page, request.query.type, this.configs.baseUrl
+        )
             .then((response: any) => {
                 return reply(response);
             }).catch((err) => reply(err));
     }
 
     public newStory(request: Hapi.Request, reply: Hapi.Base_Reply) {
-        this.database.story.createNewStory(request.payload, this.database.card).then((res: any) => {
-            return reply({
-                "success": true
-            }).code(201);
-        }).catch((err) => reply(err));
-
+        this.database.story.createNewStory(request.payload, this.database.card).then((storyId: number) => {
+            this.getStory(storyId).then((story: any) => reply({ "story": story }).code(201)).catch((err) => reply(err));
+        });
     }
 
     public updateStory(request: Hapi.Request, reply: Hapi.Base_Reply) {
@@ -104,11 +107,9 @@ export default class StoryController {
                 } else {
                     return reply(Boom.notFound("Story with give id or slug doesn't exist"));
                 }
-            }).then((res: any) => {
-                return reply({
-                    "updated": true
-                });
-            }).catch((err) => reply(err));
+            }).then((story: any) => {
+                this.getStory(story.id).then((story: any) => reply({ "story": story })).catch((err) => reply(err));
+            });
     }
 
     public pushLive(request: Hapi.Request, reply: Hapi.Base_Reply) {

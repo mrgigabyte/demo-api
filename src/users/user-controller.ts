@@ -16,7 +16,7 @@ export default class UserController {
         this.database.user.create(request.payload).then((user: any) => {
             return reply({
                 "success": true
-            });
+            }).code(201);
         }).catch((err) => {
             if (err.parent.errno === 1062) {
                 reply(Boom.conflict('User with the given email already exists'));
@@ -77,9 +77,10 @@ export default class UserController {
             if (user) {
                 return user.generatePasswordResetCode(this.database.resetCode);
             } else {
-                reply(Boom.notFound('Email not registered on platform'));
+                throw (Boom.notFound('Email not registered on platform'));
             }
         }).then((code: string) => {
+            console.log('hey111222');
             // TODO: send email to the user after generating the code.
             return reply({
                 "code": code
@@ -175,7 +176,9 @@ export default class UserController {
     }
 
     public getAllPaginatedUsers(request: Hapi.Request, reply: Hapi.Base_Reply) {
-        this.database.user.getAllPaginatedUsers(request.query.size, request.query.page, this.configs.baseUrl).then((response: any) => {
+        this.database.user.getAllPaginatedUsers(
+            request.query.size, request.query.page, this.configs.baseUrl
+        ).then((response: any) => {
             return reply(response);
         }).catch(err => reply(err));
     }
@@ -191,8 +194,9 @@ export default class UserController {
     public downloadCsv(request: Hapi.Request, reply: Hapi.Base_Reply) {
         if (this.database.user.verifyJwtCsv(request.query.jwt, this.configs.jwtCsvSecret)) {
             return this.database.user.getCsv().then((csv: any) => {
+                let filename: string = "users-" + new Date().toISOString() + ".csv";
                 return reply(csv).header('Content-Type', 'text/csv')
-                    .header('content-disposition', 'attachment; filename=users.csv;');
+                    .header('content-disposition', 'attachment; filename=' + filename + ';');
             }).catch(err => reply(err));
         } else {
             return reply(Boom.badRequest('The link has expired. Try downloading the file again.'));
@@ -204,7 +208,7 @@ export default class UserController {
         this.database.user.create(request.payload).then((user: any) => {
             return reply({
                 "success": true
-            });
+            }).code(201);
         }).catch((err) => {
             return reply(Boom.conflict('User data already exists.'));
         });

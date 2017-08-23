@@ -52,7 +52,6 @@ export default function (sequelize, DataTypes) {
      * This code will expire in 12 h from the date-time of creation of the code.
      */
     Code.createCode = function (userId) {
-        console.log('gege');
         return Code.create({
             expiresAt: moment().add(12, 'h').toDate(),
             userId: userId

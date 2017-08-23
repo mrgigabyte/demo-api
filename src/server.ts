@@ -7,11 +7,26 @@ import * as Stories from "./stories";
 import * as Cards from "./cards";
 import * as Documetation from "./documentation";
 import * as Boom from 'boom';
+import * as winston from 'winston';
+import * as LogglyTransport from 'winston-loggly-transport';
 
 export function init(configs: IServerConfigurations, database: any): Promise<Hapi.Server> {
     return new Promise<Hapi.Server>(resolve => {
         const port = process.env.port || configs.port;
         const server = new Hapi.Server();
+
+        /**
+         * Intialize logger which will be used to send logs to loggly.
+         */
+        const logger = new winston.Logger({
+            transports: [
+                new LogglyTransport({
+                    token: configs.logglyToken,
+                    subdomain: "abstrct",
+                    tags: ["error-log"],
+                    json: true
+                })]
+        });
 
         server.connection({
             port: port,
@@ -24,17 +39,16 @@ export function init(configs: IServerConfigurations, database: any): Promise<Hap
         });
 
         /**
-         * Pre response handler.
-         * This will throw an internal server error if any unexepected errors come anywhere in the code.
-         * TODO: Integrate loggly.
+         * This will log an internal server error to loggly if any internal error come in the code.
          */
-        server.ext('onPreResponse', (request: Hapi.Request, reply: Hapi.ReplyWithContinue) => {
-            const response = request.response;
-            if (!response.isBoom) { // if not error then continue :)
-                return reply.continue();
-            }
-            console.log(response);
-            return reply(response);
+        server.on('request-error', (request, err) => {
+            logger.error(err.message, {
+                method: request.method,
+                path: request.url.href,
+                payload: request.payload,                
+                headers: request.headers,
+                stack: err.stack
+            });
         });
 
         //  Setup Hapi Plugins

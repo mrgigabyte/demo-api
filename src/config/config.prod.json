@@ -30,6 +30,7 @@
             "cardBucket": "story-cards",
             "encodedVideoBucket": "encoded-video-cards"
         },
-        "zenCoderApiKey": "988a4d41538476737d752367f803b9ed"
+        "zenCoderApiKey": "988a4d41538476737d752367f803b9ed",
+        "logglyToken": "7e44347a-2da9-4a01-a14e-d866a693bc85"
     }
 }

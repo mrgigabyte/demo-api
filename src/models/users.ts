@@ -101,6 +101,7 @@ export default function (sequelize, DataTypes) {
         if (size > 0 && page >= 0) {
             return User.scope(null).findAndCountAll({
                 attributes: ['id', 'name', 'email', 'emailNotif', 'pushNotif', ['createdAt', 'joinedOn'], 'status'],
+                order: [['createdAt', 'DESC']],
                 limit: size,
                 offset: page * size
             }).then((res) => {
@@ -108,14 +109,20 @@ export default function (sequelize, DataTypes) {
                 res.rows.forEach((user) => {
                     data.push(user.get({ plain: true }));
                 });
-                if (page < Math.ceil(res.count / size) - 1) {  // for pages other than the last page.
+                let totalPages = Math.ceil(res.count / size) - 1;
+                if (page < totalPages) {  // for pages other than the last page.
                     return ({
+                        noOfPages: totalPages + 1,
+                        currentPageNo: page + 1,
                         users: data,
                         next: `${baseUrl}/user?page=${page + 1}&size=${size}`
                     });
-                } else if (page === Math.ceil(res.count / size) - 1) { // for last page.
+                } else if (page >= totalPages) { // for last page and any page number that doesn't exist.
                     return ({
-                        users: data
+                        noOfPages: totalPages + 1,
+                        currentPageNo: page + 1,
+                        users: data,
+                        next: null,                        
                     });
                 }
             });
@@ -170,7 +177,8 @@ export default function (sequelize, DataTypes) {
     User.getCsv = function (): Promise<any> {
         let fields: Array<string> = ['id', 'name', 'email', 'emailNotif', 'pushNotif', 'createdAt', 'status'];
         return this.scope(null).findAll({
-            attributes: fields
+            attributes: fields,
+            order: [['createdAt', 'DESC']]
         }).then((users: Array<any>) => {
             if (users.length) {
                 let data: Array<any> = [];
