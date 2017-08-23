@@ -224,12 +224,12 @@ export default function (sequelize, DataTypes) {
                 "by": story.by,
                 "slug": story.title
             }, { transaction: t }).then((newStory) => {
+                let cardPromise: Promise<any>;
                 if (story.cards) {
                     addStoryIdAndOrder(story.cards, newStory.id);
-                    return cardModel.bulkCreate(story.cards, { transaction: t });
-                } else {
-                    return Promise.resolve();
+                    cardPromise = cardModel.bulkCreate(story.cards, { transaction: t });
                 }
+                return Promise.all([cardPromise]).then(() => Promise.resolve(newStory.id));
             });
         });
     };
@@ -440,11 +440,16 @@ export default function (sequelize, DataTypes) {
     Story.prototype.updateStory = function (story: any, cardModel: any): Promise<any> {
         let updatePromises: Array<any> = [];
         let createPromises: Array<any> = [];
+        let slugPromise: Promise<any>;
         return sequelize.transaction((t) => {
-            this.title = story.title;
-            this.by = story.by;
-            return this.getSlug().then((slug) => {
-                this.slug = slug;
+            if (this.title !== story.title) {
+                slugPromise = this.getSlug().then((slug) => {
+                    this.slug = slug;
+                });
+            }
+            return Promise.all([slugPromise]).then(() => {
+                this.title = story.title;
+                this.by = story.by;
                 if (story.cards) {
                     return this.deleteOldCards(t, story.cards).then(() => {
                         addStoryIdAndOrder(story.cards, this.id);
