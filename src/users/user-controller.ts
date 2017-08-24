@@ -194,8 +194,9 @@ export default class UserController {
     public downloadCsv(request: Hapi.Request, reply: Hapi.Base_Reply) {
         if (this.database.user.verifyJwtCsv(request.query.jwt, this.configs.jwtCsvSecret)) {
             return this.database.user.getCsv().then((csv: any) => {
+                let filename: string = "users-" + new Date().toISOString() + ".csv";
                 return reply(csv).header('Content-Type', 'text/csv')
-                    .header('content-disposition', 'attachment; filename=users.csv;');
+                    .header('content-disposition', 'attachment; filename=' + filename + ';');
             }).catch(err => reply(err));
         } else {
             return reply(Boom.badRequest('The link has expired. Try downloading the file again.'));

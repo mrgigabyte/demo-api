@@ -17,17 +17,18 @@
 
 //     before(() => {
 //         server = Utils.getServerInstance();
-//         return Utils.getRoleBasedjwt('romans').then((res: string) => {
-//             romansJwt = res;
-//             return Utils.getRoleBasedjwt('god').then((res: string) => {
-//                 godJwt = res;
-//                 return Utils.getRoleBasedjwt('jesus').then((res: string) => {
-//                     jesusJwt = res;
+//         return Utils.getRoleBasedjwt('romans').then((jwt: string) => {
+//             romansJwt = jwt;
+//             return Utils.getRoleBasedjwt('god').then((jwt: string) => {
+//                 godJwt = jwt;
+//                 return Utils.getRoleBasedjwt('jesus').then((jwt: string) => {
+//                     jesusJwt = jwt;
 //                     Promise.resolve();
 //                 });
 //             });
 //         });
 //     });
+
 
 //     afterEach(() => {
 //         return Utils.clearDatabase().then(() => {

@@ -48,7 +48,6 @@ export function init(configs: IServerConfigurations, database: any): Promise<Hap
                 payload: request.payload,                
                 headers: request.headers,
                 stack: err.stack
-            
             });
         });
 

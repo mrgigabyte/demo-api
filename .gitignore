@@ -1,7 +1,7 @@
 build/
 src/config/config.dev.json
 src/config/config.test.json
-src/config/nginx.dev.config
+src/config/nginx.staging.config
 src/config/googleServiceAccountKey.json
 .DS_Store
 npm-debug.log
