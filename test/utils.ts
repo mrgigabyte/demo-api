@@ -28,6 +28,22 @@ export function getUserDummy(email?: string, role?: string, password?: string, n
     return user;
 }
 
+export function getStoryDummy(title?: string, author?: string, mediaUri?: string, mediaType?: string,externalLink?: string): any {
+    let story = {
+        title: title || "Dummy Artifact to Human Communication",
+        by: author || "Dummy Jones",
+        cards:[
+            {
+                mediaUri: "http://www.dummy.org/image/test.jpg",
+                mediaType: "image",
+                externalLink: "http://www.externallike.org"
+            }
+        ]
+    };
+
+    return story;
+}
+
 export function getResetPasswordDetails(code: string, email?: string): any {
     let user = {
         code: code,
