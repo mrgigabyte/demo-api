@@ -28,15 +28,15 @@ export function getUserDummy(email?: string, role?: string, password?: string, n
     return user;
 }
 
-export function getStoryDummy(title?: string, author?: string, mediaUri?: string, mediaType?: string,externalLink?: string): any {
+export function getStoryDummy(title?: string, author?: string, mediaUri?: string, mediaType?: string, externalLink?: string): any {
     let story = {
         title: title || "Dummy Artifact to Human Communication",
         by: author || "Dummy Jones",
-        cards:[
+        cards: [
             {
-                mediaUri: "http://www.dummy.org/image/test.jpg",
-                mediaType: "image",
-                externalLink: "http://www.externallike.org"
+                mediaUri: mediaUri || "http://www.dummy.org/image/test.jpg",
+                mediaType: mediaType || "image",
+                externalLink: externalLink || "http://www.externallike.org"
             }
         ]
     };
@@ -61,8 +61,10 @@ export function getServerInstance(): any {
 export function clearDatabase(): Promise<any> {
     var promiseResetCodes = database.resetCode.destroy({ where: {} });
     var promiseDeletedUser = database.user.destroy({ where: { status: 'deleted' } });
+    var promiseStory = database.story.destroy({ where: {} });
+    var promiseCards = database.card.destroy({ where: {} });
     var promiseUser = database.user.destroy({ where: {} });
-    return Promise.all([promiseResetCodes, promiseDeletedUser, promiseUser]);
+    return Promise.all([promiseResetCodes, promiseDeletedUser, promiseCards, promiseStory, promiseUser]);
 }
 
 export function createUserDummy(email?: string, role?: string): Promise<any> {
@@ -72,6 +74,19 @@ export function createUserDummy(email?: string, role?: string): Promise<any> {
 
 export function getUserInfo(email: string): Promise<any> {
     return database.user.findOne({ where: { email: email } });
+}
+
+export function createStory(title?: string, author?: string, mediaUri?: string, mediaType?: string, externalLink?: string) {
+    return getRoleBasedjwt('god').then((jwt: string) => {
+        return server.inject({
+            method: 'POST', url: '/story',
+            headers: { "authorization": jwt },
+            payload: getStoryDummy(title, author, mediaUri, mediaType, externalLink)
+        }).then((res: any) => {
+            let responseBody: any = JSON.parse(res.payload);
+            return responseBody.story;
+        });
+    });
 }
 
 
@@ -149,6 +164,15 @@ export function createSeedUserData(): Promise<any> {
         createUserDummy("user1@mail.com"),
         createUserDummy("user2@mail.com"),
         createUserDummy("user3@mail.com"),
+    ]);
+
+}
+
+export function createSeedStoryData(): Promise<any> {
+    return Promise.all([
+        createStory("Story 1"),
+        createStory("Story 2"),
+        createStory("Story 3"),
     ]);
 
 }

@@ -29,7 +29,7 @@ describe('Tests for admin-panel stories related endpoints.', () => {
             });
         });
     });
-    
+
     afterEach(() => {
         return Utils.clearDatabase().then(() => {
             Promise.resolve();
@@ -39,9 +39,9 @@ describe('Tests for admin-panel stories related endpoints.', () => {
     describe("Tests for creating a new story.", () => {
 
         it("Creates a new story through GOD's account.", () => {
-            let story = Utils.getStoryDummy();
+            let story: any = Utils.getStoryDummy();
             return server.inject({
-                method: 'POST', url: '/user/story',
+                method: 'POST', url: '/story',
                 headers: { "authorization": godJwt },
                 payload: story
             }).then((res: any) => {
@@ -51,8 +51,7 @@ describe('Tests for admin-panel stories related endpoints.', () => {
                 assert.isString(responseBody.slug);
                 assert.equal(responseBody.by, story.by);
                 assert.isNumber(responseBody.views);
-                assert.equal(responseBody.publishedAt,moment().toDate());
-                assert.equal(responseBody.createdAt,moment().toDate());
+                assert.isString(responseBody.createdAt);
                 assert.equal(responseBody.cards[0].mediaUri, story.cards[0].mediaUri);
                 assert.equal(responseBody.cards[0].mediaType, story.cards[0].mediaType);
                 assert.equal(responseBody.cards[0].externalLink, story.cards[0].externalLink);
@@ -64,7 +63,7 @@ describe('Tests for admin-panel stories related endpoints.', () => {
 
         it("Creates new story through ROMANS's account.", () => {
             return server.inject({
-                method: 'POST', url: '/user/story',
+                method: 'POST', url: '/story',
                 headers: { "authorization": romansJwt },
                 payload: Utils.getStoryDummy()
             }).then((res: any) => {
@@ -80,7 +79,7 @@ describe('Tests for admin-panel stories related endpoints.', () => {
                 story.title = 123;
                 return server.inject({
                     method: 'POST',
-                    url: '/user/story',
+                    url: '/story',
                     headers: { "authorization": godJwt },
                     payload: story
                 }).then((res: any) => {
@@ -94,7 +93,7 @@ describe('Tests for admin-panel stories related endpoints.', () => {
                 story.by = 123;
                 return server.inject({
                     method: 'POST',
-                    url: '/user/story',
+                    url: '/story',
                     headers: { "authorization": godJwt },
                     payload: story
                 }).then((res: any) => {
@@ -109,7 +108,7 @@ describe('Tests for admin-panel stories related endpoints.', () => {
                 story.cards[0].mediaUri = "google[dot]com";
                 return server.inject({
                     method: 'POST',
-                    url: '/user/story',
+                    url: '/story',
                     headers: { "authorization": godJwt },
                     payload: story
                 }).then((res: any) => {
@@ -120,10 +119,10 @@ describe('Tests for admin-panel stories related endpoints.', () => {
 
             it('Invalid mediaType of the card.', () => {
                 let story: any = Utils.getStoryDummy();
-                story.cards[0].mediaType = "picture"
+                story.cards[0].mediaType = "picture";
                 return server.inject({
                     method: 'POST',
-                    url: '/user/story',
+                    url: '/story',
                     headers: { "authorization": godJwt },
                     payload: story
                 }).then((res: any) => {
@@ -134,10 +133,10 @@ describe('Tests for admin-panel stories related endpoints.', () => {
 
             it('Invalid externalLink of the card.', () => {
                 let story: any = Utils.getStoryDummy();
-                story.cards[0].externalLink = "google[dot]com"
+                story.cards[0].externalLink = "google[dot]com";
                 return server.inject({
                     method: 'POST',
-                    url: '/user/story',
+                    url: '/story',
                     headers: { "authorization": godJwt },
                     payload: story
                 }).then((res: any) => {
@@ -155,7 +154,7 @@ describe('Tests for admin-panel stories related endpoints.', () => {
                 delete story.title;
                 return server.inject({
                     method: 'POST',
-                    url: '/user/story',
+                    url: '/story',
                     headers: { "authorization": godJwt },
                     payload: story
                 }).then((res: any) => {
@@ -169,7 +168,7 @@ describe('Tests for admin-panel stories related endpoints.', () => {
                 delete story.by;
                 return server.inject({
                     method: 'POST',
-                    url: '/user/story',
+                    url: '/story',
                     headers: { "authorization": godJwt },
                     payload: story
                 }).then((res: any) => {
@@ -184,7 +183,7 @@ describe('Tests for admin-panel stories related endpoints.', () => {
                 delete story.cards[0].mediaUri;
                 return server.inject({
                     method: 'POST',
-                    url: '/user/story',
+                    url: '/story',
                     headers: { "authorization": godJwt },
                     payload: story
                 }).then((res: any) => {
@@ -198,191 +197,517 @@ describe('Tests for admin-panel stories related endpoints.', () => {
                 delete story.cards[0].mediaType;
                 return server.inject({
                     method: 'POST',
-                    url: '/user/story',
+                    url: '/story',
                     headers: { "authorization": godJwt },
                     payload: story
                 }).then((res: any) => {
                     assert.equal(400, res.statusCode);
                     Promise.resolve();
                 });
-            });
-
-            it('Missing externalLink of the card.', () => {
-                let story = Utils.getStoryDummy();
-                delete story.cards[0].externalLink;
-                return server.inject({
-                    method: 'POST',
-                    url: '/user/story',
-                    headers: { "authorization": godJwt },
-                    payload: story
-                }).then((res: any) => {
-                    assert.equal(400, res.statusCode);
-                    Promise.resolve();
-                });
-
             });
 
         });
     });
 
-    // describe("Tests for getting download CSV link.", () => {
+    describe("Tests for updating details of a previously published/draft story.", () => {
 
-    //     it("Gets download CSV link through GOD's account.", () => {
-    //         return server.inject({ method: 'GET', url: '/user/getCsvLink', headers: { "authorization": godJwt } }).then((res: any) => {
-    //             let responseBody: any = JSON.parse(res.payload);
-    //             responseBody.should.have.property('link');
-    //             const csvlink = url.parse(responseBody.link);
-    //             const jwt: string = csvlink.query.split('jwt=').pop();
-    //             assert.isString(jwt);
-    //             assert.equal(200, res.statusCode);
-    //             Promise.resolve();
-    //         });
-    //     });
+        it("Updates a story, adds a new card through GOD's account.", () => {
+            return Utils.createStory().then((story: any) => {
+                let storyId = story.id;
+                let newCard: any = {
+                    mediaUri: "http://www.newcard.org/image/test.wav",
+                    mediaType: "video"
+                };
+                let dummyStory: Array<any> = Object.keys(Utils.getStoryDummy());
+                Object.keys(story).forEach(function (x: any) {
+                    if (dummyStory.indexOf(x) === -1) {
+                        delete story[x];
+                    }
+                });
+                story.cards.push(newCard);
+                return server.inject({
+                    method: 'PUT', url: `/story/${storyId}`,
+                    headers: { "authorization": godJwt },
+                    payload: story
+                }).then((res: any) => {
+                    let responseBody: any = JSON.parse(res.payload).story;
+                    assert.equal(responseBody.title, story.title);
+                    assert.isNumber(responseBody.id);
+                    assert.isString(responseBody.slug);
+                    assert.equal(responseBody.by, story.by);
+                    assert.isNumber(responseBody.views);
+                    assert.isString(responseBody.createdAt);
+                    for (let i = 0; i < story.cards.length; i++) {
+                        assert.equal(responseBody.cards[i].mediaUri, story.cards[i].mediaUri);
+                        assert.equal(responseBody.cards[i].mediaType, story.cards[i].mediaType);
+                        assert.equal(responseBody.cards[i].externalLink, story.cards[i].externalLink);
+                        assert.isNumber(responseBody.cards[i].id);
+                    }
+                    assert.equal(200, res.statusCode);
+                    Promise.resolve();
+                });
+            });
+        });
 
-    //     it("Gets download CSV link through ROMANS's account.", () => {
-    //         return server.inject({ method: 'GET', url: '/user/getCsvLink', headers: { "authorization": romansJwt } }).then((res: any) => {
-    //             assert.equal(403, res.statusCode);
-    //             Promise.resolve();
-    //         });
-    //     });
-    // });
+        it("Updates a story, updates story title, author and an existing card through GOD's account.", () => {
+            return Utils.createStory().then((story: any) => {
+                let UpdatedStory = {
+                    title: "Updated Dummy Artifact to Human Communication",
+                    by: "John Doe",
+                    cards: [
+                        {
+                            id: story.cards[0].id,
+                            mediaUri: "http://www.Updateddummy.org/image/test.jpg",
+                            mediaType: "video",
+                            externalLink: "http://www.externallike.org"
+                        }
+                    ]
+                };
+                return server.inject({
+                    method: 'PUT', url: `/story/${story.id}`,
+                    headers: { "authorization": godJwt },
+                    payload: UpdatedStory
+                }).then((res: any) => {
+                    let responseBody: any = JSON.parse(res.payload).story;
+                    assert.equal(responseBody.title, UpdatedStory.title);
+                    assert.isNumber(responseBody.id);
+                    assert.isString(responseBody.slug);
+                    assert.equal(responseBody.by, UpdatedStory.by);
+                    assert.isNumber(responseBody.views);
+                    assert.isString(responseBody.createdAt);
+                    assert.equal(responseBody.cards[0].mediaUri, UpdatedStory.cards[0].mediaUri);
+                    assert.equal(responseBody.cards[0].mediaType, UpdatedStory.cards[0].mediaType);
+                    assert.equal(responseBody.cards[0].externalLink, UpdatedStory.cards[0].externalLink);
+                    assert.isNumber(responseBody.cards[0].id);
+                    assert.equal(200, res.statusCode);
+                    Promise.resolve();
+                });
+            });
+        });
 
-    // describe("Tests for downloading the users CSV.", () => {
+        it("Updates a story, removes all the existing cards through GOD's account.", () => {
+            return Utils.createStory().then((story: any) => {
+                story.cards = [];
+                let storyId = story.id;
+                let dummyStory: Array<any> = Object.keys(Utils.getStoryDummy());
+                Object.keys(story).forEach(function (x: any) {
+                    if (dummyStory.indexOf(x) === -1) {
+                        delete story[x];
+                    }
+                });
+                return server.inject({
+                    method: 'PUT', url: `/story/${storyId}`,
+                    headers: { "authorization": godJwt },
+                    payload: story
+                }).then((res: any) => {
+                    let responseBody: any = JSON.parse(res.payload).story;
+                    assert.equal(responseBody.title, story.title);
+                    assert.isNumber(responseBody.id);
+                    assert.isString(responseBody.slug);
+                    assert.equal(responseBody.by, story.by);
+                    assert.isNumber(responseBody.views);
+                    assert.isString(responseBody.createdAt);
+                    assert.isUndefined(responseBody.cards);
+                    assert.equal(200, res.statusCode);
+                    Promise.resolve();
+                });
+            });
+        });
 
-    //     it("Downloads users CSV with a valid JWT.", () => {
-    //         return Utils.getCsvJwt().then((jwt: string) => {
-    //             return server.inject({ method: 'GET', url: '/user/downloadCsv?' + jwt }).then((res: any) => {
-    //                 let responseHeader: any = res.headers;
-    //                 assert.equal(responseHeader["content-type"], "text/csv; charset=utf-8");
-    //                 assert.equal(200, res.statusCode);
-    //                 Promise.resolve();
-    //             });
-    //         });
-    //     });
+        it("Updates a story through ROMAN's account.", () => {
+            return Utils.createStory().then((story: any) => {
+                let UpdatedStory = {
+                    title: "Updated Dummy Artifact to Human Communication",
+                    by: "John Doe",
+                    cards: [
+                        {
+                            id: story.cards[0].id,
+                            mediaUri: "http://www.Updateddummy.org/image/test.jpg",
+                            mediaType: "video",
+                            externalLink: "http://www.externallike.org"
+                        }
+                    ]
+                };
+                return server.inject({
+                    method: 'PUT', url: `/story/${story.id}`,
+                    headers: { "authorization": romansJwt },
+                    payload: UpdatedStory
+                }).then((res: any) => {
+                    let responseBody: any = JSON.parse(res.payload).story;
+                    assert.equal(403, res.statusCode);
+                    Promise.resolve();
+                });
+            });
+        });
 
-    //     it("Downloads users CSV with a invalid JWT.", () => {
-    //         const jwt: string = "jwt=dummyjwt";
-    //         return server.inject({ method: 'GET', url: '/user/downloadCsv?' + jwt }).then((res: any) => {
-    //             assert.equal(400, res.statusCode);
-    //             Promise.resolve();
-    //         });
-    //     });
+        describe('Sends invalid data in the payload.', () => {
 
-    //     it("Downloads users CSV with an expired JWT.", () => {
-    //         return Utils.getCsvJwt().then((jwt: string) => {
-    //             return new Promise((resolve, reject) => setTimeout(() => {
-    //                 resolve();
-    //             }, 1100)).then(() => {
-    //                 return (server.inject({ method: 'GET', url: '/user/downloadCsv?' + jwt }).then((res: any) => {
-    //                     assert.equal(400, res.statusCode);
-    //                     Promise.resolve();
-    //                 }));
-    //             });
-    //         });
-    //     });
-    // });
+            it('Invalid story-title.', () => {
+                return Utils.createStory().then((story: any) => {
+                    let storyId = story.id;
+                    let dummyStory: Array<any> = Object.keys(Utils.getStoryDummy());
+                    Object.keys(story).forEach(function (x: any) {
+                        if (dummyStory.indexOf(x) === -1) {
+                            delete story[x];
+                        }
+                    });
+                    story.title = 123;
+                    return server.inject({
+                        method: 'PUT',
+                        url: `/story/${storyId}`,
+                        headers: { "authorization": godJwt },
+                        payload: story
+                    }).then((res: any) => {
+                        assert.equal(400, res.statusCode);
+                        Promise.resolve();
+                    });
+                });
+            });
 
-    // describe("Tests for getting user info in paginated fashion.", () => {
-    //     it("Checks if GOD & JESUS can access the endpoint and ROMANS cant.", () => {
-    //         return Utils.checkEndpointAccess('GET', '/user?page=6&size=3').then((res: any) => {
-    //             assert.equal(res.romans, false);
-    //             assert.equal(res.god, true);
-    //             assert.equal(res.jesus, true);
-    //             Promise.resolve();
-    //         });
-    //     });
+            it('Invalid story-author.', () => {
+                return Utils.createStory().then((story: any) => {
+                    let storyId = story.id;
+                    let dummyStory: Array<any> = Object.keys(Utils.getStoryDummy());
+                    Object.keys(story).forEach(function (x: any) {
+                        if (dummyStory.indexOf(x) === -1) {
+                            delete story[x];
+                        }
+                    });
+                    story.by = 123;
+                    return server.inject({
+                        method: 'PUT',
+                        url: `/story/${storyId}`,
+                        headers: { "authorization": godJwt },
+                        payload: story
+                    }).then((res: any) => {
+                        assert.equal(400, res.statusCode);
+                        Promise.resolve();
+                    });
+                });
 
-    //     it("Gets user info by sending valid query params.", () => {
-    //         return Utils.createSeedUserData().then((res: any) => {
-    //             return server.inject({
-    //                 method: 'GET',
-    //                 url: '/user?page=0&size=3',
-    //                 headers: { "authorization": godJwt }
-    //             }).then((res: any) => {
-    //                 let responseBody: any = JSON.parse(res.payload);
-    //                 let counter: number = 1;
-    //                 responseBody.users.forEach((element: any) => {
-    //                     assert.equal(element.name, "Dummy Jones");
-    //                     assert.equal(element.email, `user${counter}@mail.com`);
-    //                     counter++;
-    //                 });
-    //                 assert.isArray(responseBody.users);
-    //                 assert.equal(200, res.statusCode);
-    //                 Promise.resolve();
-    //             });
-    //         });
-    //     });
+            });
 
-    //     it("Gets user info by sending invalid size in query params.", () => {
-    //         return server.inject({ method: 'GET', url: '/user?page=6&size=3a', headers: { "authorization": godJwt } })
-    //             .then((res: any) => {
-    //                 let responseBody: any = JSON.parse(res.payload);
-    //                 assert.equal(400, res.statusCode);
-    //                 Promise.resolve();
-    //             });
-    //     });
+            it('Invalid mediaUri of the card.', () => {
+                return Utils.createStory().then((story: any) => {
+                    let storyId = story.id;
+                    let dummyStory: Array<any> = Object.keys(Utils.getStoryDummy());
+                    Object.keys(story).forEach(function (x: any) {
+                        if (dummyStory.indexOf(x) === -1) {
+                            delete story[x];
+                        }
+                    });
+                    story.cards[0].mediaUri = "google[dot]com";
+                    return server.inject({
+                        method: 'PUT',
+                        url: `/story/${storyId}`,
+                        headers: { "authorization": godJwt },
+                        payload: story
+                    }).then((res: any) => {
+                        assert.equal(400, res.statusCode);
+                        Promise.resolve();
+                    });
+                });
+            });
 
-    //     it("Gets user info by sending invalid page in query params.", () => {
-    //         return server.inject({ method: 'GET', url: '/user?page=6a&size=3', headers: { "authorization": godJwt } })
-    //             .then((res: any) => {
-    //                 let responseBody: any = JSON.parse(res.payload);
-    //                 assert.equal(400, res.statusCode);
-    //                 Promise.resolve();
-    //             });
-    //     });
+            it('Invalid mediaType of the card.', () => {
+                return Utils.createStory().then((story: any) => {
+                    let storyId = story.id;
+                    let dummyStory: Array<any> = Object.keys(Utils.getStoryDummy());
+                    Object.keys(story).forEach(function (x: any) {
+                        if (dummyStory.indexOf(x) === -1) {
+                            delete story[x];
+                        }
+                    });
+                    story.cards[0].mediaType = "picture";
+                    return server.inject({
+                        method: 'PUT',
+                        url: `/story/${storyId}`,
+                        headers: { "authorization": godJwt },
+                        payload: story
+                    }).then((res: any) => {
+                        assert.equal(400, res.statusCode);
+                        Promise.resolve();
+                    });
+                });
+            });
 
-    //     describe('Sends missing data in the payload.', () => {
-    //         it("Missing size.", () => {
-    //             return server.inject({ method: 'GET', url: '/user?page=6', headers: { "authorization": godJwt } }).then((res: any) => {
-    //                 let responseBody: any = JSON.parse(res.payload);
-    //                 assert.equal(400, res.statusCode);
-    //                 Promise.resolve();
-    //             });
-    //         });
+            it('Invalid externalLink of the card.', () => {
+                return Utils.createStory().then((story: any) => {
+                    let storyId = story.id;
+                    let dummyStory: Array<any> = Object.keys(Utils.getStoryDummy());
+                    Object.keys(story).forEach(function (x: any) {
+                        if (dummyStory.indexOf(x) === -1) {
+                            delete story[x];
+                        }
+                    });
+                    story.cards[0].externalLink = "google[dot]com";
+                    return server.inject({
+                        method: 'PUT',
+                        url: `/story/${storyId}`,
+                        headers: { "authorization": godJwt },
+                        payload: story
+                    }).then((res: any) => {
+                        assert.equal(400, res.statusCode);
+                        Promise.resolve();
+                    });
+                });
+            });
+        });
 
-    //         it("Missing page.", () => {
-    //             return server.inject({ method: 'GET', url: '/user?size=3', headers: { "authorization": godJwt } }).then((res: any) => {
-    //                 let responseBody: any = JSON.parse(res.payload);
-    //                 assert.equal(400, res.statusCode);
-    //                 Promise.resolve();
-    //             });
-    //         });
-    //     });
-    // });
+        describe('Sends missing data in the payload.', () => {
 
-    // describe("Tests for getting info of a user from userId.", () => {
-    //     it("Checks if GOD & JESUS can access the endpoint and ROMANS cant.", () => {
-    //         return Utils.checkEndpointAccess('GET', '/user/1').then((res: any) => {
-    //             assert.equal(res.romans, false);
-    //             assert.equal(res.god, true);
-    //             assert.equal(res.jesus, true);
-    //             Promise.resolve();
-    //         });
-    //     });
+            it('Missing story-title.', () => {
+                return Utils.createStory().then((story: any) => {
+                    let storyId = story.id;
+                    let dummyStory: Array<any> = Object.keys(Utils.getStoryDummy());
+                    Object.keys(story).forEach(function (x: any) {
+                        if (dummyStory.indexOf(x) === -1) {
+                            delete story[x];
+                        }
+                    });
+                    delete story.title;
+                    return server.inject({
+                        method: 'PUT',
+                        url: `/story/${storyId}`,
+                        headers: { "authorization": godJwt },
+                        payload: story
+                    }).then((res: any) => {
+                        assert.equal(400, res.statusCode);
+                        Promise.resolve();
+                    });
+                });
+            });
 
-    //     it("Gets info of an existing user.", () => {
-    //         return Utils.createUserDummy().then((user: any) => {
-    //             return server.inject({
-    //                 method: 'GET',
-    //                 url: `/user/${user.id}`,
-    //                 headers: { "authorization": godJwt }
-    //             }).then((res: any) => {
-    //                 let responseBody: any = JSON.parse(res.payload);
-    //                 let userinfo: any = responseBody.user;
-    //                 assert.equal(user.id, userinfo.id);
-    //                 assert.equal(user.name, userinfo.name);
-    //                 assert.equal(200, res.statusCode);
-    //                 Promise.resolve();
-    //             });
-    //         });
-    //     });
+            it('Missing story-author.', () => {
+                return Utils.createStory().then((story: any) => {
+                    let storyId = story.id;
+                    let dummyStory: Array<any> = Object.keys(Utils.getStoryDummy());
+                    Object.keys(story).forEach(function (x: any) {
+                        if (dummyStory.indexOf(x) === -1) {
+                            delete story[x];
+                        }
+                    });
+                    delete story.by;
+                    return server.inject({
+                        method: 'PUT',
+                        url: `/story/${storyId}`,
+                        headers: { "authorization": godJwt },
+                        payload: story
+                    }).then((res: any) => {
+                        assert.equal(400, res.statusCode);
+                        Promise.resolve();
+                    });
+                });
+            });
 
-    //     it("Gets info of a non-existant user.", () => {
-    //         return server.inject({ method: 'GET', url: '/user/-1', headers: { "authorization": godJwt } }).then((res: any) => {
-    //             let responseBody: any = JSON.parse(res.payload);
-    //             assert.equal(404, res.statusCode);
-    //             Promise.resolve();
-    //         });
-    //     });
-    // });
+            it('Missing mediaUri of the card.', () => {
+                return Utils.createStory().then((story: any) => {
+                    let storyId = story.id;
+                    let dummyStory: Array<any> = Object.keys(Utils.getStoryDummy());
+                    Object.keys(story).forEach(function (x: any) {
+                        if (dummyStory.indexOf(x) === -1) {
+                            delete story[x];
+                        }
+                    });
+                    delete story.cards[0].mediaUri;
+                    return server.inject({
+                        method: 'PUT',
+                        url: `/story/${storyId}`,
+                        headers: { "authorization": godJwt },
+                        payload: story
+                    }).then((res: any) => {
+                        assert.equal(400, res.statusCode);
+                        Promise.resolve();
+                    });
+                });
+            });
+
+            it('Missing mediaType of the card.', () => {
+                return Utils.createStory().then((story: any) => {
+                    let storyId = story.id;
+                    let dummyStory: Array<any> = Object.keys(Utils.getStoryDummy());
+                    Object.keys(story).forEach(function (x: any) {
+                        if (dummyStory.indexOf(x) === -1) {
+                            delete story[x];
+                        }
+                    });
+                    delete story.cards[0].mediaType;
+                    return server.inject({
+                        method: 'PUT',
+                        url: `/story/${storyId}`,
+                        headers: { "authorization": godJwt },
+                        payload: story
+                    }).then((res: any) => {
+                        assert.equal(400, res.statusCode);
+                        Promise.resolve();
+                    });
+                });
+            });
+
+        });
+    });
+
+    describe("Tests for making a story live.", () => {
+
+        it("Checks if GOD & JESUS can access the endpoint and ROMANS cant.", () => {
+            return Utils.checkEndpointAccess('POST', '/story/3/pushLive').then((res: any) => {
+                assert.equal(res.romans, false);
+                assert.equal(res.god, true);
+                assert.equal(res.jesus, true);
+                Promise.resolve();
+            });
+        });
+
+        it("Makes an existing story live.", () => {
+            return Utils.createStory().then((story: any) => {
+                let storyId = story.id;
+                return server.inject({
+                    method: 'POST',
+                    url: `/story/${storyId}/pushLive`,
+                    headers: { "authorization": godJwt }
+                }).then((res: any) => {
+                    let responseBody: any = JSON.parse(res.payload);
+                    responseBody.should.have.property('pushed');
+                    assert.equal(responseBody.pushed, true);
+                    assert.equal(200, res.statusCode);
+                    Promise.resolve();
+                });
+            });
+        });
+
+        it("Sends invalid or non existant id of a story in the payload.", () => {
+            let storyId = "dummyId";
+            return server.inject({
+                method: 'POST',
+                url: `/story/${storyId}/pushLive`,
+                headers: { "authorization": godJwt }
+            }).then((res: any) => {
+                assert.equal(404, res.statusCode);
+                Promise.resolve();
+            });
+        });
+    });
+
+    describe("Tests for sending a push notification of a story to GOD/JESUS. ", () => {
+
+        it("Checks if GOD & JESUS can access the endpoint and ROMANS cant.", () => {
+            return Utils.checkEndpointAccess('POST', '/story/3/preview').then((res: any) => {
+                assert.equal(res.romans, false);
+                assert.equal(res.god, true);
+                assert.equal(res.jesus, true);
+                Promise.resolve();
+            });
+        });
+
+        it("Sends a push notification of an existing story.", () => {
+            return Utils.createStory().then((story: any) => {
+                let storyId = story.id;
+                return server.inject({
+                    method: 'POST',
+                    url: `/story/${storyId}/preview`,
+                    headers: { "authorization": godJwt }
+                }).then((res: any) => {
+                    let responseBody: any = JSON.parse(res.payload);
+                    responseBody.should.have.property('success');
+                    assert.equal(responseBody.success, true);
+                    assert.equal(200, res.statusCode);
+                    Promise.resolve();
+                });
+            });
+        });
+
+        it("Sends invalid or non existant id of a story in the payload.", () => {
+            let storyId = "dummyId";
+            return server.inject({
+                method: 'POST',
+                url: `/story/${storyId}/preview`,
+                headers: { "authorization": godJwt }
+            }).then((res: any) => {
+                assert.equal(404, res.statusCode);
+                Promise.resolve();
+            });
+        });
+    });
+
+    describe("Tests for deleting a story and all the cards associated with the story. ", () => {
+
+        it("Checks if GOD & JESUS can access the endpoint and ROMANS cant.", () => {
+            return Utils.checkEndpointAccess('DELETE', '/story/3').then((res: any) => {
+                assert.equal(res.romans, false);
+                assert.equal(res.god, true);
+                assert.equal(res.jesus, true);
+                Promise.resolve();
+            });
+        });
+
+        it("Deletes an existing story.", () => {
+            return Utils.createStory().then((story: any) => {
+                let storyId = story.id;
+                return server.inject({
+                    method: 'DELETE',
+                    url: `/story/${storyId}`,
+                    headers: { "authorization": godJwt }
+                }).then((res: any) => {
+                    let responseBody: any = JSON.parse(res.payload);
+                    responseBody.should.have.property('deleted');
+                    assert.equal(responseBody.deleted, true);
+                    assert.equal(200, res.statusCode);
+                    Promise.resolve();
+                });
+            });
+        });
+
+        it("Sends invalid or non existant id of a story in the payload.", () => {
+            let storyId = "dummyId";
+            return server.inject({
+                method: 'DELETE',
+                url: `/story/${storyId}`,
+                headers: { "authorization": godJwt }
+            }).then((res: any) => {
+                assert.equal(404, res.statusCode);
+                Promise.resolve();
+            });
+        });
+    });
+
+    describe("Tests for getting story by id or slug. ", () => {
+
+        it("Checks if GOD & JESUS can access the endpoint and ROMANS cant.", () => {
+            return Utils.checkEndpointAccess('GET', '/story/3').then((res: any) => {
+                assert.equal(res.romans, false);
+                assert.equal(res.god, true);
+                assert.equal(res.jesus, true);
+                Promise.resolve();
+            });
+        });
+
+        it("Gets details of an existing story.", () => {
+            return Utils.createStory().then((story: any) => {
+                let storyId = story.id;
+                return server.inject({ method: 'GET', url: `/story/${storyId}`, headers: { "authorization": godJwt } }).then((res: any) => {
+                    let responseBody: any = JSON.parse(res.payload).story;
+                    assert.equal(responseBody.title, story.title);
+                    assert.isNumber(responseBody.id);
+                    assert.isString(responseBody.slug);
+                    assert.equal(responseBody.by, story.by);
+                    assert.isNumber(responseBody.views);
+                    assert.isString(responseBody.createdAt);
+                    assert.equal(responseBody.cards[0].mediaUri, story.cards[0].mediaUri);
+                    assert.equal(responseBody.cards[0].mediaType, story.cards[0].mediaType);
+                    assert.equal(responseBody.cards[0].externalLink, story.cards[0].externalLink);
+                    assert.isNumber(responseBody.cards[0].id);
+                    assert.equal(200, res.statusCode);
+                    Promise.resolve();
+                });
+            });
+        });
+
+        it("Sends invalid or non existant id of a story in the payload.", () => {
+            let storyId = "dummyId";
+            return server.inject({ method: 'GET', url: `/story/${storyId}`, headers: { "authorization": godJwt } }).then((res: any) => {
+                assert.equal(404, res.statusCode);
+                Promise.resolve();
+            });
+        });
+    });
 });
