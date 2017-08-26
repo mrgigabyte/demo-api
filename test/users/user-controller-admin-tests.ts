@@ -29,7 +29,6 @@ describe('Tests for admin-panel user related endpoints.', () => {
         });
     });
 
-
     afterEach(() => {
         return Utils.clearDatabase().then(() => {
             Promise.resolve();

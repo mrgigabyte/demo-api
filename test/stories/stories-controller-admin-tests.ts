@@ -1,11 +1,7 @@
 import * as chai from "chai";
-import UserController from "../../src/users/user-controller";
-import { IDb } from "../../src/config";
 import * as config from '../../src/config';
 import * as Hapi from 'hapi';
 import * as Utils from "../utils";
-import * as url from 'url';
-import * as moment from 'moment';
 
 const assert: Chai.Assert = chai.assert;
 const should: Chai.Should = chai.should();
@@ -46,16 +42,7 @@ describe('Tests for admin-panel stories related endpoints.', () => {
                 payload: story
             }).then((res: any) => {
                 let responseBody: any = JSON.parse(res.payload).story;
-                assert.equal(responseBody.title, story.title);
-                assert.isNumber(responseBody.id);
-                assert.isString(responseBody.slug);
-                assert.equal(responseBody.by, story.by);
-                assert.isNumber(responseBody.views);
-                assert.isString(responseBody.createdAt);
-                assert.equal(responseBody.cards[0].mediaUri, story.cards[0].mediaUri);
-                assert.equal(responseBody.cards[0].mediaType, story.cards[0].mediaType);
-                assert.equal(responseBody.cards[0].externalLink, story.cards[0].externalLink);
-                assert.isNumber(responseBody.cards[0].id);
+                Utils.validateStoryResponse(responseBody, story);
                 assert.equal(201, res.statusCode);
                 Promise.resolve();
             });
@@ -231,18 +218,7 @@ describe('Tests for admin-panel stories related endpoints.', () => {
                     payload: story
                 }).then((res: any) => {
                     let responseBody: any = JSON.parse(res.payload).story;
-                    assert.equal(responseBody.title, story.title);
-                    assert.isNumber(responseBody.id);
-                    assert.isString(responseBody.slug);
-                    assert.equal(responseBody.by, story.by);
-                    assert.isNumber(responseBody.views);
-                    assert.isString(responseBody.createdAt);
-                    for (let i = 0; i < story.cards.length; i++) {
-                        assert.equal(responseBody.cards[i].mediaUri, story.cards[i].mediaUri);
-                        assert.equal(responseBody.cards[i].mediaType, story.cards[i].mediaType);
-                        assert.equal(responseBody.cards[i].externalLink, story.cards[i].externalLink);
-                        assert.isNumber(responseBody.cards[i].id);
-                    }
+                    Utils.validateStoryResponse(responseBody, story);
                     assert.equal(200, res.statusCode);
                     Promise.resolve();
                 });
@@ -260,6 +236,12 @@ describe('Tests for admin-panel stories related endpoints.', () => {
                             mediaUri: "http://www.Updateddummy.org/image/test.jpg",
                             mediaType: "video",
                             externalLink: "http://www.externallike.org"
+                        },
+                        {
+                            id: story.cards[1].id,
+                            mediaUri: "http://www.Updateddummy.org/image/test11.jpg",
+                            mediaType: "image",
+                            externalLink: "http://www.externallike.org"
                         }
                     ]
                 };
@@ -269,16 +251,7 @@ describe('Tests for admin-panel stories related endpoints.', () => {
                     payload: UpdatedStory
                 }).then((res: any) => {
                     let responseBody: any = JSON.parse(res.payload).story;
-                    assert.equal(responseBody.title, UpdatedStory.title);
-                    assert.isNumber(responseBody.id);
-                    assert.isString(responseBody.slug);
-                    assert.equal(responseBody.by, UpdatedStory.by);
-                    assert.isNumber(responseBody.views);
-                    assert.isString(responseBody.createdAt);
-                    assert.equal(responseBody.cards[0].mediaUri, UpdatedStory.cards[0].mediaUri);
-                    assert.equal(responseBody.cards[0].mediaType, UpdatedStory.cards[0].mediaType);
-                    assert.equal(responseBody.cards[0].externalLink, UpdatedStory.cards[0].externalLink);
-                    assert.isNumber(responseBody.cards[0].id);
+                    Utils.validateStoryResponse(responseBody, UpdatedStory);
                     assert.equal(200, res.statusCode);
                     Promise.resolve();
                 });
@@ -301,13 +274,7 @@ describe('Tests for admin-panel stories related endpoints.', () => {
                     payload: story
                 }).then((res: any) => {
                     let responseBody: any = JSON.parse(res.payload).story;
-                    assert.equal(responseBody.title, story.title);
-                    assert.isNumber(responseBody.id);
-                    assert.isString(responseBody.slug);
-                    assert.equal(responseBody.by, story.by);
-                    assert.isNumber(responseBody.views);
-                    assert.isString(responseBody.createdAt);
-                    assert.isUndefined(responseBody.cards);
+                    Utils.validateStoryResponse(responseBody, story);
                     assert.equal(200, res.statusCode);
                     Promise.resolve();
                 });
@@ -588,46 +555,46 @@ describe('Tests for admin-panel stories related endpoints.', () => {
         });
     });
 
-    describe("Tests for sending a push notification of a story to GOD/JESUS. ", () => {
+    // describe("Tests for sending a push notification of a story to GOD/JESUS. ", () => {
 
-        it("Checks if GOD & JESUS can access the endpoint and ROMANS cant.", () => {
-            return Utils.checkEndpointAccess('POST', '/story/3/preview').then((res: any) => {
-                assert.equal(res.romans, false);
-                assert.equal(res.god, true);
-                assert.equal(res.jesus, true);
-                Promise.resolve();
-            });
-        });
+    //     it("Checks if GOD & JESUS can access the endpoint and ROMANS cant.", () => {
+    //         return Utils.checkEndpointAccess('POST', '/story/3/preview').then((res: any) => {
+    //             assert.equal(res.romans, false);
+    //             assert.equal(res.god, true);
+    //             assert.equal(res.jesus, true);
+    //             Promise.resolve();
+    //         });
+    //     });
 
-        it("Sends a push notification of an existing story.", () => {
-            return Utils.createStory().then((story: any) => {
-                let storyId = story.id;
-                return server.inject({
-                    method: 'POST',
-                    url: `/story/${storyId}/preview`,
-                    headers: { "authorization": godJwt }
-                }).then((res: any) => {
-                    let responseBody: any = JSON.parse(res.payload);
-                    responseBody.should.have.property('success');
-                    assert.equal(responseBody.success, true);
-                    assert.equal(200, res.statusCode);
-                    Promise.resolve();
-                });
-            });
-        });
+    //     it("Sends a push notification of an existing story.", () => {
+    //         return Utils.createStory().then((story: any) => {
+    //             let storyId = story.id;
+    //             return server.inject({
+    //                 method: 'POST',
+    //                 url: `/story/${storyId}/preview`,
+    //                 headers: { "authorization": godJwt }
+    //             }).then((res: any) => {
+    //                 let responseBody: any = JSON.parse(res.payload);
+    //                 responseBody.should.have.property('success');
+    //                 assert.equal(responseBody.success, true);
+    //                 assert.equal(200, res.statusCode);
+    //                 Promise.resolve();
+    //             });
+    //         });
+    //     });
 
-        it("Sends invalid or non existant id of a story in the payload.", () => {
-            let storyId = "dummyId";
-            return server.inject({
-                method: 'POST',
-                url: `/story/${storyId}/preview`,
-                headers: { "authorization": godJwt }
-            }).then((res: any) => {
-                assert.equal(404, res.statusCode);
-                Promise.resolve();
-            });
-        });
-    });
+    //     it("Sends invalid or non existant id of a story in the payload.", () => {
+    //         let storyId = "dummyId";
+    //         return server.inject({
+    //             method: 'POST',
+    //             url: `/story/${storyId}/preview`,
+    //             headers: { "authorization": godJwt }
+    //         }).then((res: any) => {
+    //             assert.equal(404, res.statusCode);
+    //             Promise.resolve();
+    //         });
+    //     });
+    // });
 
     describe("Tests for deleting a story and all the cards associated with the story. ", () => {
 
@@ -686,16 +653,7 @@ describe('Tests for admin-panel stories related endpoints.', () => {
                 let storyId = story.id;
                 return server.inject({ method: 'GET', url: `/story/${storyId}`, headers: { "authorization": godJwt } }).then((res: any) => {
                     let responseBody: any = JSON.parse(res.payload).story;
-                    assert.equal(responseBody.title, story.title);
-                    assert.isNumber(responseBody.id);
-                    assert.isString(responseBody.slug);
-                    assert.equal(responseBody.by, story.by);
-                    assert.isNumber(responseBody.views);
-                    assert.isString(responseBody.createdAt);
-                    assert.equal(responseBody.cards[0].mediaUri, story.cards[0].mediaUri);
-                    assert.equal(responseBody.cards[0].mediaType, story.cards[0].mediaType);
-                    assert.equal(responseBody.cards[0].externalLink, story.cards[0].externalLink);
-                    assert.isNumber(responseBody.cards[0].id);
+                    Utils.validateStoryResponse(responseBody, story);
                     assert.equal(200, res.statusCode);
                     Promise.resolve();
                 });

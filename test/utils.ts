@@ -8,6 +8,7 @@ import * as url from 'url';
 
 let database: IDb = Database.init(process.env.NODE_ENV);
 const serverConfig = Configs.getServerConfigs();
+const assert: Chai.Assert = chai.assert;
 let server: Hapi.Server;
 Server.init(serverConfig, database).then((Server: Hapi.Server) => {
     server = Server;
@@ -34,9 +35,14 @@ export function getStoryDummy(title?: string, author?: string, mediaUri?: string
         by: author || "Dummy Jones",
         cards: [
             {
-                mediaUri: mediaUri || "http://www.dummy.org/image/test.jpg",
+                mediaUri: mediaUri || "http://www.dummy.org/image/test1.jpg",
                 mediaType: mediaType || "image",
-                externalLink: externalLink || "http://www.externallike.org"
+                externalLink: externalLink || "http://www.externallink1.org"
+            },
+            {
+                mediaUri: mediaUri || "http://www.dummy.org/image/test1.wav",
+                mediaType: mediaType || "video",
+                externalLink: externalLink || "http://www.externallink2.org"
             }
         ]
     };
@@ -67,6 +73,24 @@ export function clearDatabase(): Promise<any> {
     return Promise.all([promiseResetCodes, promiseDeletedUser, promiseCards, promiseStory, promiseUser]);
 }
 
+export function validateStoryResponse(responseBody: any, story: any) {
+    assert.equal(responseBody.title, story.title);
+    assert.isNumber(responseBody.id);
+    assert.isString(responseBody.slug);
+    assert.equal(responseBody.by, story.by);
+    assert.isNumber(responseBody.views);
+    assert.isString(responseBody.createdAt);
+    if (story.cards) {
+        for (let i = 0; i < story.cards.length; i++) {
+            assert.equal(responseBody.cards[i].mediaUri, story.cards[i].mediaUri);
+            assert.equal(responseBody.cards[i].mediaType, story.cards[i].mediaType);
+            assert.equal(responseBody.cards[i].externalLink, story.cards[i].externalLink);
+            assert.isNumber(responseBody.cards[i].id);
+        }
+    }
+
+}
+
 export function createUserDummy(email?: string, role?: string): Promise<any> {
     role = role || 'romans';
     return database.user.create(getUserDummy(email, role));
@@ -76,8 +100,8 @@ export function getUserInfo(email: string): Promise<any> {
     return database.user.findOne({ where: { email: email } });
 }
 
-export function createStory(title?: string, author?: string, mediaUri?: string, mediaType?: string, externalLink?: string) {
-    return getRoleBasedjwt('god').then((jwt: string) => {
+export function createStory(jwt?: string, title?: string, author?: string, mediaUri?: string, mediaType?: string, externalLink?: string) {
+    if (jwt) {
         return server.inject({
             method: 'POST', url: '/story',
             headers: { "authorization": jwt },
@@ -86,6 +110,26 @@ export function createStory(title?: string, author?: string, mediaUri?: string, 
             let responseBody: any = JSON.parse(res.payload);
             return responseBody.story;
         });
+    }
+    else {
+        return getRoleBasedjwt('god').then((jwt: string) => {
+            return server.inject({
+                method: 'POST', url: '/story',
+                headers: { "authorization": jwt },
+                payload: getStoryDummy(title, author, mediaUri, mediaType, externalLink)
+            }).then((res: any) => {
+                let responseBody: any = JSON.parse(res.payload);
+                return responseBody.story;
+            });
+        });
+    }
+}
+
+export function publishStory(jwt: string, storyId: number) {
+    return server.inject({
+        method: 'POST',
+        url: `/story/${storyId}/pushLive`,
+        headers: { "authorization": jwt }
     });
 }
 
@@ -99,6 +143,7 @@ export function getRoleBasedjwt(role: string, email?: string): Promise<string> {
         return server.inject({ method: 'POST', url: '/user/login', payload: user }).then((res: any) => {
             let login: any = JSON.parse(res.payload);
             return login.jwt;
+
         });
     });
 }

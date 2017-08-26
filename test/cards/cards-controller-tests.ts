@@ -1,133 +1,64 @@
-// import * as chai from "chai";
-// import TaskController from "../../src/tasks/task-controller";
-// // import { ITask } from "../../src/tasks/task";
-// // import { IUser } from "../../src/users/user";
-// import * as Configs from "../../src/configurations";
-// import * as Server from "../../src/server";
-// import * as Database from "../../src/database";
-// // import * as Utils from "../utils";
+import * as chai from "chai";
+import * as Hapi from 'hapi';
+import * as Utils from "../utils";
 
-// const configDb = Configs.getDatabaseConfig();
-// const database = Database.init(configDb);
-// const assert = chai.assert;
-// const serverConfig = Configs.getServerConfigs();
-// const server = Server.init(serverConfig, database);
+const assert: Chai.Assert = chai.assert;
+const should: Chai.Should = chai.should();
+let server: Hapi.Server;
+let romansJwt: string;
+let godJwt: string;
 
-// describe("TastController Tests", () => {
+describe('Tests for cards related endpoints.', () => {
 
-//     // beforeEach((done) => {
-//     //     Utils.createSeedTaskData(database, done);
-//     // });
+    before(() => {
+        server = Utils.getServerInstance();
+        return Utils.getRoleBasedjwt('romans').then((jwt: string) => {
+            romansJwt = jwt;
+            return Utils.getRoleBasedjwt('god').then((jwt: string) => {
+                godJwt = jwt;
+                Promise.resolve();
+            });
+        });
+    });
 
-//     // afterEach((done) => {
-//     //     Utils.clearDatabase(database, done);
-//     // });
+    afterEach(() => {
+        return Utils.clearDatabase().then(() => {
+            Promise.resolve();
+        });
+    });
 
-//     // it("Get tasks", (done) => {
-//     //     var user = Utils.createUserDummy();
+    describe("Tests for marking story as read. ", () => {
 
-//     //     server.inject({ method: 'POST', url: '/users/login', payload: { email: user.email, password: user.password } }, (res) => {
-//     //         assert.equal(200, res.statusCode);
-//     //         var login: any = JSON.parse(res.payload);
+        it("Favourites/Unfavourites an existing card", () => {
+            return Utils.createStory(godJwt).then((story: any) => {
+                return Utils.publishStory(godJwt,story.id).then((res) => {
+                    return server.inject({
+                        method: 'POST',
+                        url: `/card/${story.cards[0].id}/favourite`,
+                        headers: { "authorization": romansJwt }
+                    }).then((res: any) => {
+                        console.log(res);
+                        let responseBody: any = JSON.parse(res.payload);
+                        responseBody.should.have.property('favourited');
+                        assert.equal(responseBody.favourited, true);
+                        assert.equal(201, res.statusCode);
+                        Promise.resolve();
+                    });
+                });
+            });
+        });
 
-//     //         server.inject({ method: 'Get', url: '/tasks', headers: { "authorization": login.token } }, (res) => {
-//     //             assert.equal(200, res.statusCode);
-//     //             var responseBody: Array<ITask> = JSON.parse(res.payload);
-//     //             assert.equal(3, responseBody.length);
-//     //             done();
-//     //         });
-//     //     });
-//     // });
+        it("Sends invalid or non existant id of the card in the payload.", () => {
+            let cardId = "dummyId";
+            return server.inject({
+                method: 'POST',
+                url: `/card/${cardId}/favourite`,
+                headers: { "authorization": romansJwt }
+            }).then((res: any) => {
+                assert.equal(404, res.statusCode);
+                Promise.resolve();
+            });
+        });
+    });
 
-//     // it("Get single task", (done) => {
-//     //     var user = Utils.createUserDummy();
-
-//     //     server.inject({ method: 'POST', url: '/users/login', payload: { email: user.email, password: user.password } }, (res) => {
-//     //         assert.equal(200, res.statusCode);
-//     //         var login: any = JSON.parse(res.payload);
-
-//     //         database.taskModel.findOne({}).then((task) => {
-//     //             server.inject({ method: 'Get', url: '/tasks/' + task._id, headers: { "authorization": login.token } }, (res) => {
-//     //                 assert.equal(200, res.statusCode);
-//     //                 var responseBody: ITask = JSON.parse(res.payload);
-//     //                 assert.equal(task.name, responseBody.name);
-//     //                 done();
-//     //             });
-//     //         });
-//     //     });
-//     // });
-
-//     // it("Create task", (done) => {
-//     //     var user = Utils.createUserDummy();
-
-//     //     server.inject({ method: 'POST', url: '/users/login', payload: { email: user.email, password: user.password } }, (res) => {
-//     //         assert.equal(200, res.statusCode);
-//     //         var login: any = JSON.parse(res.payload);
-
-//     //         database.userModel.findOne({ email: user.email }).then((user: IUser) => {
-//     //             var task = Utils.createTaskDummy();
-
-//     //             server.inject({ method: 'POST', url: '/tasks', payload: task, headers: { "authorization": login.token } }, (res) => {
-//     //                 assert.equal(201, res.statusCode);
-//     //                 var responseBody: ITask = <ITask>JSON.parse(res.payload);
-//     //                 assert.equal(task.name, responseBody.name);
-//     //                 assert.equal(task.description, responseBody.description);
-//     //                 done();
-//     //             });
-//     //         });
-//     //     });
-//     // });
-
-//     // it("Update task", (done) => {
-//     //     var user = Utils.createUserDummy();
-
-//     //     server.inject({ method: 'POST', url: '/users/login', payload: { email: user.email, password: user.password } }, (res) => {
-//     //         assert.equal(200, res.statusCode);
-//     //         var login: any = JSON.parse(res.payload);
-
-//     //         database.taskModel.findOne({}).then((task) => {
-
-//     //             var updateTask = {
-//     //                 completed: true,
-//     //                 name: task.name,
-//     //                 description: task.description
-//     //             };
-
-//     //             server.inject({ 
-//         method: 'PUT', 
-//         url: '/tasks/' + task._id, 
-//         payload: updateTask, 
-//         headers: { "authorization": login.token } },
-//     //                 (res) => {
-//     //                     assert.equal(200, res.statusCode);
-//     //                     console.log(res.payload);
-//     //                     var responseBody: ITask = JSON.parse(res.payload);
-//     //                     assert.isTrue(responseBody.completed);
-//     //                     done();
-//     //                 });
-//     //         });
-//     //     });
-//     // });
-
-//     // it("Delete single task", (done) => {
-//     //     var user = Utils.createUserDummy();
-
-//     //     server.inject({ method: 'POST', url: '/users/login', payload: { email: user.email, password: user.password } }, (res) => {
-//     //         assert.equal(200, res.statusCode);
-//     //         var login: any = JSON.parse(res.payload);
-
-//     //         database.taskModel.findOne({}).then((task) => {
-//     //             server.inject({ method: 'DELETE', url: '/tasks/' + task._id, headers: { "authorization": login.token } }, (res) => {
-//     //                 assert.equal(200, res.statusCode);
-//     //                 var responseBody: ITask = JSON.parse(res.payload);
-//     //                 assert.equal(task.name, responseBody.name);
-
-//     //                 database.taskModel.findById(responseBody._id).then((deletedTask) => {
-//     //                     assert.isNull(deletedTask);
-//     //                     done();
-//     //                 });
-//     //             });
-//     //         });
-//     //     });
-//     // });
-// });
+});
