@@ -91,7 +91,7 @@ describe('Tests for cards related endpoints.', () => {
                         return server.inject({
                             method: 'GET',
                             url: '/card/favourite',
-                            headers: { "authorization": godJwt }
+                            headers: { "authorization": romansJwt }
                         }).then((res: any) => {
                             let responseBody: any = JSON.parse(res.payload);
                             for (let i = 0; i < story.cards.length; i++) {
