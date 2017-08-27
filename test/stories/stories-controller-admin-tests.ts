@@ -668,4 +668,146 @@ describe('Tests for admin-panel stories related endpoints.', () => {
             });
         });
     });
+
+    describe("Tests for getting all the stories (published/draft) created so far. ", () => {
+
+        it("Checks if GOD & JESUS can access the endpoint and ROMANS cant.", () => {
+            return Utils.checkEndpointAccess('GET', '/story?page=0&size=3&type=published').then((res: any) => {
+                assert.equal(res.romans, false);
+                assert.equal(res.god, true);
+                assert.equal(res.jesus, true);
+                Promise.resolve();
+            });
+        });
+
+        it("Gets all the published stories", () => {
+            return Utils.createSeedStoryData(godJwt).then((stories: any) => {
+                var promises = [];
+                for (var i = 0; i < stories.length; ++i) {
+                    promises.push(Utils.publishStory(godJwt, stories[i].id));
+                }
+                return Promise.all(promises).then((res) => {
+                    return server.inject({
+                        method: 'GET',
+                        url: `/story?page=0&size=3&type=published`,
+                        headers: { "authorization": godJwt }
+                    }).then((res: any) => {
+                        let responseBody: any = JSON.parse(res.payload);
+                        assert.isNumber(responseBody.noOfPages);
+                        assert.isNumber(responseBody.currentPageNo);
+                        responseBody.stories.forEach(function (responseStory) {
+                            stories.forEach(function (story) {
+                                if (responseStory.id === story.id) {
+                                    Utils.validateStoryResponse(responseStory, story);
+                                }
+                            });
+                        });
+                        assert.equal(200, res.statusCode);
+                        Promise.resolve();
+                    });
+                });
+            });
+        });
+
+        it("Gets all the draft stories.", () => {
+            return Utils.createSeedStoryData(godJwt).then((stories: any) => {
+                var promises = [];
+                for (var i = 0; i < stories.length - 2; ++i) {
+                    promises.push(Utils.publishStory(godJwt, stories[i].id));
+                }
+                return Promise.all(promises).then((res) => {
+                    return server.inject({
+                        method: 'GET',
+                        url: `/story?page=0&size=3&type=published`,
+                        headers: { "authorization": godJwt }
+                    }).then((res: any) => {
+                        let responseBody: any = JSON.parse(res.payload);
+                        assert.isNumber(responseBody.noOfPages);
+                        assert.isNumber(responseBody.currentPageNo);
+                        responseBody.stories.forEach(function (responseStory) {
+                            stories.forEach(function (story) {
+                                if (responseStory.id === story.id) {
+                                    Utils.validateStoryResponse(responseStory, story);
+                                }
+                            });
+                        });
+                        assert.equal(200, res.statusCode);
+                        Promise.resolve();
+                    });
+                });
+            });
+        });
+
+        describe("Sends invalid data in the payload.", () => {
+
+            it("Invalid page.", () => {
+                return server.inject({
+                    method: 'GET',
+                    url: `/story?page=abc&size=3&type=published`,
+                    headers: { "authorization": godJwt }
+                }).then((res: any) => {
+                    assert.equal(400, res.statusCode);
+                    Promise.resolve();
+                });
+            });
+
+            it("Invalid size.", () => {
+                return server.inject({
+                    method: 'GET',
+                    url: `/story?page=0&size=abc&type=published`,
+                    headers: { "authorization": godJwt }
+                }).then((res: any) => {
+                    assert.equal(400, res.statusCode);
+                    Promise.resolve();
+                });
+            });
+
+            it("Invalid type.", () => {
+                return server.inject({
+                    method: 'GET',
+                    url: `/story?page=0&size=3&type=user`,
+                    headers: { "authorization": godJwt }
+                }).then((res: any) => {
+                    assert.equal(400, res.statusCode);
+                    Promise.resolve();
+                });
+            });
+        });
+
+        describe('Sends missing data in the payload.', () => {
+
+            it('Missing page.', () => {
+                return server.inject({
+                    method: 'GET',
+                    url: `/story?size=3&type=published`,
+                    headers: { "authorization": godJwt }
+                }).then((res: any) => {
+                    assert.equal(400, res.statusCode);
+                    Promise.resolve();
+                });
+            });
+
+            it('Missing size.', () => {
+                return server.inject({
+                    method: 'GET',
+                    url: `/story?page=0&type=published`,
+                    headers: { "authorization": godJwt }
+                }).then((res: any) => {
+                    assert.equal(400, res.statusCode);
+                    Promise.resolve();
+                });
+            });
+
+            it('Missing type.', () => {
+                return server.inject({
+                    method: 'GET',
+                    url: `/story?page=0&size=3`,
+                    headers: { "authorization": godJwt }
+                }).then((res: any) => {
+                    assert.equal(400, res.statusCode);
+                    Promise.resolve();
+                });
+            });
+        });
+    });
 });

@@ -29,7 +29,8 @@ export function getUserDummy(email?: string, role?: string, password?: string, n
     return user;
 }
 
-export function getStoryDummy(title?: string, author?: string, mediaUri?: string, mediaType?: string, externalLink?: string): any {
+export function getStoryDummy(title?: string, author?: string,
+    mediaUri?: string, mediaType?: string, externalLink?: string): any {
     let story = {
         title: title || "Dummy Artifact to Human Communication",
         by: author || "Dummy Jones",
@@ -81,14 +82,17 @@ export function validateStoryResponse(responseBody: any, story: any) {
     assert.isNumber(responseBody.views);
     assert.isString(responseBody.createdAt);
     if (story.cards) {
-        for (let i = 0; i < story.cards.length; i++) {
-            assert.equal(responseBody.cards[i].mediaUri, story.cards[i].mediaUri);
-            assert.equal(responseBody.cards[i].mediaType, story.cards[i].mediaType);
-            assert.equal(responseBody.cards[i].externalLink, story.cards[i].externalLink);
-            assert.isNumber(responseBody.cards[i].id);
-        }
+        validateCardResponse(responseBody, story);
     }
+}
 
+export function validateCardResponse(responseBody: any, story: any) {
+    for (let i = 0; i < story.cards.length; i++) {
+        assert.equal(responseBody.cards[i].mediaUri, story.cards[i].mediaUri);
+        assert.equal(responseBody.cards[i].mediaType, story.cards[i].mediaType);
+        assert.equal(responseBody.cards[i].externalLink, story.cards[i].externalLink);
+        assert.isNumber(responseBody.cards[i].id);
+    }
 }
 
 export function createUserDummy(email?: string, role?: string): Promise<any> {
@@ -100,7 +104,8 @@ export function getUserInfo(email: string): Promise<any> {
     return database.user.findOne({ where: { email: email } });
 }
 
-export function createStory(jwt?: string, title?: string, author?: string, mediaUri?: string, mediaType?: string, externalLink?: string) {
+export function createStory(jwt?: string, title?: string, author?: string,
+    mediaUri?: string, mediaType?: string, externalLink?: string): Promise<any> {
     if (jwt) {
         return server.inject({
             method: 'POST', url: '/story',
@@ -125,7 +130,7 @@ export function createStory(jwt?: string, title?: string, author?: string, media
     }
 }
 
-export function publishStory(jwt: string, storyId: number) {
+export function publishStory(jwt: string, storyId: number): Promise<any> {
     return server.inject({
         method: 'POST',
         url: `/story/${storyId}/pushLive`,
@@ -162,6 +167,10 @@ export function getCsvJwt(): Promise<any> {
             return csvlink;
         });
     });
+}
+
+export function markFavouriteCard(jwt: string, cardId: string): Promise<any> {
+    return server.inject({ method: 'POST', url: `/card/${cardId}/favourite`, headers: { "authorization": jwt } });
 }
 
 
@@ -213,11 +222,11 @@ export function createSeedUserData(): Promise<any> {
 
 }
 
-export function createSeedStoryData(): Promise<any> {
+export function createSeedStoryData(jwt: string): Promise<any> {
     return Promise.all([
-        createStory("Story 1"),
-        createStory("Story 2"),
-        createStory("Story 3"),
+        createStory(jwt, "Story 1"),
+        createStory(jwt, "Story 2"),
+        createStory(jwt, "Story 3"),
     ]);
 
 }
