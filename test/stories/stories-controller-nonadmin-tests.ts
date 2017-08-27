@@ -36,7 +36,7 @@ describe('Tests for non-admin-panel stories related endpoints.', () => {
 
         it("Marks an existing, published story as read.", () => {
             return Utils.createStory(godJwt).then((story: any) => {
-                return Utils.publishStory(godJwt,story.id).then((res) => {
+                return Utils.publishStory(godJwt, story.id).then((res) => {
                     return server.inject({
                         method: 'POST',
                         url: `/story/${story.id}/markRead`,
@@ -71,6 +71,49 @@ describe('Tests for non-admin-panel stories related endpoints.', () => {
             return server.inject({
                 method: 'POST',
                 url: `/story/${storyId}/markRead`,
+                headers: { "authorization": romansJwt }
+            }).then((res: any) => {
+                assert.equal(404, res.statusCode);
+                Promise.resolve();
+            });
+        });
+    });
+
+    describe("Tests for getting latest stories for the user. ", () => {
+
+        it("Gets the latest stories, if the stories have been published.", () => {
+            return Utils.createSeedStoryData(godJwt).then((stories: any) => {
+                var promises = [];
+                for (var i = 0; i < stories.length; ++i) {
+                    promises.push(Utils.publishStory(godJwt, stories[i].id));
+                }
+                return Promise.all(promises).then((res:any) => {
+                    return server.inject({
+                        method: 'GET',
+                        url: `/story/latest`,
+                        headers: { "authorization": romansJwt }
+                    }).then((res: any) => {
+                        let responseBody: any = JSON.parse(res.payload).latest;
+                        console.log(res);
+                        assert.equal(responseBody.length, 2);
+                        responseBody.forEach(function (responseStory) {
+                            stories.forEach(function (story) {
+                                if (responseStory.id === story.id) {
+                                    Utils.validateStoryResponse(responseStory, story);
+                                }
+                            });
+                        });
+                        assert.equal(200, res.statusCode);
+                        Promise.resolve();
+                    });
+                });
+            });
+        });
+
+        it("Gets the latest stories, if none of the stories are published.", () => {
+            return server.inject({
+                method: 'GET',
+                url: `/story/latest`,
                 headers: { "authorization": romansJwt }
             }).then((res: any) => {
                 assert.equal(404, res.statusCode);
