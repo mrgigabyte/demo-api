@@ -1,14 +1,26 @@
 {
-    "apps": [{
-        "exec_mode": "fork",
-        "instances": 4,
-        "script": "./build/src/index.js",
-        "name": "abstrct-staging-api",
-        "interpreter": "node",
-        "env": {
-            "NODE_ENV": "staging"
+    "apps": [
+        {
+            "exec_mode": "fork",
+            "instances": 4,
+            "script": "./build/src/index.js",
+            "name": "abstrct-staging-api",
+            "interpreter": "node",
+            "env": {
+                "NODE_ENV": "staging"
+            },
+            "out_file": "/logs/abstrct-node-app.log",
+            "error_file": "/logs/abstrct-node-app-err.log"
         },
-        "out_file": "/logs/abstrct-node-app.log",
-        "error_file": "/logs/abstrct-node-app-err.log"
-    }]
+        {
+            "script": "./build/src/pushNotif.js",
+            "name": "abstrct-oneSignal-pushNotif",
+            "interpreter": "node",
+            "env": {
+                "NODE_ENV": "staging"
+            },
+            "out_file": "/logs/abstrct-node-app.log",
+            "error_file": "/logs/abstrct-node-app-err.log"
+        }
+    ]
 }
