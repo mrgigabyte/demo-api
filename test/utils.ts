@@ -16,7 +16,7 @@ Server.init(serverConfig, database).then((Server: Hapi.Server) => {
 
 export function getUserDummy(email?: string, role?: string, password?: string, name?: string): any {
     let user = {
-        email: email || "dummy@mail.com",
+        email: email || "dummy123@mail.com",
         name: name || "Dummy Jones",
         password: password || "123123",
         role: role || 'romans'
@@ -54,7 +54,7 @@ export function getStoryDummy(title?: string, author?: string,
 export function getResetPasswordDetails(code: string, email?: string): any {
     let user = {
         code: code,
-        email: email || "dummy@mail.com",
+        email: email || "dummy123@mail.com",
         password: "12223123"
     };
 
@@ -70,8 +70,16 @@ export function clearDatabase(): Promise<any> {
     var promiseDeletedUser = database.user.destroy({ where: { status: 'deleted' } });
     var promiseStory = database.story.destroy({ where: {} });
     var promiseCards = database.card.destroy({ where: {} });
-    var promiseUser = database.user.destroy({ where: {} });
+    var promiseUser = database.user.destroy({
+        where: {
+            email: { $notIn: ['god@mail.com', 'romans@mail.com', 'jesus@mail.com'] }
+        }
+    });
     return Promise.all([promiseResetCodes, promiseDeletedUser, promiseCards, promiseStory, promiseUser]);
+}
+
+export function clearUser(): Promise<any> {
+    return database.user.destroy({ where: {} });
 }
 
 export function validateStoryResponse(responseBody: any, story: any) {
@@ -79,15 +87,17 @@ export function validateStoryResponse(responseBody: any, story: any) {
     assert.isNumber(responseBody.id);
     assert.isString(responseBody.slug);
     assert.equal(responseBody.by, story.by);
-    assert.isNumber(responseBody.views);
     assert.isString(responseBody.createdAt);
+    if (responseBody.views) {
+        assert.isNumber(responseBody.views);
+    }
     if (story.cards) {
         validateCardResponse(responseBody, story);
     }
 }
 
 export function validateCardResponse(responseBody: any, story: any) {
-    for (let i = 0; i < story.cards.length; i++) {
+    for (let i = 0; i < responseBody.cards.length; i++) {
         assert.equal(responseBody.cards[i].mediaUri, story.cards[i].mediaUri);
         assert.equal(responseBody.cards[i].mediaType, story.cards[i].mediaType);
         assert.equal(responseBody.cards[i].externalLink, story.cards[i].externalLink);
@@ -104,30 +114,16 @@ export function getUserInfo(email: string): Promise<any> {
     return database.user.findOne({ where: { email: email } });
 }
 
-export function createStory(jwt?: string, title?: string, author?: string,
+export function createStory(jwt: string, title?: string, author?: string,
     mediaUri?: string, mediaType?: string, externalLink?: string): Promise<any> {
-    if (jwt) {
-        return server.inject({
-            method: 'POST', url: '/story',
-            headers: { "authorization": jwt },
-            payload: getStoryDummy(title, author, mediaUri, mediaType, externalLink)
-        }).then((res: any) => {
-            let responseBody: any = JSON.parse(res.payload);
-            return responseBody.story;
-        });
-    }
-    else {
-        return getRoleBasedjwt('god').then((jwt: string) => {
-            return server.inject({
-                method: 'POST', url: '/story',
-                headers: { "authorization": jwt },
-                payload: getStoryDummy(title, author, mediaUri, mediaType, externalLink)
-            }).then((res: any) => {
-                let responseBody: any = JSON.parse(res.payload);
-                return responseBody.story;
-            });
-        });
-    }
+    return server.inject({
+        method: 'POST', url: '/story',
+        headers: { "authorization": jwt },
+        payload: getStoryDummy(title, author, mediaUri, mediaType, externalLink)
+    }).then((res: any) => {
+        let responseBody: any = JSON.parse(res.payload);
+        return responseBody.story;
+    });
 }
 
 export function publishStory(jwt: string, storyId: number): Promise<any> {
@@ -153,19 +149,15 @@ export function getRoleBasedjwt(role: string, email?: string): Promise<string> {
     });
 }
 
-export function getResetCode(): Promise<any> {
-    return createUserDummy().then(() => {
-        return server.inject({ method: 'POST', url: '/user/requestResetPassword', payload: { email: getUserDummy().email } });
-    });
+export function getResetCode(email: string): Promise<any> {
+    return server.inject({ method: 'POST', url: '/user/requestResetPassword', payload: { email: email } });
 }
 
-export function getCsvJwt(): Promise<any> {
-    return getRoleBasedjwt('god').then((jwt: string) => {
-        return server.inject({ method: 'GET', url: '/user/getCsvLink', headers: { "authorization": jwt } }).then((res: any) => {
-            const jwt: any = JSON.parse(res.payload);
-            const csvlink: string = url.parse(jwt.link).query;
-            return csvlink;
-        });
+export function getCsvJwt(jwt: string): Promise<any> {
+    return server.inject({ method: 'GET', url: '/user/getCsvLink', headers: { "authorization": jwt } }).then((res: any) => {
+        const jwt: any = JSON.parse(res.payload);
+        const csvlink: string = url.parse(jwt.link).query;
+        return csvlink;
     });
 }
 
@@ -174,7 +166,7 @@ export function markFavouriteCard(jwt: string, cardId: string): Promise<any> {
 }
 
 
-export function checkEndpointAccess(httpMethod: string, httpUrl: string): Promise<any> {
+export function checkEndpointAccess(jwts: any, httpMethod: string, httpUrl: string): Promise<any> {
 
     return new Promise((resolve, reject) => {
         let accessStatus = {
@@ -182,29 +174,32 @@ export function checkEndpointAccess(httpMethod: string, httpUrl: string): Promis
             god: true,
             jesus: true
         };
-        var PromiseRomans = getRoleBasedjwt('romans').then((jwt: string) => {
-            return server.inject({ method: httpMethod, url: httpUrl, headers: { "authorization": jwt } }).then((res: any) => {
-                if (res.statusCode === 403) {
-                    accessStatus.romans = false;
-                }
-            });
-
+        var PromiseRomans = server.inject({
+            method: httpMethod,
+            url: httpUrl,
+            headers: { "authorization": jwts.romans }
+        }).then((res: any) => {
+            if (res.statusCode === 403) {
+                accessStatus.romans = false;
+            }
         });
 
-        var PromiseGod = getRoleBasedjwt('god').then((jwt: string) => {
-            return server.inject({ method: httpMethod, url: httpUrl, headers: { "authorization": jwt } }).then((res: any) => {
-                if (res.statusCode === 403) {
-                    accessStatus.god = false;
-                }
-            });
+        var PromiseGod = server.inject({
+            method: httpMethod,
+            url: httpUrl, headers: { "authorization": jwts.god }
+        }).then((res: any) => {
+            if (res.statusCode === 403) {
+                accessStatus.god = false;
+            }
         });
 
-        var PromiseJesus = getRoleBasedjwt('jesus').then((jwt: string) => {
-            return server.inject({ method: httpMethod, url: httpUrl, headers: { "authorization": jwt } }).then((res: any) => {
-                if (res.statusCode === 403) {
-                    accessStatus.jesus = false;
-                }
-            });
+        var PromiseJesus = server.inject({
+            method: httpMethod,
+            url: httpUrl, headers: { "authorization": jwts.jesus }
+        }).then((res: any) => {
+            if (res.statusCode === 403) {
+                accessStatus.jesus = false;
+            }
         });
 
         Promise.all([PromiseRomans, PromiseGod, PromiseJesus]).then(() => {
@@ -227,6 +222,7 @@ export function createSeedStoryData(jwt: string): Promise<any> {
         createStory(jwt, "Story 1"),
         createStory(jwt, "Story 2"),
         createStory(jwt, "Story 3"),
+        createStory(jwt, "Story 4")
     ]);
 
 }

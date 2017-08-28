@@ -21,9 +21,7 @@ gulp.task('clean', function () {
  * Lint all custom TypeScript files.
  */
 gulp.task('tslint', ['clean'], () => {
-    return gulp.src(['src/**/*.ts'
-    // , 'test/**/*.ts' 
-    ])
+    return gulp.src(['src/**/*.ts', 'test/**/*.ts'])
         .pipe(tslint({
             formatter: "verbose"
         }))

@@ -1,7 +1,4 @@
 import * as chai from "chai";
-import UserController from "../../src/users/user-controller";
-import { IDb } from "../../src/config";
-import * as config from '../../src/config';
 import * as Hapi from 'hapi';
 import * as Utils from "../utils";
 import * as url from 'url';
@@ -12,6 +9,7 @@ let server: Hapi.Server;
 let romansJwt: string;
 let godJwt: string;
 let jesusJwt: string;
+let jwts: any = {};
 
 describe('Tests for admin-panel user related endpoints.', () => {
 
@@ -23,9 +21,18 @@ describe('Tests for admin-panel user related endpoints.', () => {
                 godJwt = jwt;
                 return Utils.getRoleBasedjwt('jesus').then((jwt: string) => {
                     jesusJwt = jwt;
+                    jwts.romans = romansJwt;
+                    jwts.god = godJwt;
+                    jwts.jesus = jesusJwt;
                     Promise.resolve();
                 });
             });
+        });
+    });
+
+    after(() => {
+        return Utils.clearUser().then(() => {
+            Promise.resolve();
         });
     });
 
@@ -38,10 +45,11 @@ describe('Tests for admin-panel user related endpoints.', () => {
     describe("Tests for creating an account with role JESUS.", () => {
 
         it("Creates an account through GOD's account.", () => {
+            let user: any = Utils.getUserDummy('createjesus@mail.com');
             return server.inject({
                 method: 'POST', url: '/user/createJesus',
                 headers: { "authorization": godJwt },
-                payload: Utils.getUserDummy('createjesus@mail.com')
+                payload: user
             }).then((res: any) => {
                 let responseBody: any = JSON.parse(res.payload);
                 responseBody.should.have.property('success');
@@ -52,10 +60,11 @@ describe('Tests for admin-panel user related endpoints.', () => {
         });
 
         it("Creates an account through ROMANS's account.", () => {
+            let user: any = Utils.getUserDummy('createjesus@mail.com');
             return server.inject({
                 method: 'POST', url: '/user/createJesus',
                 headers: { "authorization": romansJwt },
-                payload: Utils.getUserDummy('createjesus@mail.com')
+                payload: user
             }).then((res: any) => {
                 assert.equal(403, res.statusCode);
                 Promise.resolve();
@@ -63,21 +72,20 @@ describe('Tests for admin-panel user related endpoints.', () => {
         });
 
         it("Creates an account with existing email.", () => {
-            return Utils.createUserDummy('createjesus@mail.com', 'jesus').then(() => {
-                return server.inject({
-                    method: 'POST',
-                    url: '/user/createJesus',
-                    headers: { "authorization": godJwt },
-                    payload: Utils.getUserDummy('createjesus@mail.com')
-                }).then((res: any) => {
-                    assert.equal(409, res.statusCode);
-                    Promise.resolve();
-                });
+            let user: any = Utils.getUserDummy('jesus@mail.com');
+            return server.inject({
+                method: 'POST',
+                url: '/user/createJesus',
+                headers: { "authorization": godJwt },
+                payload: user
+            }).then((res: any) => {
+                assert.equal(409, res.statusCode);
+                Promise.resolve();
             });
         });
 
         it("Creates an account with invalid email.", () => {
-            let user = Utils.getUserDummy("dummail.com");
+            let user: any = Utils.getUserDummy("createjesus.com");
             return server.inject({
                 method: 'POST',
                 url: '/user/createJesus',
@@ -133,7 +141,6 @@ describe('Tests for admin-panel user related endpoints.', () => {
                     Promise.resolve();
                 });
             });
-
         });
     });
 
@@ -162,7 +169,7 @@ describe('Tests for admin-panel user related endpoints.', () => {
     describe("Tests for downloading the users CSV.", () => {
 
         it("Downloads users CSV with a valid JWT.", () => {
-            return Utils.getCsvJwt().then((jwt: string) => {
+            return Utils.getCsvJwt(godJwt).then((jwt: string) => {
                 return server.inject({ method: 'GET', url: '/user/downloadCsv?' + jwt }).then((res: any) => {
                     let responseHeader: any = res.headers;
                     assert.equal(responseHeader["content-type"], "text/csv; charset=utf-8");
@@ -181,7 +188,7 @@ describe('Tests for admin-panel user related endpoints.', () => {
         });
 
         it("Downloads users CSV with an expired JWT.", () => {
-            return Utils.getCsvJwt().then((jwt: string) => {
+            return Utils.getCsvJwt(godJwt).then((jwt: string) => {
                 return new Promise((resolve, reject) => setTimeout(() => {
                     resolve();
                 }, 1100)).then(() => {
@@ -196,7 +203,7 @@ describe('Tests for admin-panel user related endpoints.', () => {
 
     describe("Tests for getting user info in paginated fashion.", () => {
         it("Checks if GOD & JESUS can access the endpoint and ROMANS cant.", () => {
-            return Utils.checkEndpointAccess('GET', '/user?page=6&size=3').then((res: any) => {
+            return Utils.checkEndpointAccess(jwts, 'GET', '/user?page=6&size=3').then((res: any) => {
                 assert.equal(res.romans, false);
                 assert.equal(res.god, true);
                 assert.equal(res.jesus, true);
@@ -205,18 +212,20 @@ describe('Tests for admin-panel user related endpoints.', () => {
         });
 
         it("Gets user info by sending valid query params.", () => {
-            return Utils.createSeedUserData().then((res: any) => {
+            return Utils.createSeedUserData().then((seedResponse: any) => {
                 return server.inject({
                     method: 'GET',
                     url: '/user?page=0&size=3',
                     headers: { "authorization": godJwt }
                 }).then((res: any) => {
                     let responseBody: any = JSON.parse(res.payload);
-                    let counter: number = 1;
-                    responseBody.users.forEach((element: any) => {
-                        assert.equal(element.name, "Dummy Jones");
-                        assert.equal(element.email, `user${counter}@mail.com`);
-                        counter++;
+                    responseBody.users.forEach((resElement: any) => {
+                        seedResponse.forEach((seedElement: any) => {
+                            if (seedElement.id === resElement.id) {
+                                assert.equal(resElement.name, seedElement.name);
+                                assert.equal(resElement.email, seedElement.email);
+                            }
+                        });
                     });
                     assert.isArray(responseBody.users);
                     assert.equal(200, res.statusCode);
@@ -264,7 +273,7 @@ describe('Tests for admin-panel user related endpoints.', () => {
 
     describe("Tests for getting info of a user from userId.", () => {
         it("Checks if GOD & JESUS can access the endpoint and ROMANS cant.", () => {
-            return Utils.checkEndpointAccess('GET', '/user/1').then((res: any) => {
+            return Utils.checkEndpointAccess(jwts, 'GET', '/user/1').then((res: any) => {
                 assert.equal(res.romans, false);
                 assert.equal(res.god, true);
                 assert.equal(res.jesus, true);
@@ -289,7 +298,7 @@ describe('Tests for admin-panel user related endpoints.', () => {
             });
         });
 
-        it("Gets info of a non-existant user.", () => {
+        it("Gets info of a non-existing user.", () => {
             return server.inject({ method: 'GET', url: '/user/-1', headers: { "authorization": godJwt } }).then((res: any) => {
                 let responseBody: any = JSON.parse(res.payload);
                 assert.equal(404, res.statusCode);

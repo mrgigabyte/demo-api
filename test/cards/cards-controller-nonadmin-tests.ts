@@ -7,6 +7,8 @@ const should: Chai.Should = chai.should();
 let server: Hapi.Server;
 let romansJwt: string;
 let godJwt: string;
+let jesusJwt: string;
+let jwts: any = {};
 
 describe('Tests for cards related endpoints.', () => {
 
@@ -16,8 +18,20 @@ describe('Tests for cards related endpoints.', () => {
             romansJwt = jwt;
             return Utils.getRoleBasedjwt('god').then((jwt: string) => {
                 godJwt = jwt;
-                Promise.resolve();
+                return Utils.getRoleBasedjwt('jesus').then((jwt: string) => {
+                    jesusJwt = jwt;
+                    jwts.romans = romansJwt;
+                    jwts.god = godJwt;
+                    jwts.jesus = jesusJwt;
+                    Promise.resolve();
+                });
             });
+        });
+    });
+
+    after(() => {
+        return Utils.clearUser().then(() => {
+            Promise.resolve();
         });
     });
 
@@ -31,7 +45,7 @@ describe('Tests for cards related endpoints.', () => {
 
         it("Favourites/Unfavourites an existing card", () => {
             return Utils.createStory(godJwt).then((story: any) => {
-                return Utils.publishStory(godJwt, story.id).then((res) => {
+                return Utils.publishStory(godJwt, story.id).then(() => {
                     return server.inject({
                         method: 'POST',
                         url: `/card/${story.cards[0].id}/favourite`,
@@ -41,7 +55,7 @@ describe('Tests for cards related endpoints.', () => {
                         let responseBody: any = JSON.parse(res.payload);
                         responseBody.should.have.property('favourited');
                         assert.equal(responseBody.favourited, true);
-                        assert.equal(201, res.statusCode);
+                        assert.equal(200, res.statusCode);
                         Promise.resolve();
                     });
                 });
@@ -76,7 +90,7 @@ describe('Tests for cards related endpoints.', () => {
     describe("Tests for gettng all the cards marked as favourite by a user. ", () => {
 
         it("Checks if GOD, JESUS & ROMANS can access the endpoint.", () => {
-            return Utils.checkEndpointAccess('GET', '/card/favourite').then((res: any) => {
+            return Utils.checkEndpointAccess(jwts,'GET', '/card/favourite').then((res: any) => {
                 assert.equal(res.romans, true);
                 assert.equal(res.god, true);
                 assert.equal(res.jesus, true);
@@ -94,7 +108,7 @@ describe('Tests for cards related endpoints.', () => {
                             headers: { "authorization": romansJwt }
                         }).then((res: any) => {
                             let responseBody: any = JSON.parse(res.payload);
-                            for (let i = 0; i < story.cards.length; i++) {
+                            for (let i = 0; i < responseBody.cards.length; i++) {
                                 if (responseBody.cards[i].id === story.cards[i].id) {
                                     Utils.validateCardResponse(responseBody, story);
                                 }

@@ -1,5 +1,4 @@
 import * as chai from "chai";
-import * as config from '../../src/config';
 import * as Hapi from 'hapi';
 import * as Utils from "../utils";
 
@@ -9,6 +8,7 @@ let server: Hapi.Server;
 let romansJwt: string;
 let godJwt: string;
 let jesusJwt: string;
+let jwts: any = {};
 
 describe('Tests for admin-panel stories related endpoints.', () => {
 
@@ -20,9 +20,18 @@ describe('Tests for admin-panel stories related endpoints.', () => {
                 godJwt = jwt;
                 return Utils.getRoleBasedjwt('jesus').then((jwt: string) => {
                     jesusJwt = jwt;
+                    jwts.romans = romansJwt;
+                    jwts.god = godJwt;
+                    jwts.jesus = jesusJwt;
                     Promise.resolve();
                 });
             });
+        });
+    });
+
+    after(() => {
+        return Utils.clearUser().then(() => {
+            Promise.resolve();
         });
     });
 
@@ -199,7 +208,7 @@ describe('Tests for admin-panel stories related endpoints.', () => {
     describe("Tests for updating details of a previously published/draft story.", () => {
 
         it("Updates a story, adds a new card through GOD's account.", () => {
-            return Utils.createStory().then((story: any) => {
+            return Utils.createStory(godJwt).then((story: any) => {
                 let storyId = story.id;
                 let newCard: any = {
                     mediaUri: "http://www.newcard.org/image/test.wav",
@@ -225,8 +234,33 @@ describe('Tests for admin-panel stories related endpoints.', () => {
             });
         });
 
+        it("Updates a story, changes the order of the cards through GOD's account.", () => {
+            return Utils.createStory(godJwt).then((story: any) => {
+                let storyId = story.id;
+                let dummyStory: Array<any> = Object.keys(Utils.getStoryDummy());
+                Object.keys(story).forEach(function (x: any) {
+                    if (dummyStory.indexOf(x) === -1) {
+                        delete story[x];
+                    }
+                });
+                let initialCard: any = story.cards[0];
+                story.cards[0]=story.cards[1];
+                story.cards[1] = initialCard;
+                return server.inject({
+                    method: 'PUT', url: `/story/${storyId}`,
+                    headers: { "authorization": godJwt },
+                    payload: story
+                }).then((res: any) => {
+                    let responseBody: any = JSON.parse(res.payload).story;
+                    Utils.validateStoryResponse(responseBody, story);
+                    assert.equal(200, res.statusCode);
+                    Promise.resolve();
+                });
+            });
+        });
+
         it("Updates a story, updates story title, author and an existing card through GOD's account.", () => {
-            return Utils.createStory().then((story: any) => {
+            return Utils.createStory(godJwt).then((story: any) => {
                 let UpdatedStory = {
                     title: "Updated Dummy Artifact to Human Communication",
                     by: "John Doe",
@@ -259,7 +293,7 @@ describe('Tests for admin-panel stories related endpoints.', () => {
         });
 
         it("Updates a story, removes all the existing cards through GOD's account.", () => {
-            return Utils.createStory().then((story: any) => {
+            return Utils.createStory(godJwt).then((story: any) => {
                 story.cards = [];
                 let storyId = story.id;
                 let dummyStory: Array<any> = Object.keys(Utils.getStoryDummy());
@@ -273,6 +307,9 @@ describe('Tests for admin-panel stories related endpoints.', () => {
                     headers: { "authorization": godJwt },
                     payload: story
                 }).then((res: any) => {
+                    console.log('=============')
+                    console.log(res);
+                    console.log('=============')
                     let responseBody: any = JSON.parse(res.payload).story;
                     Utils.validateStoryResponse(responseBody, story);
                     assert.equal(200, res.statusCode);
@@ -282,7 +319,7 @@ describe('Tests for admin-panel stories related endpoints.', () => {
         });
 
         it("Updates a story through ROMAN's account.", () => {
-            return Utils.createStory().then((story: any) => {
+            return Utils.createStory(godJwt).then((story: any) => {
                 let UpdatedStory = {
                     title: "Updated Dummy Artifact to Human Communication",
                     by: "John Doe",
@@ -310,7 +347,7 @@ describe('Tests for admin-panel stories related endpoints.', () => {
         describe('Sends invalid data in the payload.', () => {
 
             it('Invalid story-title.', () => {
-                return Utils.createStory().then((story: any) => {
+                return Utils.createStory(godJwt).then((story: any) => {
                     let storyId = story.id;
                     let dummyStory: Array<any> = Object.keys(Utils.getStoryDummy());
                     Object.keys(story).forEach(function (x: any) {
@@ -332,7 +369,7 @@ describe('Tests for admin-panel stories related endpoints.', () => {
             });
 
             it('Invalid story-author.', () => {
-                return Utils.createStory().then((story: any) => {
+                return Utils.createStory(godJwt).then((story: any) => {
                     let storyId = story.id;
                     let dummyStory: Array<any> = Object.keys(Utils.getStoryDummy());
                     Object.keys(story).forEach(function (x: any) {
@@ -355,7 +392,7 @@ describe('Tests for admin-panel stories related endpoints.', () => {
             });
 
             it('Invalid mediaUri of the card.', () => {
-                return Utils.createStory().then((story: any) => {
+                return Utils.createStory(godJwt).then((story: any) => {
                     let storyId = story.id;
                     let dummyStory: Array<any> = Object.keys(Utils.getStoryDummy());
                     Object.keys(story).forEach(function (x: any) {
@@ -377,7 +414,7 @@ describe('Tests for admin-panel stories related endpoints.', () => {
             });
 
             it('Invalid mediaType of the card.', () => {
-                return Utils.createStory().then((story: any) => {
+                return Utils.createStory(godJwt).then((story: any) => {
                     let storyId = story.id;
                     let dummyStory: Array<any> = Object.keys(Utils.getStoryDummy());
                     Object.keys(story).forEach(function (x: any) {
@@ -399,7 +436,7 @@ describe('Tests for admin-panel stories related endpoints.', () => {
             });
 
             it('Invalid externalLink of the card.', () => {
-                return Utils.createStory().then((story: any) => {
+                return Utils.createStory(godJwt).then((story: any) => {
                     let storyId = story.id;
                     let dummyStory: Array<any> = Object.keys(Utils.getStoryDummy());
                     Object.keys(story).forEach(function (x: any) {
@@ -424,7 +461,7 @@ describe('Tests for admin-panel stories related endpoints.', () => {
         describe('Sends missing data in the payload.', () => {
 
             it('Missing story-title.', () => {
-                return Utils.createStory().then((story: any) => {
+                return Utils.createStory(godJwt).then((story: any) => {
                     let storyId = story.id;
                     let dummyStory: Array<any> = Object.keys(Utils.getStoryDummy());
                     Object.keys(story).forEach(function (x: any) {
@@ -446,7 +483,7 @@ describe('Tests for admin-panel stories related endpoints.', () => {
             });
 
             it('Missing story-author.', () => {
-                return Utils.createStory().then((story: any) => {
+                return Utils.createStory(godJwt).then((story: any) => {
                     let storyId = story.id;
                     let dummyStory: Array<any> = Object.keys(Utils.getStoryDummy());
                     Object.keys(story).forEach(function (x: any) {
@@ -468,7 +505,7 @@ describe('Tests for admin-panel stories related endpoints.', () => {
             });
 
             it('Missing mediaUri of the card.', () => {
-                return Utils.createStory().then((story: any) => {
+                return Utils.createStory(godJwt).then((story: any) => {
                     let storyId = story.id;
                     let dummyStory: Array<any> = Object.keys(Utils.getStoryDummy());
                     Object.keys(story).forEach(function (x: any) {
@@ -490,7 +527,7 @@ describe('Tests for admin-panel stories related endpoints.', () => {
             });
 
             it('Missing mediaType of the card.', () => {
-                return Utils.createStory().then((story: any) => {
+                return Utils.createStory(godJwt).then((story: any) => {
                     let storyId = story.id;
                     let dummyStory: Array<any> = Object.keys(Utils.getStoryDummy());
                     Object.keys(story).forEach(function (x: any) {
@@ -517,7 +554,7 @@ describe('Tests for admin-panel stories related endpoints.', () => {
     describe("Tests for making a story live.", () => {
 
         it("Checks if GOD & JESUS can access the endpoint and ROMANS cant.", () => {
-            return Utils.checkEndpointAccess('POST', '/story/3/pushLive').then((res: any) => {
+            return Utils.checkEndpointAccess(jwts,'POST', '/story/3/pushLive').then((res: any) => {
                 assert.equal(res.romans, false);
                 assert.equal(res.god, true);
                 assert.equal(res.jesus, true);
@@ -526,7 +563,7 @@ describe('Tests for admin-panel stories related endpoints.', () => {
         });
 
         it("Makes an existing story live.", () => {
-            return Utils.createStory().then((story: any) => {
+            return Utils.createStory(godJwt).then((story: any) => {
                 let storyId = story.id;
                 return server.inject({
                     method: 'POST',
@@ -599,7 +636,7 @@ describe('Tests for admin-panel stories related endpoints.', () => {
     describe("Tests for deleting a story and all the cards associated with the story. ", () => {
 
         it("Checks if GOD & JESUS can access the endpoint and ROMANS cant.", () => {
-            return Utils.checkEndpointAccess('DELETE', '/story/3').then((res: any) => {
+            return Utils.checkEndpointAccess(jwts,'DELETE', '/story/3').then((res: any) => {
                 assert.equal(res.romans, false);
                 assert.equal(res.god, true);
                 assert.equal(res.jesus, true);
@@ -608,7 +645,7 @@ describe('Tests for admin-panel stories related endpoints.', () => {
         });
 
         it("Deletes an existing story.", () => {
-            return Utils.createStory().then((story: any) => {
+            return Utils.createStory(godJwt).then((story: any) => {
                 let storyId = story.id;
                 return server.inject({
                     method: 'DELETE',
@@ -640,7 +677,7 @@ describe('Tests for admin-panel stories related endpoints.', () => {
     describe("Tests for getting story by id or slug. ", () => {
 
         it("Checks if GOD & JESUS can access the endpoint and ROMANS cant.", () => {
-            return Utils.checkEndpointAccess('GET', '/story/3').then((res: any) => {
+            return Utils.checkEndpointAccess(jwts,'GET', '/story/3').then((res: any) => {
                 assert.equal(res.romans, false);
                 assert.equal(res.god, true);
                 assert.equal(res.jesus, true);
@@ -649,7 +686,7 @@ describe('Tests for admin-panel stories related endpoints.', () => {
         });
 
         it("Gets details of an existing story.", () => {
-            return Utils.createStory().then((story: any) => {
+            return Utils.createStory(godJwt).then((story: any) => {
                 let storyId = story.id;
                 return server.inject({ method: 'GET', url: `/story/${storyId}`, headers: { "authorization": godJwt } }).then((res: any) => {
                     let responseBody: any = JSON.parse(res.payload).story;
@@ -672,7 +709,7 @@ describe('Tests for admin-panel stories related endpoints.', () => {
     describe("Tests for getting all the stories (published/draft) created so far. ", () => {
 
         it("Checks if GOD & JESUS can access the endpoint and ROMANS cant.", () => {
-            return Utils.checkEndpointAccess('GET', '/story?page=0&size=3&type=published').then((res: any) => {
+            return Utils.checkEndpointAccess(jwts,'GET', '/story?page=0&size=3&type=published').then((res: any) => {
                 assert.equal(res.romans, false);
                 assert.equal(res.god, true);
                 assert.equal(res.jesus, true);
@@ -683,7 +720,7 @@ describe('Tests for admin-panel stories related endpoints.', () => {
         it("Gets all the published stories", () => {
             return Utils.createSeedStoryData(godJwt).then((stories: any) => {
                 var promises = [];
-                for (var i = 0; i < stories.length; ++i) {
+                for (var i = 0; i < stories.length; i++) {
                     promises.push(Utils.publishStory(godJwt, stories[i].id));
                 }
                 return Promise.all(promises).then((res) => {
@@ -712,7 +749,7 @@ describe('Tests for admin-panel stories related endpoints.', () => {
         it("Gets all the draft stories.", () => {
             return Utils.createSeedStoryData(godJwt).then((stories: any) => {
                 var promises = [];
-                for (var i = 0; i < stories.length - 2; ++i) {
+                for (var i = 0; i < stories.length - 3; i++) {
                     promises.push(Utils.publishStory(godJwt, stories[i].id));
                 }
                 return Promise.all(promises).then((res) => {
