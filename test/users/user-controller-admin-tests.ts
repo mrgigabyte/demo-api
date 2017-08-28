@@ -1,8 +1,10 @@
 import * as chai from "chai";
 import * as Hapi from 'hapi';
 import * as Utils from "../utils";
+import * as Configs from "../../src/config";
 import * as url from 'url';
 
+const CSVjwt = Configs.getServerConfigs().jwtCsvExpiration;
 const assert: Chai.Assert = chai.assert;
 const should: Chai.Should = chai.should();
 let server: Hapi.Server;
@@ -191,7 +193,7 @@ describe('Tests for admin-panel user related endpoints.', () => {
             return Utils.getCsvJwt(godJwt).then((jwt: string) => {
                 return new Promise((resolve, reject) => setTimeout(() => {
                     resolve();
-                }, 1100)).then(() => {
+                }, parseInt(CSVjwt, 10)+5)).then(() => {
                     return (server.inject({ method: 'GET', url: '/user/downloadCsv?' + jwt }).then((res: any) => {
                         assert.equal(400, res.statusCode);
                         Promise.resolve();

@@ -307,9 +307,9 @@ describe('Tests for admin-panel stories related endpoints.', () => {
                     headers: { "authorization": godJwt },
                     payload: story
                 }).then((res: any) => {
-                    console.log('=============')
+                    console.log('=============');
                     console.log(res);
-                    console.log('=============')
+                    console.log('=============');
                     let responseBody: any = JSON.parse(res.payload).story;
                     Utils.validateStoryResponse(responseBody, story);
                     assert.equal(200, res.statusCode);
