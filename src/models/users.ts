@@ -122,7 +122,7 @@ export default function (sequelize, DataTypes) {
                         noOfPages: totalPages + 1,
                         currentPageNo: page + 1,
                         users: data,
-                        next: null,                        
+                        next: null,
                     });
                 }
             });
@@ -138,16 +138,12 @@ export default function (sequelize, DataTypes) {
     User.prototype.getFavouriteCards = function (cardModel: any): Promise<any> {
         return this.getCards({ attributes: ['id', 'storyId', 'mediaUri', 'mediaType', 'externalLink'] })
             .then((cards: Array<any>) => {
-                if (cards.length) {
-                    let plainCards: Array<any> = [];
-                    cards.forEach((card: any, index: number) => {
-                        plainCards.push(card.get({ plain: true }));
-                        delete plainCards[index]['favouriteCards'];
-                    });
-                    return Promise.resolve(plainCards);
-                } else {
-                    throw Boom.notFound("User doesn't have any favourite cards");
-                }
+                let plainCards: Array<any> = [];
+                cards.forEach((card: any, index: number) => {
+                    plainCards.push(card.get({ plain: true }));
+                    delete plainCards[index]['favouriteCards'];
+                });
+                return Promise.resolve(plainCards);
             });
     };
 
