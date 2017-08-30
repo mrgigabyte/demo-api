@@ -13,7 +13,7 @@ let jwts: any = {};
 describe('Tests for admin-panel user related endpoints.', () => {
 
    before(function () {
-        this.timeout(3000);
+        this.timeout(3000); //increases the default timeout from 2000ms to 3000ms
         server = Utils.getServerInstance();
         return Utils.clearDatabase().then(() => {
             return Utils.clearUser().then(() => {
@@ -32,12 +32,17 @@ describe('Tests for admin-panel user related endpoints.', () => {
     });
 
     after(() => {
+        // deletes the 3 default records present in the user table
         return Utils.clearUser().then(() => {
             Promise.resolve();
         });
     });
 
     afterEach(() => {
+       /*
+        * clears all the records from all the tables present in the database 
+        * except 3 records from the table
+        */
         return Utils.clearDatabase().then(() => {
             Promise.resolve();
         });

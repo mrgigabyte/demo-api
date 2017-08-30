@@ -11,7 +11,7 @@ let jwts: any = {};
 describe('Tests for admin-panel stories related endpoints.', () => {
 
     before(function () {
-        this.timeout(3000);
+        this.timeout(3000); //increases the detault timeout to 3000ms
         server = Utils.getServerInstance();
         return Utils.clearDatabase().then(() => {
             return Utils.clearUser().then(() => {
@@ -212,6 +212,8 @@ describe('Tests for admin-panel stories related endpoints.', () => {
                     mediaType: "video"
                 };
                 let dummyStory: Array<any> = Object.keys(Utils.getStoryDummy());
+
+                // deletes the unwanted keys from story object so that it matches the payload
                 Object.keys(story).forEach(function (x: any) {
                     if (dummyStory.indexOf(x) === -1) {
                         delete story[x];
@@ -235,6 +237,8 @@ describe('Tests for admin-panel stories related endpoints.', () => {
             return Utils.createStory(jwts.god).then((story: any) => {
                 let storyId = story.id;
                 let dummyStory: Array<any> = Object.keys(Utils.getStoryDummy());
+
+                // deletes the unwanted keys from story object so that it matches the payload                
                 Object.keys(story).forEach(function (x: any) {
                     if (dummyStory.indexOf(x) === -1) {
                         delete story[x];
@@ -294,6 +298,8 @@ describe('Tests for admin-panel stories related endpoints.', () => {
                 story.cards = [];
                 let storyId = story.id;
                 let dummyStory: Array<any> = Object.keys(Utils.getStoryDummy());
+
+                // deletes the unwanted keys from story object so that it matches the payload                
                 Object.keys(story).forEach(function (x: any) {
                     if (dummyStory.indexOf(x) === -1) {
                         delete story[x];
@@ -304,10 +310,6 @@ describe('Tests for admin-panel stories related endpoints.', () => {
                     headers: { "authorization": jwts.god },
                     payload: story
                 }).then((res: any) => {
-                    console.log('===========')
-                    console.log(res)
-                    console.log('===========')
-                    
                     let responseBody: any = JSON.parse(res.payload).story;
                     Utils.validateStoryResponse(responseBody, story);
                     assert.equal(200, res.statusCode);
@@ -347,6 +349,8 @@ describe('Tests for admin-panel stories related endpoints.', () => {
                 return Utils.createStory(jwts.god).then((story: any) => {
                     let storyId = story.id;
                     let dummyStory: Array<any> = Object.keys(Utils.getStoryDummy());
+
+                    // deletes the unwanted keys from story object so that it matches the payload                    
                     Object.keys(story).forEach(function (x: any) {
                         if (dummyStory.indexOf(x) === -1) {
                             delete story[x];
@@ -369,6 +373,8 @@ describe('Tests for admin-panel stories related endpoints.', () => {
                 return Utils.createStory(jwts.god).then((story: any) => {
                     let storyId = story.id;
                     let dummyStory: Array<any> = Object.keys(Utils.getStoryDummy());
+
+                    // deletes the unwanted keys from story object so that it matches the payload                    
                     Object.keys(story).forEach(function (x: any) {
                         if (dummyStory.indexOf(x) === -1) {
                             delete story[x];
@@ -392,6 +398,8 @@ describe('Tests for admin-panel stories related endpoints.', () => {
                 return Utils.createStory(jwts.god).then((story: any) => {
                     let storyId = story.id;
                     let dummyStory: Array<any> = Object.keys(Utils.getStoryDummy());
+
+                    // deletes the unwanted keys from story object so that it matches the payload                    
                     Object.keys(story).forEach(function (x: any) {
                         if (dummyStory.indexOf(x) === -1) {
                             delete story[x];
@@ -414,6 +422,8 @@ describe('Tests for admin-panel stories related endpoints.', () => {
                 return Utils.createStory(jwts.god).then((story: any) => {
                     let storyId = story.id;
                     let dummyStory: Array<any> = Object.keys(Utils.getStoryDummy());
+
+                    // deletes the unwanted keys from story object so that it matches the payload                    
                     Object.keys(story).forEach(function (x: any) {
                         if (dummyStory.indexOf(x) === -1) {
                             delete story[x];
@@ -436,6 +446,8 @@ describe('Tests for admin-panel stories related endpoints.', () => {
                 return Utils.createStory(jwts.god).then((story: any) => {
                     let storyId = story.id;
                     let dummyStory: Array<any> = Object.keys(Utils.getStoryDummy());
+
+                    // deletes the unwanted keys from story object so that it matches the payload                    
                     Object.keys(story).forEach(function (x: any) {
                         if (dummyStory.indexOf(x) === -1) {
                             delete story[x];
@@ -460,6 +472,8 @@ describe('Tests for admin-panel stories related endpoints.', () => {
                 return Utils.createStory(jwts.god).then((story: any) => {
                     let storyId = story.id;
                     let dummyStory: Array<any> = Object.keys(Utils.getStoryDummy());
+
+                    // deletes the unwanted keys from story object so that it matches the payload                    
                     Object.keys(story).forEach(function (x: any) {
                         if (dummyStory.indexOf(x) === -1) {
                             delete story[x];
@@ -482,6 +496,8 @@ describe('Tests for admin-panel stories related endpoints.', () => {
                 return Utils.createStory(jwts.god).then((story: any) => {
                     let storyId = story.id;
                     let dummyStory: Array<any> = Object.keys(Utils.getStoryDummy());
+
+                    // deletes the unwanted keys from story object so that it matches the payload                    
                     Object.keys(story).forEach(function (x: any) {
                         if (dummyStory.indexOf(x) === -1) {
                             delete story[x];
@@ -504,6 +520,8 @@ describe('Tests for admin-panel stories related endpoints.', () => {
                 return Utils.createStory(jwts.god).then((story: any) => {
                     let storyId = story.id;
                     let dummyStory: Array<any> = Object.keys(Utils.getStoryDummy());
+
+                // deletes the unwanted keys from story object so that it matches the payload                    
                     Object.keys(story).forEach(function (x: any) {
                         if (dummyStory.indexOf(x) === -1) {
                             delete story[x];
@@ -526,6 +544,8 @@ describe('Tests for admin-panel stories related endpoints.', () => {
                 return Utils.createStory(jwts.god).then((story: any) => {
                     let storyId = story.id;
                     let dummyStory: Array<any> = Object.keys(Utils.getStoryDummy());
+
+                // deletes the unwanted keys from story object so that it matches the payload                    
                     Object.keys(story).forEach(function (x: any) {
                         if (dummyStory.indexOf(x) === -1) {
                             delete story[x];
@@ -560,6 +580,8 @@ describe('Tests for admin-panel stories related endpoints.', () => {
         it("Makes an existing story live.", () => {
             return Utils.createStory(jwts.god).then((story: any) => {
                 let storyId = story.id;
+
+                // gets the initial value of publishedAt field from the table
                 return Utils.getStoryData(storyId).then((indbStory: any) => {
                     let initial_publishedAt = indbStory.publishedAt;
                     return server.inject({
@@ -567,10 +589,14 @@ describe('Tests for admin-panel stories related endpoints.', () => {
                         url: `/story/${storyId}/pushLive`,
                         headers: { "authorization": jwts.god }
                     }).then((res: any) => {
+
+                        // gets the value of publishedAt after pushing the story live
                         return Utils.getStoryData(storyId).then((fdbStory: any) => {
                             let final_publishedAt = fdbStory.publishedAt;
                             let responseBody: any = JSON.parse(res.payload);
                             responseBody.should.have.property('pushed');
+
+                            // initial value = null and final value = current time
                             expect(initial_publishedAt).not.equal(final_publishedAt);
                             assert.equal(responseBody.pushed, true);
                             assert.equal(200, res.statusCode);
@@ -653,11 +679,15 @@ describe('Tests for admin-panel stories related endpoints.', () => {
                     url: `/story/${storyId}`,
                     headers: { "authorization": jwts.god }
                 }).then((res: any) => {
+                   /*
+                    * runs a query in the database to ensure that the query
+                    * is actually deleted in the database
+                    */
                     return Utils.getStoryData().then((storyRes: any) => {
                         let responseBody: any = JSON.parse(res.payload);
                         responseBody.should.have.property('deleted');
                         assert.equal(responseBody.deleted, true);
-                        assert.equal(storyRes.length,0);
+                        assert.equal(storyRes.length, 0);
                         assert.equal(200, res.statusCode);
                         Promise.resolve();
                     });
@@ -722,6 +752,7 @@ describe('Tests for admin-panel stories related endpoints.', () => {
         it("Gets all the published stories in paginated fashion.", () => {
             return Utils.createSeedStoryData(jwts.god).then((stories: any) => {
                 let promises = [];
+                //publishes all the stories which were created in the database
                 for (let i = 0; i < stories.length; i++) {
                     promises.push(Utils.publishStory(stories[i].id));
                 }
@@ -751,6 +782,7 @@ describe('Tests for admin-panel stories related endpoints.', () => {
         it("Gets all the draft stories in paginated fashion.", () => {
             return Utils.createSeedStoryData(jwts.god).then((stories: any) => {
                 let promises = [];
+                //creates four stories but publishes only one, so draft=3 
                 for (let i = 0; i < stories.length - 3; i++) {
                     promises.push(Utils.publishStory(stories[i].id));
                 }

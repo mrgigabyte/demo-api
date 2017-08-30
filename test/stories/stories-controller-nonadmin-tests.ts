@@ -10,7 +10,7 @@ let jwts: any = {};
 describe('Tests for non-admin-panel stories related endpoints.', () => {
 
    before(function () {
-        this.timeout(3000);
+        this.timeout(3000); //increases the default timeout from 2000ms to 3000ms
         server = Utils.getServerInstance();
         return Utils.clearDatabase().then(() => {
             return Utils.clearUser().then(() => {
@@ -29,12 +29,14 @@ describe('Tests for non-admin-panel stories related endpoints.', () => {
     });
 
     after(() => {
+        // clears the 3 default records from user table
         return Utils.clearUser().then(() => {
             Promise.resolve();
         });
     });
 
     afterEach(() => {
+        //clears the entire database except the three records in the user table
         return Utils.clearDatabase().then(() => {
             Promise.resolve();
         });
@@ -89,6 +91,7 @@ describe('Tests for non-admin-panel stories related endpoints.', () => {
         it("Gets the latest stories, if the stories have been published.", () => {
             return Utils.createSeedStoryData(jwts.god).then((stories: any) => {
                 var promises = [];
+                // publishes all the stories which were created
                 for (var i = 0; i < stories.length; i++) {
                     promises.push(Utils.publishStory(stories[i].id));
                 }
@@ -141,6 +144,7 @@ describe('Tests for non-admin-panel stories related endpoints.', () => {
         it("Gets the archived stories, if the user has read the story.", () => {
             return Utils.createSeedStoryData(jwts.god).then((stories: any) => {
                 var promises = [];
+                // publishes all the stories which were created
                 for (var i = 0; i < stories.length - 2; i++) {
                     promises.push(Utils.publishStory(stories[i].id));
                 }
@@ -175,6 +179,7 @@ describe('Tests for non-admin-panel stories related endpoints.', () => {
         it("Gets the archived stories, if the user has not read the story and it(story) is not latest.", () => {
             return Utils.createSeedStoryData(jwts.god).then((stories: any) => {
                 let promises = [];
+                // publishes all the stories which were created
                 for (let i = 0; i < stories.length; ++i) {
                     promises.push(Utils.publishStory(stories[i].id));
                 }

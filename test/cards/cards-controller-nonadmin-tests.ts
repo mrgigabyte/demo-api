@@ -49,7 +49,6 @@ describe('Tests for cards related endpoints.', () => {
                         url: `/card/${story.cards[0].id}/favourite`,
                         headers: { "authorization": jwts.romans }
                     }).then((res: any) => {
-                        console.log(res);
                         let responseBody: any = JSON.parse(res.payload);
                         responseBody.should.have.property('favourited');
                         assert.equal(responseBody.favourited, true);
@@ -104,8 +103,8 @@ describe('Tests for cards related endpoints.', () => {
                             url: '/card/favourite',
                             headers: { "authorization": jwts.romans }
                         }).then((res: any) => {
-                            console.log(res)
                             let responseBody: any = JSON.parse(res.payload);
+                            // validates the entire response
                             for (let i = 0; i < responseBody.cards.length; i++) {
                                 if (responseBody.cards[i].id === story.cards[i].id) {
                                     Utils.validateCardResponse(responseBody, story);

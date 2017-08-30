@@ -96,6 +96,7 @@ export function clearDatabase(): Promise<any> {
     });
 }
 
+// deletes all the existing records from the users table
 export function clearUser(): Promise<any> {
     return database.user.destroy({ where: {} });
 }
@@ -109,11 +110,12 @@ export function validateStoryResponse(responseBody: any, story: any) {
     if (responseBody.views) {
         assert.isNumber(responseBody.views);
     }
-    if (story.cards) {
+    if (responseBody.cards) {
         validateCardResponse(responseBody, story);
     }
 }
 
+// validates the cards key when the responseBody and the initial story is passed
 export function validateCardResponse(responseBody: any, story: any) {
     for (let i = 0; i < responseBody.cards.length; i++) {
         assert.equal(responseBody.cards[i].mediaUri, story.cards[i].mediaUri);
@@ -123,15 +125,18 @@ export function validateCardResponse(responseBody: any, story: any) {
     }
 }
 
+
 export function createUserDummy(email?: string, role?: string): Promise<any> {
     role = role || 'romans';
     return database.user.create(getUserDummy(email, role));
 }
 
+// gets the userinfo with given email id
 export function getUserInfo(email: string): Promise<any> {
     return database.user.findOne({ where: { email: email } });
 }
 
+//access the create story endpoint and returns the instance
 export function createStory(jwt: string, title?: string, author?: string,
     mediaUri?: string, mediaType?: string, externalLink?: string): Promise<any> {
     return server.inject({
@@ -144,6 +149,7 @@ export function createStory(jwt: string, title?: string, author?: string,
     });
 }
 
+//updates the publishAt field for the story with the given storyid
 export function publishStory(storyId: number): Promise<any> {
     return database.story.findOne({
         where: {
@@ -154,18 +160,7 @@ export function publishStory(storyId: number): Promise<any> {
     });
 }
 
-export function markRead(email: string, storyId?: string): Promise<any> {
-    return this.database.user.findOne({
-        where: {
-            email: email
-        }
-    }).then((user) => {
-        return user.getStories({ where: { id: storyId } }).then((stories: Array<any>) => {
-            return this.addUsers(user);
-        });
-    });
-}
-
+// generates the jwt for the role with the desired email id
 export function getRoleBasedjwt(role: string, email?: string): Promise<string> {
     let user = {
         email: email || `${role}@mail.com`,
@@ -192,13 +187,11 @@ export function getCsvJwt(jwt: string): Promise<any> {
     });
 }
 
+// sets the card as favourite for the user with the given email and if od the card
 export function markFavouriteCard(email: string, cardId: string): Promise<any> {
     return database.user.findOne({ where: { email: email } }).then((user) => {
-        console.log(user)
         return database.card.findOne({ where: { id: cardId } }).then((card) => {
-            console.log(card[0]);
             return user.hasCards(card).then((result) => {
-                console.log(result);
                 if (result) {
                     user.removeCards(card);
                     return Promise.resolve(false);
@@ -209,12 +202,10 @@ export function markFavouriteCard(email: string, cardId: string): Promise<any> {
             });
         });
     });
-    // return server.inject({ method: 'POST', url: `/card/${cardId}/favourite`, headers: { "authorization": jwt } });
 }
 
-
+// tries accessing the given endpoint with all the three authorisation headers
 export function checkEndpointAccess(jwts: any, httpMethod: string, httpUrl: string): Promise<any> {
-
     return new Promise((resolve, reject) => {
         let accessStatus = {
             romans: true,
