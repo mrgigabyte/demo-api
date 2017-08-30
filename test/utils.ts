@@ -52,8 +52,13 @@ export function getStoryDummy(title?: string, author?: string,
     return story;
 }
 
-export function getStoryData(storyId: number): Promise<any> {
-    return database.story.findOne({ where: { id: storyId } });
+export function getStoryData(storyId?: number): Promise<any> {
+    if (storyId) {
+        return database.story.findOne({ where: { id: storyId } });
+    }
+    else {
+        return database.story.findAll({ where: {} });
+    }
 }
 
 export function getResetPasswordDetails(code: string, email?: string): any {

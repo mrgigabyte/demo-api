@@ -4,7 +4,7 @@ import * as Utils from "../utils";
 
 const assert: Chai.Assert = chai.assert;
 const should: Chai.Should = chai.should();
-const expect  = chai.expect; 
+const expect = chai.expect;
 let server: Hapi.Server;
 let jwts: any = {};
 
@@ -30,7 +30,7 @@ describe('Tests for admin-panel stories related endpoints.', () => {
     });
 
     after(function () {
-        
+
         return Utils.clearUser().then(() => {
             Promise.resolve();
         });
@@ -304,6 +304,10 @@ describe('Tests for admin-panel stories related endpoints.', () => {
                     headers: { "authorization": jwts.god },
                     payload: story
                 }).then((res: any) => {
+                    console.log('===========')
+                    console.log(res)
+                    console.log('===========')
+                    
                     let responseBody: any = JSON.parse(res.payload).story;
                     Utils.validateStoryResponse(responseBody, story);
                     assert.equal(200, res.statusCode);
@@ -649,11 +653,14 @@ describe('Tests for admin-panel stories related endpoints.', () => {
                     url: `/story/${storyId}`,
                     headers: { "authorization": jwts.god }
                 }).then((res: any) => {
-                    let responseBody: any = JSON.parse(res.payload);
-                    responseBody.should.have.property('deleted');
-                    assert.equal(responseBody.deleted, true);
-                    assert.equal(200, res.statusCode);
-                    Promise.resolve();
+                    return Utils.getStoryData().then((storyRes: any) => {
+                        let responseBody: any = JSON.parse(res.payload);
+                        responseBody.should.have.property('deleted');
+                        assert.equal(responseBody.deleted, true);
+                        assert.equal(storyRes.length,0);
+                        assert.equal(200, res.statusCode);
+                        Promise.resolve();
+                    });
                 });
             });
         });
