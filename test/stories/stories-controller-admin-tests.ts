@@ -4,32 +4,33 @@ import * as Utils from "../utils";
 
 const assert: Chai.Assert = chai.assert;
 const should: Chai.Should = chai.should();
+const expect  = chai.expect; 
 let server: Hapi.Server;
-let romansJwt: string;
-let godJwt: string;
-let jesusJwt: string;
 let jwts: any = {};
 
 describe('Tests for admin-panel stories related endpoints.', () => {
 
-    before(() => {
+    before(function () {
+        this.timeout(3000);
         server = Utils.getServerInstance();
-        return Utils.getRoleBasedjwt('romans').then((jwt: string) => {
-            romansJwt = jwt;
-            return Utils.getRoleBasedjwt('god').then((jwt: string) => {
-                godJwt = jwt;
-                return Utils.getRoleBasedjwt('jesus').then((jwt: string) => {
-                    jesusJwt = jwt;
-                    jwts.romans = romansJwt;
-                    jwts.god = godJwt;
-                    jwts.jesus = jesusJwt;
-                    Promise.resolve();
+        return Utils.clearDatabase().then(() => {
+            return Utils.clearUser().then(() => {
+                return Utils.getRoleBasedjwt('romans').then((jwt: string) => {
+                    jwts.romans = jwt;
+                    return Utils.getRoleBasedjwt('god').then((jwt: string) => {
+                        jwts.god = jwt;
+                        return Utils.getRoleBasedjwt('jesus').then((jwt: string) => {
+                            jwts.jesus = jwt;
+                            Promise.resolve();
+                        });
+                    });
                 });
             });
         });
     });
 
-    after(() => {
+    after(function () {
+        
         return Utils.clearUser().then(() => {
             Promise.resolve();
         });
@@ -42,12 +43,11 @@ describe('Tests for admin-panel stories related endpoints.', () => {
     });
 
     describe("Tests for creating a new story.", () => {
-
         it("Creates a new story through GOD's account.", () => {
             let story: any = Utils.getStoryDummy();
             return server.inject({
                 method: 'POST', url: '/story',
-                headers: { "authorization": godJwt },
+                headers: { "authorization": jwts.god },
                 payload: story
             }).then((res: any) => {
                 let responseBody: any = JSON.parse(res.payload).story;
@@ -60,7 +60,7 @@ describe('Tests for admin-panel stories related endpoints.', () => {
         it("Creates new story through ROMANS's account.", () => {
             return server.inject({
                 method: 'POST', url: '/story',
-                headers: { "authorization": romansJwt },
+                headers: { "authorization": jwts.romans },
                 payload: Utils.getStoryDummy()
             }).then((res: any) => {
                 assert.equal(403, res.statusCode);
@@ -69,14 +69,13 @@ describe('Tests for admin-panel stories related endpoints.', () => {
         });
 
         describe('Sends invalid data in the payload.', () => {
-
             it('Invalid story-title.', () => {
                 let story = Utils.getStoryDummy();
                 story.title = 123;
                 return server.inject({
                     method: 'POST',
                     url: '/story',
-                    headers: { "authorization": godJwt },
+                    headers: { "authorization": jwts.god },
                     payload: story
                 }).then((res: any) => {
                     assert.equal(400, res.statusCode);
@@ -90,7 +89,7 @@ describe('Tests for admin-panel stories related endpoints.', () => {
                 return server.inject({
                     method: 'POST',
                     url: '/story',
-                    headers: { "authorization": godJwt },
+                    headers: { "authorization": jwts.god },
                     payload: story
                 }).then((res: any) => {
                     assert.equal(400, res.statusCode);
@@ -105,7 +104,7 @@ describe('Tests for admin-panel stories related endpoints.', () => {
                 return server.inject({
                     method: 'POST',
                     url: '/story',
-                    headers: { "authorization": godJwt },
+                    headers: { "authorization": jwts.god },
                     payload: story
                 }).then((res: any) => {
                     assert.equal(400, res.statusCode);
@@ -119,7 +118,7 @@ describe('Tests for admin-panel stories related endpoints.', () => {
                 return server.inject({
                     method: 'POST',
                     url: '/story',
-                    headers: { "authorization": godJwt },
+                    headers: { "authorization": jwts.god },
                     payload: story
                 }).then((res: any) => {
                     assert.equal(400, res.statusCode);
@@ -133,7 +132,7 @@ describe('Tests for admin-panel stories related endpoints.', () => {
                 return server.inject({
                     method: 'POST',
                     url: '/story',
-                    headers: { "authorization": godJwt },
+                    headers: { "authorization": jwts.god },
                     payload: story
                 }).then((res: any) => {
                     assert.equal(400, res.statusCode);
@@ -144,14 +143,13 @@ describe('Tests for admin-panel stories related endpoints.', () => {
         });
 
         describe('Sends missing data in the payload.', () => {
-
             it('Missing story-title.', () => {
                 let story = Utils.getStoryDummy();
                 delete story.title;
                 return server.inject({
                     method: 'POST',
                     url: '/story',
-                    headers: { "authorization": godJwt },
+                    headers: { "authorization": jwts.god },
                     payload: story
                 }).then((res: any) => {
                     assert.equal(400, res.statusCode);
@@ -165,7 +163,7 @@ describe('Tests for admin-panel stories related endpoints.', () => {
                 return server.inject({
                     method: 'POST',
                     url: '/story',
-                    headers: { "authorization": godJwt },
+                    headers: { "authorization": jwts.god },
                     payload: story
                 }).then((res: any) => {
                     assert.equal(400, res.statusCode);
@@ -180,7 +178,7 @@ describe('Tests for admin-panel stories related endpoints.', () => {
                 return server.inject({
                     method: 'POST',
                     url: '/story',
-                    headers: { "authorization": godJwt },
+                    headers: { "authorization": jwts.god },
                     payload: story
                 }).then((res: any) => {
                     assert.equal(400, res.statusCode);
@@ -194,7 +192,7 @@ describe('Tests for admin-panel stories related endpoints.', () => {
                 return server.inject({
                     method: 'POST',
                     url: '/story',
-                    headers: { "authorization": godJwt },
+                    headers: { "authorization": jwts.god },
                     payload: story
                 }).then((res: any) => {
                     assert.equal(400, res.statusCode);
@@ -206,9 +204,8 @@ describe('Tests for admin-panel stories related endpoints.', () => {
     });
 
     describe("Tests for updating details of a previously published/draft story.", () => {
-
         it("Updates a story, adds a new card through GOD's account.", () => {
-            return Utils.createStory(godJwt).then((story: any) => {
+            return Utils.createStory(jwts.god).then((story: any) => {
                 let storyId = story.id;
                 let newCard: any = {
                     mediaUri: "http://www.newcard.org/image/test.wav",
@@ -223,7 +220,7 @@ describe('Tests for admin-panel stories related endpoints.', () => {
                 story.cards.push(newCard);
                 return server.inject({
                     method: 'PUT', url: `/story/${storyId}`,
-                    headers: { "authorization": godJwt },
+                    headers: { "authorization": jwts.god },
                     payload: story
                 }).then((res: any) => {
                     let responseBody: any = JSON.parse(res.payload).story;
@@ -235,7 +232,7 @@ describe('Tests for admin-panel stories related endpoints.', () => {
         });
 
         it("Updates a story, changes the order of the cards through GOD's account.", () => {
-            return Utils.createStory(godJwt).then((story: any) => {
+            return Utils.createStory(jwts.god).then((story: any) => {
                 let storyId = story.id;
                 let dummyStory: Array<any> = Object.keys(Utils.getStoryDummy());
                 Object.keys(story).forEach(function (x: any) {
@@ -244,11 +241,11 @@ describe('Tests for admin-panel stories related endpoints.', () => {
                     }
                 });
                 let initialCard: any = story.cards[0];
-                story.cards[0]=story.cards[1];
+                story.cards[0] = story.cards[1];
                 story.cards[1] = initialCard;
                 return server.inject({
                     method: 'PUT', url: `/story/${storyId}`,
-                    headers: { "authorization": godJwt },
+                    headers: { "authorization": jwts.god },
                     payload: story
                 }).then((res: any) => {
                     let responseBody: any = JSON.parse(res.payload).story;
@@ -260,7 +257,7 @@ describe('Tests for admin-panel stories related endpoints.', () => {
         });
 
         it("Updates a story, updates story title, author and an existing card through GOD's account.", () => {
-            return Utils.createStory(godJwt).then((story: any) => {
+            return Utils.createStory(jwts.god).then((story: any) => {
                 let UpdatedStory = {
                     title: "Updated Dummy Artifact to Human Communication",
                     by: "John Doe",
@@ -281,7 +278,7 @@ describe('Tests for admin-panel stories related endpoints.', () => {
                 };
                 return server.inject({
                     method: 'PUT', url: `/story/${story.id}`,
-                    headers: { "authorization": godJwt },
+                    headers: { "authorization": jwts.god },
                     payload: UpdatedStory
                 }).then((res: any) => {
                     let responseBody: any = JSON.parse(res.payload).story;
@@ -293,7 +290,7 @@ describe('Tests for admin-panel stories related endpoints.', () => {
         });
 
         it("Updates a story, removes all the existing cards through GOD's account.", () => {
-            return Utils.createStory(godJwt).then((story: any) => {
+            return Utils.createStory(jwts.god).then((story: any) => {
                 story.cards = [];
                 let storyId = story.id;
                 let dummyStory: Array<any> = Object.keys(Utils.getStoryDummy());
@@ -304,12 +301,9 @@ describe('Tests for admin-panel stories related endpoints.', () => {
                 });
                 return server.inject({
                     method: 'PUT', url: `/story/${storyId}`,
-                    headers: { "authorization": godJwt },
+                    headers: { "authorization": jwts.god },
                     payload: story
                 }).then((res: any) => {
-                    console.log('=============');
-                    console.log(res);
-                    console.log('=============');
                     let responseBody: any = JSON.parse(res.payload).story;
                     Utils.validateStoryResponse(responseBody, story);
                     assert.equal(200, res.statusCode);
@@ -319,7 +313,7 @@ describe('Tests for admin-panel stories related endpoints.', () => {
         });
 
         it("Updates a story through ROMAN's account.", () => {
-            return Utils.createStory(godJwt).then((story: any) => {
+            return Utils.createStory(jwts.god).then((story: any) => {
                 let UpdatedStory = {
                     title: "Updated Dummy Artifact to Human Communication",
                     by: "John Doe",
@@ -334,7 +328,7 @@ describe('Tests for admin-panel stories related endpoints.', () => {
                 };
                 return server.inject({
                     method: 'PUT', url: `/story/${story.id}`,
-                    headers: { "authorization": romansJwt },
+                    headers: { "authorization": jwts.romans },
                     payload: UpdatedStory
                 }).then((res: any) => {
                     let responseBody: any = JSON.parse(res.payload).story;
@@ -345,9 +339,8 @@ describe('Tests for admin-panel stories related endpoints.', () => {
         });
 
         describe('Sends invalid data in the payload.', () => {
-
             it('Invalid story-title.', () => {
-                return Utils.createStory(godJwt).then((story: any) => {
+                return Utils.createStory(jwts.god).then((story: any) => {
                     let storyId = story.id;
                     let dummyStory: Array<any> = Object.keys(Utils.getStoryDummy());
                     Object.keys(story).forEach(function (x: any) {
@@ -359,7 +352,7 @@ describe('Tests for admin-panel stories related endpoints.', () => {
                     return server.inject({
                         method: 'PUT',
                         url: `/story/${storyId}`,
-                        headers: { "authorization": godJwt },
+                        headers: { "authorization": jwts.god },
                         payload: story
                     }).then((res: any) => {
                         assert.equal(400, res.statusCode);
@@ -369,7 +362,7 @@ describe('Tests for admin-panel stories related endpoints.', () => {
             });
 
             it('Invalid story-author.', () => {
-                return Utils.createStory(godJwt).then((story: any) => {
+                return Utils.createStory(jwts.god).then((story: any) => {
                     let storyId = story.id;
                     let dummyStory: Array<any> = Object.keys(Utils.getStoryDummy());
                     Object.keys(story).forEach(function (x: any) {
@@ -381,7 +374,7 @@ describe('Tests for admin-panel stories related endpoints.', () => {
                     return server.inject({
                         method: 'PUT',
                         url: `/story/${storyId}`,
-                        headers: { "authorization": godJwt },
+                        headers: { "authorization": jwts.god },
                         payload: story
                     }).then((res: any) => {
                         assert.equal(400, res.statusCode);
@@ -392,7 +385,7 @@ describe('Tests for admin-panel stories related endpoints.', () => {
             });
 
             it('Invalid mediaUri of the card.', () => {
-                return Utils.createStory(godJwt).then((story: any) => {
+                return Utils.createStory(jwts.god).then((story: any) => {
                     let storyId = story.id;
                     let dummyStory: Array<any> = Object.keys(Utils.getStoryDummy());
                     Object.keys(story).forEach(function (x: any) {
@@ -404,7 +397,7 @@ describe('Tests for admin-panel stories related endpoints.', () => {
                     return server.inject({
                         method: 'PUT',
                         url: `/story/${storyId}`,
-                        headers: { "authorization": godJwt },
+                        headers: { "authorization": jwts.god },
                         payload: story
                     }).then((res: any) => {
                         assert.equal(400, res.statusCode);
@@ -414,7 +407,7 @@ describe('Tests for admin-panel stories related endpoints.', () => {
             });
 
             it('Invalid mediaType of the card.', () => {
-                return Utils.createStory(godJwt).then((story: any) => {
+                return Utils.createStory(jwts.god).then((story: any) => {
                     let storyId = story.id;
                     let dummyStory: Array<any> = Object.keys(Utils.getStoryDummy());
                     Object.keys(story).forEach(function (x: any) {
@@ -426,7 +419,7 @@ describe('Tests for admin-panel stories related endpoints.', () => {
                     return server.inject({
                         method: 'PUT',
                         url: `/story/${storyId}`,
-                        headers: { "authorization": godJwt },
+                        headers: { "authorization": jwts.god },
                         payload: story
                     }).then((res: any) => {
                         assert.equal(400, res.statusCode);
@@ -436,7 +429,7 @@ describe('Tests for admin-panel stories related endpoints.', () => {
             });
 
             it('Invalid externalLink of the card.', () => {
-                return Utils.createStory(godJwt).then((story: any) => {
+                return Utils.createStory(jwts.god).then((story: any) => {
                     let storyId = story.id;
                     let dummyStory: Array<any> = Object.keys(Utils.getStoryDummy());
                     Object.keys(story).forEach(function (x: any) {
@@ -448,7 +441,7 @@ describe('Tests for admin-panel stories related endpoints.', () => {
                     return server.inject({
                         method: 'PUT',
                         url: `/story/${storyId}`,
-                        headers: { "authorization": godJwt },
+                        headers: { "authorization": jwts.god },
                         payload: story
                     }).then((res: any) => {
                         assert.equal(400, res.statusCode);
@@ -459,9 +452,8 @@ describe('Tests for admin-panel stories related endpoints.', () => {
         });
 
         describe('Sends missing data in the payload.', () => {
-
             it('Missing story-title.', () => {
-                return Utils.createStory(godJwt).then((story: any) => {
+                return Utils.createStory(jwts.god).then((story: any) => {
                     let storyId = story.id;
                     let dummyStory: Array<any> = Object.keys(Utils.getStoryDummy());
                     Object.keys(story).forEach(function (x: any) {
@@ -473,7 +465,7 @@ describe('Tests for admin-panel stories related endpoints.', () => {
                     return server.inject({
                         method: 'PUT',
                         url: `/story/${storyId}`,
-                        headers: { "authorization": godJwt },
+                        headers: { "authorization": jwts.god },
                         payload: story
                     }).then((res: any) => {
                         assert.equal(400, res.statusCode);
@@ -483,7 +475,7 @@ describe('Tests for admin-panel stories related endpoints.', () => {
             });
 
             it('Missing story-author.', () => {
-                return Utils.createStory(godJwt).then((story: any) => {
+                return Utils.createStory(jwts.god).then((story: any) => {
                     let storyId = story.id;
                     let dummyStory: Array<any> = Object.keys(Utils.getStoryDummy());
                     Object.keys(story).forEach(function (x: any) {
@@ -495,7 +487,7 @@ describe('Tests for admin-panel stories related endpoints.', () => {
                     return server.inject({
                         method: 'PUT',
                         url: `/story/${storyId}`,
-                        headers: { "authorization": godJwt },
+                        headers: { "authorization": jwts.god },
                         payload: story
                     }).then((res: any) => {
                         assert.equal(400, res.statusCode);
@@ -505,7 +497,7 @@ describe('Tests for admin-panel stories related endpoints.', () => {
             });
 
             it('Missing mediaUri of the card.', () => {
-                return Utils.createStory(godJwt).then((story: any) => {
+                return Utils.createStory(jwts.god).then((story: any) => {
                     let storyId = story.id;
                     let dummyStory: Array<any> = Object.keys(Utils.getStoryDummy());
                     Object.keys(story).forEach(function (x: any) {
@@ -517,7 +509,7 @@ describe('Tests for admin-panel stories related endpoints.', () => {
                     return server.inject({
                         method: 'PUT',
                         url: `/story/${storyId}`,
-                        headers: { "authorization": godJwt },
+                        headers: { "authorization": jwts.god },
                         payload: story
                     }).then((res: any) => {
                         assert.equal(400, res.statusCode);
@@ -527,7 +519,7 @@ describe('Tests for admin-panel stories related endpoints.', () => {
             });
 
             it('Missing mediaType of the card.', () => {
-                return Utils.createStory(godJwt).then((story: any) => {
+                return Utils.createStory(jwts.god).then((story: any) => {
                     let storyId = story.id;
                     let dummyStory: Array<any> = Object.keys(Utils.getStoryDummy());
                     Object.keys(story).forEach(function (x: any) {
@@ -539,7 +531,7 @@ describe('Tests for admin-panel stories related endpoints.', () => {
                     return server.inject({
                         method: 'PUT',
                         url: `/story/${storyId}`,
-                        headers: { "authorization": godJwt },
+                        headers: { "authorization": jwts.god },
                         payload: story
                     }).then((res: any) => {
                         assert.equal(400, res.statusCode);
@@ -552,9 +544,8 @@ describe('Tests for admin-panel stories related endpoints.', () => {
     });
 
     describe("Tests for making a story live.", () => {
-
         it("Checks if GOD & JESUS can access the endpoint and ROMANS cant.", () => {
-            return Utils.checkEndpointAccess(jwts,'POST', '/story/3/pushLive').then((res: any) => {
+            return Utils.checkEndpointAccess(jwts, 'POST', '/story/3/pushLive').then((res: any) => {
                 assert.equal(res.romans, false);
                 assert.equal(res.god, true);
                 assert.equal(res.jesus, true);
@@ -563,18 +554,25 @@ describe('Tests for admin-panel stories related endpoints.', () => {
         });
 
         it("Makes an existing story live.", () => {
-            return Utils.createStory(godJwt).then((story: any) => {
+            return Utils.createStory(jwts.god).then((story: any) => {
                 let storyId = story.id;
-                return server.inject({
-                    method: 'POST',
-                    url: `/story/${storyId}/pushLive`,
-                    headers: { "authorization": godJwt }
-                }).then((res: any) => {
-                    let responseBody: any = JSON.parse(res.payload);
-                    responseBody.should.have.property('pushed');
-                    assert.equal(responseBody.pushed, true);
-                    assert.equal(200, res.statusCode);
-                    Promise.resolve();
+                return Utils.getStoryData(storyId).then((indbStory: any) => {
+                    let initial_publishedAt = indbStory.publishedAt;
+                    return server.inject({
+                        method: 'POST',
+                        url: `/story/${storyId}/pushLive`,
+                        headers: { "authorization": jwts.god }
+                    }).then((res: any) => {
+                        return Utils.getStoryData(storyId).then((fdbStory: any) => {
+                            let final_publishedAt = fdbStory.publishedAt;
+                            let responseBody: any = JSON.parse(res.payload);
+                            responseBody.should.have.property('pushed');
+                            expect(initial_publishedAt).not.equal(final_publishedAt);
+                            assert.equal(responseBody.pushed, true);
+                            assert.equal(200, res.statusCode);
+                            Promise.resolve();
+                        });
+                    });
                 });
             });
         });
@@ -584,7 +582,7 @@ describe('Tests for admin-panel stories related endpoints.', () => {
             return server.inject({
                 method: 'POST',
                 url: `/story/${storyId}/pushLive`,
-                headers: { "authorization": godJwt }
+                headers: { "authorization": jwts.god }
             }).then((res: any) => {
                 assert.equal(404, res.statusCode);
                 Promise.resolve();
@@ -604,12 +602,12 @@ describe('Tests for admin-panel stories related endpoints.', () => {
     //     });
 
     //     it("Sends a push notification of an existing story.", () => {
-    //         return Utils.createStory().then((story: any) => {
+    //         return Utils.createStory(jwts.god).then((story: any) => {
     //             let storyId = story.id;
     //             return server.inject({
     //                 method: 'POST',
     //                 url: `/story/${storyId}/preview`,
-    //                 headers: { "authorization": godJwt }
+    //                 headers: { "authorization": jwts.god }
     //             }).then((res: any) => {
     //                 let responseBody: any = JSON.parse(res.payload);
     //                 responseBody.should.have.property('success');
@@ -625,7 +623,7 @@ describe('Tests for admin-panel stories related endpoints.', () => {
     //         return server.inject({
     //             method: 'POST',
     //             url: `/story/${storyId}/preview`,
-    //             headers: { "authorization": godJwt }
+    //             headers: { "authorization": jwts.god }
     //         }).then((res: any) => {
     //             assert.equal(404, res.statusCode);
     //             Promise.resolve();
@@ -634,9 +632,8 @@ describe('Tests for admin-panel stories related endpoints.', () => {
     // });
 
     describe("Tests for deleting a story and all the cards associated with the story. ", () => {
-
         it("Checks if GOD & JESUS can access the endpoint and ROMANS cant.", () => {
-            return Utils.checkEndpointAccess(jwts,'DELETE', '/story/3').then((res: any) => {
+            return Utils.checkEndpointAccess(jwts, 'DELETE', '/story/3').then((res: any) => {
                 assert.equal(res.romans, false);
                 assert.equal(res.god, true);
                 assert.equal(res.jesus, true);
@@ -645,12 +642,12 @@ describe('Tests for admin-panel stories related endpoints.', () => {
         });
 
         it("Deletes an existing story.", () => {
-            return Utils.createStory(godJwt).then((story: any) => {
+            return Utils.createStory(jwts.god).then((story: any) => {
                 let storyId = story.id;
                 return server.inject({
                     method: 'DELETE',
                     url: `/story/${storyId}`,
-                    headers: { "authorization": godJwt }
+                    headers: { "authorization": jwts.god }
                 }).then((res: any) => {
                     let responseBody: any = JSON.parse(res.payload);
                     responseBody.should.have.property('deleted');
@@ -666,7 +663,7 @@ describe('Tests for admin-panel stories related endpoints.', () => {
             return server.inject({
                 method: 'DELETE',
                 url: `/story/${storyId}`,
-                headers: { "authorization": godJwt }
+                headers: { "authorization": jwts.god }
             }).then((res: any) => {
                 assert.equal(404, res.statusCode);
                 Promise.resolve();
@@ -675,9 +672,8 @@ describe('Tests for admin-panel stories related endpoints.', () => {
     });
 
     describe("Tests for getting story by id or slug. ", () => {
-
         it("Checks if GOD & JESUS can access the endpoint and ROMANS cant.", () => {
-            return Utils.checkEndpointAccess(jwts,'GET', '/story/3').then((res: any) => {
+            return Utils.checkEndpointAccess(jwts, 'GET', '/story/3').then((res: any) => {
                 assert.equal(res.romans, false);
                 assert.equal(res.god, true);
                 assert.equal(res.jesus, true);
@@ -686,9 +682,9 @@ describe('Tests for admin-panel stories related endpoints.', () => {
         });
 
         it("Gets details of an existing story.", () => {
-            return Utils.createStory(godJwt).then((story: any) => {
+            return Utils.createStory(jwts.god).then((story: any) => {
                 let storyId = story.id;
-                return server.inject({ method: 'GET', url: `/story/${storyId}`, headers: { "authorization": godJwt } }).then((res: any) => {
+                return server.inject({ method: 'GET', url: `/story/${storyId}`, headers: { "authorization": jwts.god } }).then((res: any) => {
                     let responseBody: any = JSON.parse(res.payload).story;
                     Utils.validateStoryResponse(responseBody, story);
                     assert.equal(200, res.statusCode);
@@ -699,17 +695,16 @@ describe('Tests for admin-panel stories related endpoints.', () => {
 
         it("Sends invalid or non existant id of a story in the payload.", () => {
             let storyId = "dummyId";
-            return server.inject({ method: 'GET', url: `/story/${storyId}`, headers: { "authorization": godJwt } }).then((res: any) => {
+            return server.inject({ method: 'GET', url: `/story/${storyId}`, headers: { "authorization": jwts.god } }).then((res: any) => {
                 assert.equal(404, res.statusCode);
                 Promise.resolve();
             });
         });
     });
 
-    describe("Tests for getting all the stories (published/draft) created so far. ", () => {
-
+    describe("Tests for getting all the stories (published/draft) in paginated fashion created so far . ", () => {
         it("Checks if GOD & JESUS can access the endpoint and ROMANS cant.", () => {
-            return Utils.checkEndpointAccess(jwts,'GET', '/story?page=0&size=3&type=published').then((res: any) => {
+            return Utils.checkEndpointAccess(jwts, 'GET', '/story?page=0&size=3&type=published').then((res: any) => {
                 assert.equal(res.romans, false);
                 assert.equal(res.god, true);
                 assert.equal(res.jesus, true);
@@ -717,17 +712,17 @@ describe('Tests for admin-panel stories related endpoints.', () => {
             });
         });
 
-        it("Gets all the published stories", () => {
-            return Utils.createSeedStoryData(godJwt).then((stories: any) => {
-                var promises = [];
-                for (var i = 0; i < stories.length; i++) {
-                    promises.push(Utils.publishStory(godJwt, stories[i].id));
+        it("Gets all the published stories in paginated fashion.", () => {
+            return Utils.createSeedStoryData(jwts.god).then((stories: any) => {
+                let promises = [];
+                for (let i = 0; i < stories.length; i++) {
+                    promises.push(Utils.publishStory(stories[i].id));
                 }
                 return Promise.all(promises).then((res) => {
                     return server.inject({
                         method: 'GET',
                         url: `/story?page=0&size=3&type=published`,
-                        headers: { "authorization": godJwt }
+                        headers: { "authorization": jwts.god }
                     }).then((res: any) => {
                         let responseBody: any = JSON.parse(res.payload);
                         assert.isNumber(responseBody.noOfPages);
@@ -746,17 +741,17 @@ describe('Tests for admin-panel stories related endpoints.', () => {
             });
         });
 
-        it("Gets all the draft stories.", () => {
-            return Utils.createSeedStoryData(godJwt).then((stories: any) => {
-                var promises = [];
-                for (var i = 0; i < stories.length - 3; i++) {
-                    promises.push(Utils.publishStory(godJwt, stories[i].id));
+        it("Gets all the draft stories in paginated fashion.", () => {
+            return Utils.createSeedStoryData(jwts.god).then((stories: any) => {
+                let promises = [];
+                for (let i = 0; i < stories.length - 3; i++) {
+                    promises.push(Utils.publishStory(stories[i].id));
                 }
                 return Promise.all(promises).then((res) => {
                     return server.inject({
                         method: 'GET',
                         url: `/story?page=0&size=3&type=published`,
-                        headers: { "authorization": godJwt }
+                        headers: { "authorization": jwts.god }
                     }).then((res: any) => {
                         let responseBody: any = JSON.parse(res.payload);
                         assert.isNumber(responseBody.noOfPages);
@@ -776,12 +771,11 @@ describe('Tests for admin-panel stories related endpoints.', () => {
         });
 
         describe("Sends invalid data in the payload.", () => {
-
             it("Invalid page.", () => {
                 return server.inject({
                     method: 'GET',
                     url: `/story?page=abc&size=3&type=published`,
-                    headers: { "authorization": godJwt }
+                    headers: { "authorization": jwts.god }
                 }).then((res: any) => {
                     assert.equal(400, res.statusCode);
                     Promise.resolve();
@@ -792,7 +786,7 @@ describe('Tests for admin-panel stories related endpoints.', () => {
                 return server.inject({
                     method: 'GET',
                     url: `/story?page=0&size=abc&type=published`,
-                    headers: { "authorization": godJwt }
+                    headers: { "authorization": jwts.god }
                 }).then((res: any) => {
                     assert.equal(400, res.statusCode);
                     Promise.resolve();
@@ -803,7 +797,7 @@ describe('Tests for admin-panel stories related endpoints.', () => {
                 return server.inject({
                     method: 'GET',
                     url: `/story?page=0&size=3&type=user`,
-                    headers: { "authorization": godJwt }
+                    headers: { "authorization": jwts.god }
                 }).then((res: any) => {
                     assert.equal(400, res.statusCode);
                     Promise.resolve();
@@ -812,12 +806,11 @@ describe('Tests for admin-panel stories related endpoints.', () => {
         });
 
         describe('Sends missing data in the payload.', () => {
-
             it('Missing page.', () => {
                 return server.inject({
                     method: 'GET',
                     url: `/story?size=3&type=published`,
-                    headers: { "authorization": godJwt }
+                    headers: { "authorization": jwts.god }
                 }).then((res: any) => {
                     assert.equal(400, res.statusCode);
                     Promise.resolve();
@@ -828,7 +821,7 @@ describe('Tests for admin-panel stories related endpoints.', () => {
                 return server.inject({
                     method: 'GET',
                     url: `/story?page=0&type=published`,
-                    headers: { "authorization": godJwt }
+                    headers: { "authorization": jwts.god }
                 }).then((res: any) => {
                     assert.equal(400, res.statusCode);
                     Promise.resolve();
@@ -839,7 +832,7 @@ describe('Tests for admin-panel stories related endpoints.', () => {
                 return server.inject({
                     method: 'GET',
                     url: `/story?page=0&size=3`,
-                    headers: { "authorization": godJwt }
+                    headers: { "authorization": jwts.god }
                 }).then((res: any) => {
                     assert.equal(400, res.statusCode);
                     Promise.resolve();

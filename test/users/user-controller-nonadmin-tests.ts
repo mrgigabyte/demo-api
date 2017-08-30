@@ -5,23 +5,24 @@ import * as Utils from "../utils";
 const assert: Chai.Assert = chai.assert;
 const should: Chai.Should = chai.should();
 let server: Hapi.Server;
-let romansJwt: string;
-let godJwt: string;
-let jesusJwt: string;
-let dummyJwt: string;
+let jwts: any = {};
 
 describe('Tests for app-side user related endoints.', () => {
 
-    before(() => {
+   before(function () {
+        this.timeout(3000);
         server = Utils.getServerInstance();
-        return Utils.getRoleBasedjwt('romans').then((jwt: string) => {
-            romansJwt = jwt;
-            return Utils.getRoleBasedjwt('god').then((jwt: string) => {
-                godJwt = jwt;
-                return Utils.getRoleBasedjwt('jesus').then((jwt: string) => {
-                    jesusJwt = jwt;
-                    server = Utils.getServerInstance();
-                    Promise.resolve();
+        return Utils.clearDatabase().then(() => {
+            return Utils.clearUser().then(() => {
+                return Utils.getRoleBasedjwt('romans').then((jwt: string) => {
+                    jwts.romans = jwt;
+                    return Utils.getRoleBasedjwt('god').then((jwt: string) => {
+                        jwts.god = jwt;
+                        return Utils.getRoleBasedjwt('jesus').then((jwt: string) => {
+                            jwts.jesus = jwt;
+                            Promise.resolve();
+                        });
+                    });
                 });
             });
         });
@@ -42,7 +43,6 @@ describe('Tests for app-side user related endoints.', () => {
     describe("Tests of endpoints that do not require authorization header.", () => {
 
         describe("Tests for creating an account with role ROMANS.", () => {
-
             it("Creates an account with valid details.", () => {
                 return server.inject({ method: 'POST', url: '/user', payload: Utils.getUserDummy() }).then((res: any) => {
                     let responseBody: any = JSON.parse(res.payload);
@@ -100,7 +100,6 @@ describe('Tests for app-side user related endoints.', () => {
         });
 
         describe("Tests for GET /user/checkEmail endpoint.", () => {
-
             it("Checks if the email doesn't exists", () => {
                 return server.inject({
                     method: 'POST',
@@ -142,12 +141,11 @@ describe('Tests for app-side user related endoints.', () => {
     describe("Tests of endpoints that require authorization header.", () => {
 
         describe("Tests for changing push notification preference.", () => {
-
             it("Changes push notification with invalid pushNotif value.", () => {
                 return server.inject({
                     method: 'PUT',
                     url: '/user/me/changePushNotifPref',
-                    headers: { "authorization": romansJwt },
+                    headers: { "authorization": jwts.romans },
                     payload: { pushNotif: "evening" }
                 }).then((res: any) => {
                     assert.equal(400, res.statusCode);
@@ -159,7 +157,7 @@ describe('Tests for app-side user related endoints.', () => {
                 return server.inject({
                     method: 'PUT',
                     url: '/user/me/changePushNotifPref',
-                    headers: { "authorization": romansJwt },
+                    headers: { "authorization": jwts.romans },
                     payload: { pushNotif: "disable" }
                 }).then((res: any) => {
                     let responseBody: any = JSON.parse(res.payload);
@@ -176,7 +174,7 @@ describe('Tests for app-side user related endoints.', () => {
                 return server.inject({
                     method: 'PUT',
                     url: '/user/me/changeEmailNotifPref',
-                    headers: { "authorization": romansJwt },
+                    headers: { "authorization": jwts.romans },
                     payload: { emailNotif: "disable" }
                 }).then((res: any) => {
                     assert.equal(400, res.statusCode);
@@ -188,7 +186,7 @@ describe('Tests for app-side user related endoints.', () => {
                 return server.inject({
                     method: 'PUT',
                     url: '/user/me/changeEmailNotifPref',
-                    headers: { "authorization": romansJwt },
+                    headers: { "authorization": jwts.romans },
                     payload: { emailNotif: false }
                 }).then((res: any) => {
                     let responseBody: any = JSON.parse(res.payload);
@@ -201,10 +199,9 @@ describe('Tests for app-side user related endoints.', () => {
         });
 
         describe("Tests for deleting a user.", () => {
-
             it('Deletes the user account.', () => {
                 return Utils.getRoleBasedjwt('romans', 'dummy@mail.com').then((jwt: string) => {
-                    dummyJwt = jwt;
+                    let dummyJwt = jwt;
                     return server.inject({ method: 'DELETE', url: '/user/me', headers: { "authorization": dummyJwt } }).then((res: any) => {
                         let responseBody: any = JSON.parse(res.payload);
                         responseBody.should.have.property('deleted');
@@ -227,7 +224,7 @@ describe('Tests for app-side user related endoints.', () => {
 
         describe("Tests for getting info of a logged in user.", () => {
             it('Gets info of the user with valid jwt.', () => {
-                return server.inject({ method: 'GET', url: '/user/me', headers: { "authorization": romansJwt } }).then((res: any) => {
+                return server.inject({ method: 'GET', url: '/user/me', headers: { "authorization": jwts.romans } }).then((res: any) => {
                     let responseBody: any = JSON.parse(res.payload);
                     let userDetails: any = responseBody.user;
                     assert.equal(userDetails.name, Utils.getUserDummy().name);
@@ -251,10 +248,9 @@ describe('Tests for app-side user related endoints.', () => {
         });
 
         describe("Tests for updating info of a logged in user.", () => {
-
             it("Updates the user info with valid jwt and payload.", () => {
                 return Utils.getRoleBasedjwt('romans', 'dummy@mail.com').then((jwt: string) => {
-                    dummyJwt = jwt;
+                    let dummyJwt = jwt;
                     return server.inject({
                         method: 'PUT',
                         url: '/user/me',
@@ -289,7 +285,7 @@ describe('Tests for app-side user related endoints.', () => {
                 return server.inject({
                     method: 'PUT',
                     url: '/user/me',
-                    headers: { "authorization": romansJwt },
+                    headers: { "authorization": jwts.romans },
                     payload: user
                 }).then((res: any) => {
                     assert.equal(400, res.statusCode);
@@ -412,7 +408,6 @@ describe('Tests for app-side user related endoints.', () => {
     });
 
     describe("Tests for resetting the password.", () => {
-
         it('Resets the password with valid payload.', () => {
             let email = 'romans@mail.com';
             return Utils.getResetCode(email).then((res: any) => {

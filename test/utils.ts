@@ -5,6 +5,7 @@ import * as Server from "../src/server";
 import { IDb } from "../src/config";
 import * as Hapi from 'hapi';
 import * as url from 'url';
+import * as moment from 'moment';
 
 let database: IDb = Database.init(process.env.NODE_ENV);
 const serverConfig = Configs.getServerConfigs();
@@ -51,6 +52,10 @@ export function getStoryDummy(title?: string, author?: string,
     return story;
 }
 
+export function getStoryData(storyId: number): Promise<any> {
+    return database.story.findOne({ where: { id: storyId } });
+}
+
 export function getResetPasswordDetails(code: string, email?: string): any {
     let user = {
         code: code,
@@ -66,16 +71,24 @@ export function getServerInstance(): any {
 }
 
 export function clearDatabase(): Promise<any> {
-    var promiseResetCodes = database.resetCode.destroy({ where: {} });
-    var promiseDeletedUser = database.user.destroy({ where: { status: 'deleted' } });
-    var promiseStory = database.story.destroy({ where: {} });
-    var promiseCards = database.card.destroy({ where: {} });
-    var promiseUser = database.user.destroy({
+    let promiseResetCodes: Promise<any> = database.resetCode.destroy({ where: {} });
+    let promiseDeletedUser: Promise<any> = database.user.destroy({ where: { status: 'deleted' } });
+    let promiseStory: Promise<any> = database.story.destroy({ where: {} });
+    let promiseCards: Promise<any> = database.card.destroy({ where: {} });
+    let promiseUser: Promise<any> = database.user.destroy({
         where: {
             email: { $notIn: ['god@mail.com', 'romans@mail.com', 'jesus@mail.com'] }
         }
     });
-    return Promise.all([promiseResetCodes, promiseDeletedUser, promiseCards, promiseStory, promiseUser]);
+    return promiseResetCodes.then(() => {
+        return promiseDeletedUser.then(() => {
+            return promiseStory.then(() => {
+                return promiseCards.then(() => {
+                    return promiseUser;
+                });
+            });
+        });
+    });
 }
 
 export function clearUser(): Promise<any> {
@@ -126,14 +139,27 @@ export function createStory(jwt: string, title?: string, author?: string,
     });
 }
 
-export function publishStory(jwt: string, storyId: number): Promise<any> {
-    return server.inject({
-        method: 'POST',
-        url: `/story/${storyId}/pushLive`,
-        headers: { "authorization": jwt }
+export function publishStory(storyId: number): Promise<any> {
+    return database.story.findOne({
+        where: {
+            id: storyId
+        }
+    }).then((res: any) => {
+        return res.update({ publishedAt: moment().toDate() });
     });
 }
 
+export function markRead(email: string, storyId?: string): Promise<any> {
+    return this.database.user.findOne({
+        where: {
+            email: email
+        }
+    }).then((user) => {
+        return user.getStories({ where: { id: storyId } }).then((stories: Array<any>) => {
+            return this.addUsers(user);
+        });
+    });
+}
 
 export function getRoleBasedjwt(role: string, email?: string): Promise<string> {
     let user = {
@@ -161,8 +187,24 @@ export function getCsvJwt(jwt: string): Promise<any> {
     });
 }
 
-export function markFavouriteCard(jwt: string, cardId: string): Promise<any> {
-    return server.inject({ method: 'POST', url: `/card/${cardId}/favourite`, headers: { "authorization": jwt } });
+export function markFavouriteCard(email: string, cardId: string): Promise<any> {
+    return database.user.findOne({ where: { email: email } }).then((user) => {
+        console.log(user)
+        return database.card.findOne({ where: { id: cardId } }).then((card) => {
+            console.log(card[0]);
+            return user.hasCards(card).then((result) => {
+                console.log(result);
+                if (result) {
+                    user.removeCards(card);
+                    return Promise.resolve(false);
+                } else {
+                    user.addCards(card);
+                    return Promise.resolve(true);
+                }
+            });
+        });
+    });
+    // return server.inject({ method: 'POST', url: `/card/${cardId}/favourite`, headers: { "authorization": jwt } });
 }
 
 
@@ -174,7 +216,7 @@ export function checkEndpointAccess(jwts: any, httpMethod: string, httpUrl: stri
             god: true,
             jesus: true
         };
-        var PromiseRomans = server.inject({
+        let PromiseRomans = server.inject({
             method: httpMethod,
             url: httpUrl,
             headers: { "authorization": jwts.romans }
@@ -184,7 +226,7 @@ export function checkEndpointAccess(jwts: any, httpMethod: string, httpUrl: stri
             }
         });
 
-        var PromiseGod = server.inject({
+        let PromiseGod = server.inject({
             method: httpMethod,
             url: httpUrl, headers: { "authorization": jwts.god }
         }).then((res: any) => {
@@ -193,7 +235,7 @@ export function checkEndpointAccess(jwts: any, httpMethod: string, httpUrl: stri
             }
         });
 
-        var PromiseJesus = server.inject({
+        let PromiseJesus = server.inject({
             method: httpMethod,
             url: httpUrl, headers: { "authorization": jwts.jesus }
         }).then((res: any) => {

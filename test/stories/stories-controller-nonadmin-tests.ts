@@ -5,25 +5,24 @@ import * as Utils from "../utils";
 const assert: Chai.Assert = chai.assert;
 const should: Chai.Should = chai.should();
 let server: Hapi.Server;
-let romansJwt: string;
-let godJwt: string;
-let jesusJwt: string;
 let jwts: any = {};
 
 describe('Tests for non-admin-panel stories related endpoints.', () => {
 
-    before(() => {
+   before(function () {
+        this.timeout(3000);
         server = Utils.getServerInstance();
-        return Utils.getRoleBasedjwt('romans').then((jwt: string) => {
-            romansJwt = jwt;
-            return Utils.getRoleBasedjwt('god').then((jwt: string) => {
-                godJwt = jwt;
-                return Utils.getRoleBasedjwt('jesus').then((jwt: string) => {
-                    jesusJwt = jwt;
-                    jwts.romans = romansJwt;
-                    jwts.god = godJwt;
-                    jwts.jesus = jesusJwt;
-                    Promise.resolve();
+        return Utils.clearDatabase().then(() => {
+            return Utils.clearUser().then(() => {
+                return Utils.getRoleBasedjwt('romans').then((jwt: string) => {
+                    jwts.romans = jwt;
+                    return Utils.getRoleBasedjwt('god').then((jwt: string) => {
+                        jwts.god = jwt;
+                        return Utils.getRoleBasedjwt('jesus').then((jwt: string) => {
+                            jwts.jesus = jwt;
+                            Promise.resolve();
+                        });
+                    });
                 });
             });
         });
@@ -42,14 +41,13 @@ describe('Tests for non-admin-panel stories related endpoints.', () => {
     });
 
     describe("Tests for marking story as read. ", () => {
-
         it("Marks an existing, published story as read.", () => {
-            return Utils.createStory(godJwt).then((story: any) => {
-                return Utils.publishStory(godJwt, story.id).then(() => {
+            return Utils.createStory(jwts.god).then((story: any) => {
+                return Utils.publishStory(story.id).then(() => {
                     return server.inject({
                         method: 'POST',
                         url: `/story/${story.id}/markRead`,
-                        headers: { "authorization": romansJwt }
+                        headers: { "authorization": jwts.romans }
                     }).then((res: any) => {
                         let responseBody: any = JSON.parse(res.payload);
                         responseBody.should.have.property('read');
@@ -62,11 +60,11 @@ describe('Tests for non-admin-panel stories related endpoints.', () => {
         });
 
         it("Marks an existing, non-published story as read.", () => {
-            return Utils.createStory(godJwt).then((story: any) => {
+            return Utils.createStory(jwts.god).then((story: any) => {
                 return server.inject({
                     method: 'POST',
                     url: `/story/${story.id}/markRead`,
-                    headers: { "authorization": romansJwt }
+                    headers: { "authorization": jwts.romans }
                 }).then((res: any) => {
                     assert.equal(404, res.statusCode);
                     Promise.resolve();
@@ -79,7 +77,7 @@ describe('Tests for non-admin-panel stories related endpoints.', () => {
             return server.inject({
                 method: 'POST',
                 url: `/story/${storyId}/markRead`,
-                headers: { "authorization": romansJwt }
+                headers: { "authorization": jwts.romans }
             }).then((res: any) => {
                 assert.equal(404, res.statusCode);
                 Promise.resolve();
@@ -88,18 +86,17 @@ describe('Tests for non-admin-panel stories related endpoints.', () => {
     });
 
     describe("Tests for getting latest stories for the user. ", () => {
-
         it("Gets the latest stories, if the stories have been published.", () => {
-            return Utils.createSeedStoryData(godJwt).then((stories: any) => {
+            return Utils.createSeedStoryData(jwts.god).then((stories: any) => {
                 var promises = [];
                 for (var i = 0; i < stories.length; i++) {
-                    promises.push(Utils.publishStory(godJwt, stories[i].id));
+                    promises.push(Utils.publishStory(stories[i].id));
                 }
                 return Promise.all(promises).then(() => {
                     return server.inject({
                         method: 'GET',
                         url: `/story/latest`,
-                        headers: { "authorization": romansJwt }
+                        headers: { "authorization": jwts.romans }
                     }).then((res: any) => {
                         let responseBody: any = JSON.parse(res.payload).latest;
                         assert.equal(responseBody.length, 2);
@@ -121,7 +118,7 @@ describe('Tests for non-admin-panel stories related endpoints.', () => {
             return server.inject({
                 method: 'GET',
                 url: `/story/latest`,
-                headers: { "authorization": romansJwt }
+                headers: { "authorization": jwts.romans }
             }).then((res: any) => {
                 let responseBody: any = JSON.parse(res.payload).latest;
                 assert.equal(responseBody.length, 0);
@@ -132,7 +129,6 @@ describe('Tests for non-admin-panel stories related endpoints.', () => {
     });
 
     describe("Tests for getting archived stories for the user. ", () => {
-
         it("Checks if GOD, JESUS & ROMANS can access the endpoint.", () => {
             return Utils.checkEndpointAccess(jwts, 'GET', '/story/archived').then((res: any) => {
                 assert.equal(res.romans, true);
@@ -143,21 +139,21 @@ describe('Tests for non-admin-panel stories related endpoints.', () => {
         });
 
         it("Gets the archived stories, if the user has read the story.", () => {
-            return Utils.createSeedStoryData(godJwt).then((stories: any) => {
+            return Utils.createSeedStoryData(jwts.god).then((stories: any) => {
                 var promises = [];
                 for (var i = 0; i < stories.length - 2; i++) {
-                    promises.push(Utils.publishStory(godJwt, stories[i].id));
+                    promises.push(Utils.publishStory(stories[i].id));
                 }
                 return Promise.all(promises).then(() => {
                     return server.inject({
                         method: 'POST',
                         url: `/story/${stories[0].id}/markRead`,
-                        headers: { "authorization": romansJwt }
+                        headers: { "authorization": jwts.romans }
                     }).then(() => {
                         return server.inject({
                             method: 'GET',
                             url: `/story/archived`,
-                            headers: { "authorization": romansJwt }
+                            headers: { "authorization": jwts.romans }
                         }).then((res: any) => {
                             let responseBody: any = JSON.parse(res.payload).archived;
                             assert.equal(responseBody.length, 1);
@@ -177,16 +173,16 @@ describe('Tests for non-admin-panel stories related endpoints.', () => {
         });
 
         it("Gets the archived stories, if the user has not read the story and it(story) is not latest.", () => {
-            return Utils.createSeedStoryData(godJwt).then((stories: any) => {
-                var promises = [];
-                for (var i = 0; i < stories.length; ++i) {
-                    promises.push(Utils.publishStory(godJwt, stories[i].id));
+            return Utils.createSeedStoryData(jwts.god).then((stories: any) => {
+                let promises = [];
+                for (let i = 0; i < stories.length; ++i) {
+                    promises.push(Utils.publishStory(stories[i].id));
                 }
                 return Promise.all(promises).then(() => {
                     return server.inject({
                         method: 'GET',
                         url: `/story/archived`,
-                        headers: { "authorization": romansJwt }
+                        headers: { "authorization": jwts.romans }
                     }).then((res: any) => {
                         let responseBody: any = JSON.parse(res.payload).archived;
                         assert.equal(responseBody.length, 2);

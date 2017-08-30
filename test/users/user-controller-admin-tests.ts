@@ -8,25 +8,24 @@ const CSVjwt = Configs.getServerConfigs().jwtCsvExpiration;
 const assert: Chai.Assert = chai.assert;
 const should: Chai.Should = chai.should();
 let server: Hapi.Server;
-let romansJwt: string;
-let godJwt: string;
-let jesusJwt: string;
 let jwts: any = {};
 
 describe('Tests for admin-panel user related endpoints.', () => {
 
-    before(() => {
+   before(function () {
+        this.timeout(3000);
         server = Utils.getServerInstance();
-        return Utils.getRoleBasedjwt('romans').then((jwt: string) => {
-            romansJwt = jwt;
-            return Utils.getRoleBasedjwt('god').then((jwt: string) => {
-                godJwt = jwt;
-                return Utils.getRoleBasedjwt('jesus').then((jwt: string) => {
-                    jesusJwt = jwt;
-                    jwts.romans = romansJwt;
-                    jwts.god = godJwt;
-                    jwts.jesus = jesusJwt;
-                    Promise.resolve();
+        return Utils.clearDatabase().then(() => {
+            return Utils.clearUser().then(() => {
+                return Utils.getRoleBasedjwt('romans').then((jwt: string) => {
+                    jwts.romans = jwt;
+                    return Utils.getRoleBasedjwt('god').then((jwt: string) => {
+                        jwts.god = jwt;
+                        return Utils.getRoleBasedjwt('jesus').then((jwt: string) => {
+                            jwts.jesus = jwt;
+                            Promise.resolve();
+                        });
+                    });
                 });
             });
         });
@@ -45,12 +44,11 @@ describe('Tests for admin-panel user related endpoints.', () => {
     });
 
     describe("Tests for creating an account with role JESUS.", () => {
-
         it("Creates an account through GOD's account.", () => {
             let user: any = Utils.getUserDummy('createjesus@mail.com');
             return server.inject({
                 method: 'POST', url: '/user/createJesus',
-                headers: { "authorization": godJwt },
+                headers: { "authorization": jwts.god },
                 payload: user
             }).then((res: any) => {
                 let responseBody: any = JSON.parse(res.payload);
@@ -65,7 +63,7 @@ describe('Tests for admin-panel user related endpoints.', () => {
             let user: any = Utils.getUserDummy('createjesus@mail.com');
             return server.inject({
                 method: 'POST', url: '/user/createJesus',
-                headers: { "authorization": romansJwt },
+                headers: { "authorization": jwts.romans },
                 payload: user
             }).then((res: any) => {
                 assert.equal(403, res.statusCode);
@@ -78,7 +76,7 @@ describe('Tests for admin-panel user related endpoints.', () => {
             return server.inject({
                 method: 'POST',
                 url: '/user/createJesus',
-                headers: { "authorization": godJwt },
+                headers: { "authorization": jwts.god },
                 payload: user
             }).then((res: any) => {
                 assert.equal(409, res.statusCode);
@@ -91,7 +89,7 @@ describe('Tests for admin-panel user related endpoints.', () => {
             return server.inject({
                 method: 'POST',
                 url: '/user/createJesus',
-                headers: { "authorization": godJwt },
+                headers: { "authorization": jwts.god },
                 payload: user
             }).then((res: any) => {
                 assert.equal(400, res.statusCode);
@@ -100,14 +98,13 @@ describe('Tests for admin-panel user related endpoints.', () => {
         });
 
         describe('Sends missing data in the payload.', () => {
-
             it('Missing password.', () => {
                 let user = Utils.getUserDummy('createJesus@mail.com');
                 delete user.password;
                 return server.inject({
                     method: 'POST',
                     url: '/user/createJesus',
-                    headers: { "authorization": godJwt },
+                    headers: { "authorization": jwts.god },
                     payload: user
                 }).then((res: any) => {
                     assert.equal(400, res.statusCode);
@@ -121,7 +118,7 @@ describe('Tests for admin-panel user related endpoints.', () => {
                 return server.inject({
                     method: 'POST',
                     url: '/user/createJesus',
-                    headers: { "authorization": godJwt },
+                    headers: { "authorization": jwts.god },
                     payload: user
                 }).then((res: any) => {
                     assert.equal(400, res.statusCode);
@@ -136,7 +133,7 @@ describe('Tests for admin-panel user related endpoints.', () => {
                 return server.inject({
                     method: 'POST',
                     url: '/user/createJesus',
-                    headers: { "authorization": godJwt },
+                    headers: { "authorization": jwts.god },
                     payload: user
                 }).then((res: any) => {
                     assert.equal(400, res.statusCode);
@@ -147,9 +144,8 @@ describe('Tests for admin-panel user related endpoints.', () => {
     });
 
     describe("Tests for getting download CSV link.", () => {
-
         it("Gets download CSV link through GOD's account.", () => {
-            return server.inject({ method: 'GET', url: '/user/getCsvLink', headers: { "authorization": godJwt } }).then((res: any) => {
+            return server.inject({ method: 'GET', url: '/user/getCsvLink', headers: { "authorization": jwts.god } }).then((res: any) => {
                 let responseBody: any = JSON.parse(res.payload);
                 responseBody.should.have.property('link');
                 const csvlink = url.parse(responseBody.link);
@@ -161,7 +157,7 @@ describe('Tests for admin-panel user related endpoints.', () => {
         });
 
         it("Gets download CSV link through ROMANS's account.", () => {
-            return server.inject({ method: 'GET', url: '/user/getCsvLink', headers: { "authorization": romansJwt } }).then((res: any) => {
+            return server.inject({ method: 'GET', url: '/user/getCsvLink', headers: { "authorization": jwts.romans } }).then((res: any) => {
                 assert.equal(403, res.statusCode);
                 Promise.resolve();
             });
@@ -169,9 +165,8 @@ describe('Tests for admin-panel user related endpoints.', () => {
     });
 
     describe("Tests for downloading the users CSV.", () => {
-
         it("Downloads users CSV with a valid JWT.", () => {
-            return Utils.getCsvJwt(godJwt).then((jwt: string) => {
+            return Utils.getCsvJwt(jwts.god).then((jwt: string) => {
                 return server.inject({ method: 'GET', url: '/user/downloadCsv?' + jwt }).then((res: any) => {
                     let responseHeader: any = res.headers;
                     assert.equal(responseHeader["content-type"], "text/csv; charset=utf-8");
@@ -190,10 +185,10 @@ describe('Tests for admin-panel user related endpoints.', () => {
         });
 
         it("Downloads users CSV with an expired JWT.", () => {
-            return Utils.getCsvJwt(godJwt).then((jwt: string) => {
+            return Utils.getCsvJwt(jwts.god).then((jwt: string) => {
                 return new Promise((resolve, reject) => setTimeout(() => {
                     resolve();
-                }, parseInt(CSVjwt, 10)+5)).then(() => {
+                }, parseInt(CSVjwt, 10) + 5)).then(() => {
                     return (server.inject({ method: 'GET', url: '/user/downloadCsv?' + jwt }).then((res: any) => {
                         assert.equal(400, res.statusCode);
                         Promise.resolve();
@@ -218,7 +213,7 @@ describe('Tests for admin-panel user related endpoints.', () => {
                 return server.inject({
                     method: 'GET',
                     url: '/user?page=0&size=3',
-                    headers: { "authorization": godJwt }
+                    headers: { "authorization": jwts.god }
                 }).then((res: any) => {
                     let responseBody: any = JSON.parse(res.payload);
                     responseBody.users.forEach((resElement: any) => {
@@ -237,7 +232,7 @@ describe('Tests for admin-panel user related endpoints.', () => {
         });
 
         it("Gets user info by sending invalid size in query params.", () => {
-            return server.inject({ method: 'GET', url: '/user?page=6&size=3a', headers: { "authorization": godJwt } })
+            return server.inject({ method: 'GET', url: '/user?page=6&size=3a', headers: { "authorization": jwts.god } })
                 .then((res: any) => {
                     let responseBody: any = JSON.parse(res.payload);
                     assert.equal(400, res.statusCode);
@@ -246,7 +241,7 @@ describe('Tests for admin-panel user related endpoints.', () => {
         });
 
         it("Gets user info by sending invalid page in query params.", () => {
-            return server.inject({ method: 'GET', url: '/user?page=6a&size=3', headers: { "authorization": godJwt } })
+            return server.inject({ method: 'GET', url: '/user?page=6a&size=3', headers: { "authorization": jwts.god } })
                 .then((res: any) => {
                     let responseBody: any = JSON.parse(res.payload);
                     assert.equal(400, res.statusCode);
@@ -256,7 +251,7 @@ describe('Tests for admin-panel user related endpoints.', () => {
 
         describe('Sends missing data in the payload.', () => {
             it("Missing size.", () => {
-                return server.inject({ method: 'GET', url: '/user?page=6', headers: { "authorization": godJwt } }).then((res: any) => {
+                return server.inject({ method: 'GET', url: '/user?page=6', headers: { "authorization": jwts.god } }).then((res: any) => {
                     let responseBody: any = JSON.parse(res.payload);
                     assert.equal(400, res.statusCode);
                     Promise.resolve();
@@ -264,7 +259,7 @@ describe('Tests for admin-panel user related endpoints.', () => {
             });
 
             it("Missing page.", () => {
-                return server.inject({ method: 'GET', url: '/user?size=3', headers: { "authorization": godJwt } }).then((res: any) => {
+                return server.inject({ method: 'GET', url: '/user?size=3', headers: { "authorization": jwts.god } }).then((res: any) => {
                     let responseBody: any = JSON.parse(res.payload);
                     assert.equal(400, res.statusCode);
                     Promise.resolve();
@@ -288,7 +283,7 @@ describe('Tests for admin-panel user related endpoints.', () => {
                 return server.inject({
                     method: 'GET',
                     url: `/user/${user.id}`,
-                    headers: { "authorization": godJwt }
+                    headers: { "authorization": jwts.god }
                 }).then((res: any) => {
                     let responseBody: any = JSON.parse(res.payload);
                     let userinfo: any = responseBody.user;
@@ -301,7 +296,7 @@ describe('Tests for admin-panel user related endpoints.', () => {
         });
 
         it("Gets info of a non-existing user.", () => {
-            return server.inject({ method: 'GET', url: '/user/-1', headers: { "authorization": godJwt } }).then((res: any) => {
+            return server.inject({ method: 'GET', url: '/user/-1', headers: { "authorization": jwts.god } }).then((res: any) => {
                 let responseBody: any = JSON.parse(res.payload);
                 assert.equal(404, res.statusCode);
                 Promise.resolve();
