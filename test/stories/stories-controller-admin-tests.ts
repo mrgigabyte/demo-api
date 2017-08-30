@@ -11,7 +11,7 @@ let jwts: any = {};
 describe('Tests for admin-panel stories related endpoints.', () => {
 
     before(function () {
-        this.timeout(3000); //increases the detault timeout to 3000ms
+        this.timeout(15000); //increases the detault timeout to 15000ms
         server = Utils.getServerInstance();
         return Utils.clearDatabase().then(() => {
             return Utils.clearUser().then(() => {
@@ -521,7 +521,7 @@ describe('Tests for admin-panel stories related endpoints.', () => {
                     let storyId = story.id;
                     let dummyStory: Array<any> = Object.keys(Utils.getStoryDummy());
 
-                // deletes the unwanted keys from story object so that it matches the payload                    
+                    // deletes the unwanted keys from story object so that it matches the payload                    
                     Object.keys(story).forEach(function (x: any) {
                         if (dummyStory.indexOf(x) === -1) {
                             delete story[x];
@@ -545,7 +545,7 @@ describe('Tests for admin-panel stories related endpoints.', () => {
                     let storyId = story.id;
                     let dummyStory: Array<any> = Object.keys(Utils.getStoryDummy());
 
-                // deletes the unwanted keys from story object so that it matches the payload                    
+                    // deletes the unwanted keys from story object so that it matches the payload                    
                     Object.keys(story).forEach(function (x: any) {
                         if (dummyStory.indexOf(x) === -1) {
                             delete story[x];
@@ -679,10 +679,10 @@ describe('Tests for admin-panel stories related endpoints.', () => {
                     url: `/story/${storyId}`,
                     headers: { "authorization": jwts.god }
                 }).then((res: any) => {
-                   /*
-                    * runs a query in the database to ensure that the query
-                    * is actually deleted in the database
-                    */
+                    /*
+                     * runs a query in the database to ensure that the query
+                     * is actually deleted in the database
+                     */
                     return Utils.getStoryData().then((storyRes: any) => {
                         let responseBody: any = JSON.parse(res.payload);
                         responseBody.should.have.property('deleted');
@@ -721,7 +721,11 @@ describe('Tests for admin-panel stories related endpoints.', () => {
         it("Gets details of an existing story.", () => {
             return Utils.createStory(jwts.god).then((story: any) => {
                 let storyId = story.id;
-                return server.inject({ method: 'GET', url: `/story/${storyId}`, headers: { "authorization": jwts.god } }).then((res: any) => {
+                return server.inject({
+                    method: 'GET',
+                    url: `/story/${storyId}`,
+                    headers: { "authorization": jwts.god }
+                }).then((res: any) => {
                     let responseBody: any = JSON.parse(res.payload).story;
                     Utils.validateStoryResponse(responseBody, story);
                     assert.equal(200, res.statusCode);
