@@ -103,23 +103,18 @@ export function getServerInstance(): any {
 
 export function clearDatabase(): Promise<any> {
     let promiseResetCodes: Promise<any> = database.resetCode.destroy({ where: {} });
-    let promiseDeletedUser: Promise<any> = database.user.destroy({ where: { status: 'deleted' } });
     let promiseStory: Promise<any> = database.story.destroy({ where: {} });
-    let promiseCards: Promise<any> = database.card.destroy({ where: {} });
     let promiseUser: Promise<any> = database.user.destroy({
         where: {
-            email: { $notIn: ['god@mail.com', 'romans@mail.com', 'jesus@mail.com'] }
+            email: { $notIn: ['god@mail.com', 'romans@mail.com', 'jesus@mail.com'] },
+            status: { $in: ['deleted', 'active', 'inactive'] }
         }
     });
-    return promiseResetCodes.then(() => {
-        return promiseDeletedUser.then(() => {
-            return promiseStory.then(() => {
-                return promiseCards.then(() => {
-                    return promiseUser;
-                });
-            });
-        });
+    // return promiseResetCodes.then(() => {
+    return promiseStory.then(() => {
+        return promiseUser;
     });
+    // });
 }
 
 // deletes all the existing records from the users table

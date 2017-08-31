@@ -19,7 +19,7 @@ export default class UserController {
             }).code(201);
         }).catch((err) => {
             if (err.parent.errno === 1062) {
-                reply(Boom.conflict('User with the given email already exists'));
+                return reply(Boom.conflict('User with the given email already exists'));
             } else {
                 return reply(err);
             }
@@ -37,7 +37,7 @@ export default class UserController {
                     "valid": true
                 });
             } else {
-                reply(Boom.conflict('User with the given email already exists'));
+                throw (Boom.conflict('User with the given email already exists'));
             }
         }).catch(err => reply(err));
     }
@@ -60,10 +60,10 @@ export default class UserController {
                         "user": User
                     });
                 } else {
-                    reply(Boom.unauthorized('Password is incorrect.'));
+                    throw (Boom.unauthorized('Password is incorrect.'));
                 }
             } else {
-                reply(Boom.unauthorized('Email or Password is incorrect.'));
+                throw (Boom.unauthorized('Email or Password is incorrect.'));
             }
         }).catch(err => reply(err));
     }
@@ -96,7 +96,7 @@ export default class UserController {
             if (user) {
                 return user.resetPassword(this.database.resetCode, request.payload.code, request.payload.password);
             } else {
-                return reply(Boom.notFound('Email not registered on platform'));
+                throw (Boom.notFound('Email not registered on platform'));
             }
         }).then(() => {
             return reply({
@@ -117,7 +117,7 @@ export default class UserController {
                     "user": user.get({ plain: true })
                 });
             } else {
-                reply(Boom.notFound('User not found'));
+                throw (Boom.notFound('User not found'));
             }
         }).catch(err => reply(err));
     }
@@ -133,7 +133,7 @@ export default class UserController {
                     "user": user.get({ plain: true })
                 });
             } else {
-                reply(Boom.notFound('User not found'));
+                throw (Boom.notFound('User not found'));
             }
         }).catch(err => reply(err));
     }
@@ -147,7 +147,7 @@ export default class UserController {
             if (user) {
                 return user.softDeleteUser();
             } else {
-                return reply(Boom.notFound('User not found'));
+                throw (Boom.notFound('User not found'));
             }
         }).then(() => {
             return reply({
@@ -165,7 +165,7 @@ export default class UserController {
             if (user) {
                 return user.updateUserInfo(request.payload);
             } else {
-                return reply(Boom.notFound('User not found'));
+                throw (Boom.notFound('User not found'));
             }
         }).then((res) => {
             return reply({

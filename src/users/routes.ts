@@ -1,6 +1,5 @@
 import * as Hapi from "hapi";
 import * as Joi from "joi";
-import * as Boom from "boom";
 
 import { IServerConfigurations } from "../config";
 import UserController from "./user-controller";

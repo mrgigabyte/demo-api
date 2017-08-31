@@ -6,7 +6,6 @@ import * as Users from "./users";
 import * as Stories from "./stories";
 import * as Cards from "./cards";
 import * as Documetation from "./documentation";
-import * as Boom from 'boom';
 import * as winston from 'winston';
 import * as LogglyTransport from 'winston-loggly-transport';
 
