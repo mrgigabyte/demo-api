@@ -2,19 +2,30 @@
 
 module.exports = {
   up: function (queryInterface, Sequelize) {
-    return queryInterface.addConstraint('resetCodes', ['userId'], {
+    return (
+      queryInterface.addConstraint('resetCodes', ['userId'], {
+        type: 'FOREIGN KEY',
+        name: 'custom_fkey_userId',
+        references: { //Required field
+          table: 'users',
+          field: 'id'
+        },
+        onDelete: 'cascade',
+        onUpdate: 'cascade'
+      }),
+      queryInterface.removeConstraint('resetCodes', 'resetCodes_ibfk_1')
+    );
+  },
+
+  down: function (queryInterface, Sequelize) {
+    return (queryInterface.addConstraint('resetCodes', ['userId'], {
       type: 'FOREIGN KEY',
-      name: 'custom_fkey_userId',
+      name: 'resetCodes_ibfk_1',
       references: { //Required field
         table: 'users',
         field: 'id'
       },
-      onDelete: 'cascade',
       onUpdate: 'cascade'
-    });
-  },
-
-  down: function (queryInterface, Sequelize) {
-    return queryInterface.removeConstraint('resetCodes', 'custom_fkey_userId');
+    }), queryInterface.removeConstraint('resetCodes', 'custom_fkey_userId'));
   }
 };

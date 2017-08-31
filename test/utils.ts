@@ -102,7 +102,6 @@ export function getServerInstance(): any {
 }
 
 export function clearDatabase(): Promise<any> {
-    let promiseResetCodes: Promise<any> = database.resetCode.destroy({ where: {} });
     let promiseStory: Promise<any> = database.story.destroy({ where: {} });
     let promiseUser: Promise<any> = database.user.destroy({
         where: {
