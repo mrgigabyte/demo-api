@@ -49,22 +49,22 @@
 //         it("Uploads an image of size less than 100mbs", () => {
 
 //             // Utils.downloadFile("https://goo.gl/pmBDmn", "test.png", function () {
-//                 let fileStream = fs.createReadStream('test.png');
-//                 var form = new FormData();
-//                 form.append('TestFile.jpg', fileStream);
-//                 return streamToPromise(form).then(function (payload) {
-//                     console.log(payload)
-//                     return server.inject({
-//                         method: 'POST',
-//                         url: '/card/mediaUpload',
-//                         payload: payload,
-//                         headers: { "authorization": jwts.god }
-//                     }).then((res) => {
-//                         // console.log(res);
-//                         Utils.deleteFile("test.jpg", function () { })
-//                         Promise.resolve();
-//                     });
-//                 });
+//             // let fileStream = fs.createReadStream('test.png');
+//             let payload = {
+//                 file: fs.readFileSync('../../test.png')
+//             };
+//             console.log(payload)
+//             return server.inject({
+//                 method: 'POST',
+//                 url: '/card/mediaUpload',
+//                 payload: payload,
+//                 headers: { 'Content-Type': 'multipart/form-data',"authorization": jwts.god }
+//             }).then((res) => {
+//                 // console.log(res);
+//                 Utils.deleteFile("test.jpg", function () { })
+//                 Promise.resolve();
+//             });
+
 
 
 //             // });

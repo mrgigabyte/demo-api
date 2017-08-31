@@ -90,9 +90,9 @@ describe('Tests for non-admin-panel stories related endpoints.', () => {
     describe("Tests for getting latest stories for the user. ", () => {
         it("Gets the latest stories, if the stories have been published.", () => {
             return Utils.createSeedStoryData(jwts.god).then((stories: any) => {
-                var promises = [];
+                let promises = [];
                 // publishes all the stories which were created
-                for (var i = 0; i < stories.length; i++) {
+                for (let i = 0; i < stories.length; i++) {
                     promises.push(Utils.publishStory(stories[i].id));
                 }
                 return Promise.all(promises).then(() => {
@@ -143,9 +143,9 @@ describe('Tests for non-admin-panel stories related endpoints.', () => {
 
         it("Gets the archived stories, if the user has read the story.", () => {
             return Utils.createSeedStoryData(jwts.god).then((stories: any) => {
-                var promises = [];
+                let promises = [];
                 // publishes all the stories which were created
-                for (var i = 0; i < stories.length - 2; i++) {
+                for (let i = 0; i < stories.length - 2; i++) {
                     promises.push(Utils.publishStory(stories[i].id));
                 }
                 return Promise.all(promises).then(() => {
