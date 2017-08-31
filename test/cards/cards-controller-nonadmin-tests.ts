@@ -125,7 +125,8 @@ describe('Tests for non-admin-panel cards related endpoints.', () => {
                 headers: { "authorization": jwts.romans }
             }).then((res: any) => {
                 let responseBody: any = JSON.parse(res.payload);
-                assert.equal(404, res.statusCode);
+                assert.equal(200, res.statusCode);
+                assert.equal(responseBody.cards.length,0);
                 Promise.resolve();
             });
         });
