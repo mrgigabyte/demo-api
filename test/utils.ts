@@ -6,6 +6,8 @@ import { IDb } from "../src/config";
 import * as Hapi from 'hapi';
 import * as url from 'url';
 import * as moment from 'moment';
+import * as fs from 'fs';
+import * as request from 'request';
 
 let database: IDb = Database.init(process.env.NODE_ENV);
 const serverConfig = Configs.getServerConfigs();
@@ -60,6 +62,30 @@ export function getStoryData(storyId?: number): Promise<any> {
         return database.story.findAll({ where: {} });
     }
 }
+
+
+
+export function downloadFile(uri, filename, callback) {
+    // return new Promise((resolve, reject) => {
+    request.head(uri, function (err, res, body) {
+        console.log('content-type:', res.headers['content-type']);
+        console.log('content-length:', res.headers['content-length']);
+        request(uri).pipe(fs.createWriteStream(filename)).on('close', callback);
+    });
+    // });
+}
+
+export function deleteFile(filename, callback) {
+    // return new Promise((resolve, reject) => {
+    fs.unlink(filename, function (err) {
+        if (err) {
+            return console.log(err);
+        }
+        console.log('file deleted successfully');
+    });
+    // });
+}
+
 
 export function getResetPasswordDetails(code: string, email?: string): any {
     let user = {

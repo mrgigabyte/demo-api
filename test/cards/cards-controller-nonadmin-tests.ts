@@ -7,7 +7,7 @@ const should: Chai.Should = chai.should();
 let server: Hapi.Server;
 let jwts: any = {};
 
-describe('Tests for cards related endpoints.', () => {
+describe('Tests for non-admin-panel cards related endpoints.', () => {
 
     before(function () {
         this.timeout(15000); //increases the default timeout from 2000ms to 15000ms

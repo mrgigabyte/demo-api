@@ -80,7 +80,6 @@ export default class UserController {
                 throw (Boom.notFound('Email not registered on platform'));
             }
         }).then((code: string) => {
-            console.log('hey111222');
             // TODO: send email to the user after generating the code.
             return reply({
                 "code": code
