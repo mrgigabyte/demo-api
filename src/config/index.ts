@@ -28,6 +28,11 @@ export interface IServerConfigurations {
     };
     zenCoderApiKey: string;
     logglyToken: string;
+    notifTime: {
+        morning: number;
+        evening: number;
+        night: number;
+    };
 }
 
 export interface IDb {

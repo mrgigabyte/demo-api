@@ -1,6 +1,8 @@
 import * as schedule from 'node-schedule';
 import * as moment from 'moment';
+import * as Configs from "./config";
 
+// possible values of utc offset in the world
 let utcOffsets: Array<number> = [
     -12, -11, -10, -9.5, -9, -8, -7, -6, -5, -4, -3.5, -3, -2, -1, 0, 1, 2, 3, 3.5, 4,
     4.5, 5, 5.5, 5.75, 6, 6.5, 7, 8, 8.5, 8.75, 9, 9.5, 10, 10.5, 11, 12, 12.75, 13, 14
@@ -8,9 +10,10 @@ let utcOffsets: Array<number> = [
 // array of job objects
 let jobs: Array<any> = [];
 // time at which notifications will be sent.
-const morning: number = 10;
-const evening: number = 17;
-const night: number = 22;
+const serverConfigs = Configs.getServerConfigs();
+const morning: number = serverConfigs.notifTime.morning;
+const evening: number = serverConfigs.notifTime.evening;
+const night: number = serverConfigs.notifTime.night;
 
 for (let i = 0; i < utcOffsets.length; i++) {
     setNotifSchedule(utcOffsets[i]);
@@ -47,16 +50,17 @@ function setNotifSchedule(offset: number) {
     jobs.push(jobObject);
 }
 
-// returns the hour and minute at which notification should be sent relative to utcOffset 0
+// returns the hour and minute at which notification should be sent relative to the local tz
 function getSchedule(diff: number): any {
     let time: number;
     if (diff >= 0 && diff <= 24) {
         time = diff;
     } else if (diff > 24) {
-        time = diff - 24;
+        time = diff - 24; // if next day convert the time to present day
     } else if (diff < 0) {
-        time = 24 + diff;
+        time = 24 + diff; // if previous day convert the time to present day
     }
+    // get hours and minutes after splitting around '.'
     let hour: number = +(time.toString().split('.')[0]);
     let minute: number = +('.' + time.toString().split('.')[1]) * 60 | 0;
     // get the utc date

@@ -1,4 +1,5 @@
 build/
+pm2.dev.json
 src/config/config.dev.json
 src/config/config.test.json
 src/config/nginx.staging.config
