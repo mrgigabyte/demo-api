@@ -65,14 +65,14 @@ export function getStoryData(storyId?: number): Promise<any> {
 
 
 
-export function downloadFile(uri, filename, callback) {
-    // return new Promise((resolve, reject) => {
-    request.head(uri, function (err, res, body) {
-        console.log('content-type:', res.headers['content-type']);
-        console.log('content-length:', res.headers['content-length']);
-        request(uri).pipe(fs.createWriteStream(filename)).on('close', callback);
+export function downloadFile(uri, filename): Promise<any> {
+    return new Promise((resolve, reject) => {
+        request.head(uri, function (err, res, body) {
+            console.log('content-type:', res.headers['content-type']);
+            console.log('content-length:', res.headers['content-length']);
+            return resolve(request(uri).pipe(fs.createWriteStream(filename)));
+        });
     });
-    // });
 }
 
 export function deleteFile(filename, callback) {
