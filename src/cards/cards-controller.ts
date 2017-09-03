@@ -21,7 +21,7 @@ export default class CardController {
                 return card.toggleFav(userId, this.database.user);
             }
             else {
-                return reply(Boom.notFound('Card not found.'));
+                throw Boom.notFound('Card not found.');
             }
         }).then((res: boolean) => {
             return reply({

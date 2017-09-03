@@ -18,7 +18,7 @@ export default class StoryController {
             if (user) {
                 return this.database.story.getLatestStories(user);
             } else {
-                return reply(Boom.notFound('User not found'));
+                throw (Boom.notFound('User not found'));
             }
         }).then((stories: Array<any>) => {
             return this.database.story.getPlainStories(stories);
@@ -36,7 +36,7 @@ export default class StoryController {
             if (user) {
                 return this.database.story.getArchivedStories(user);
             } else {
-                return reply(Boom.notFound('User not found.'));
+                throw (Boom.notFound('User not found.'));
             }
         }).then((stories: Array<any>) => {
             return this.database.story.getPlainStories(stories);
@@ -73,7 +73,7 @@ export default class StoryController {
             if (story) {
                 return story.markRead(this.database.user, request.auth.credentials.userId);
             } else {
-                return reply(Boom.notFound("Story with give id or slug doesn't exist"));
+                throw Boom.notFound("Story with give id or slug doesn't exist");
             }
         }).then((res: any) => {
             return reply({
@@ -105,7 +105,7 @@ export default class StoryController {
                         return story.save();
                     });
                 } else {
-                    return reply(Boom.notFound("Story with give id or slug doesn't exist"));
+                    throw (Boom.notFound("Story with give id or slug doesn't exist"));
                 }
             }).then((story: any) => {
                 this.getStory(story.id).then((story: any) => reply({ "story": story })).catch((err) => reply(err));
@@ -117,7 +117,7 @@ export default class StoryController {
             if (story) {
                 return story.pushLive();
             } else {
-                return reply(Boom.notFound("Story with give id or slug doesn't exist"));
+                throw (Boom.notFound("Story with give id or slug doesn't exist"));
             }
         }).then((story: any) => {
             return reply({
@@ -131,7 +131,7 @@ export default class StoryController {
             if (story) {
                 return story.destroy();
             } else {
-                return reply(Boom.notFound("Story with give id or slug doesn't exist"));
+                throw (Boom.notFound("Story with give id or slug doesn't exist"));
             }
         }).then(() => {
             return reply({
