@@ -78,13 +78,11 @@ export default function (sequelize, DataTypes) {
             projectId: config.projectId,
             keyFilename: __dirname + '/../' + config.keyFilename
         });
-
         let bucket = gcs.bucket(config.cardBucket);
         let name: string = generateUID() + '.' + fileData.hapi.filename;
         name = name.replace(/ /g, '');
         let filePath = 'cards/' + name;
         let file = bucket.file(filePath);
-
         return new Promise((resolve, reject) => {
             let stream = file.createWriteStream({
                 metadata: {

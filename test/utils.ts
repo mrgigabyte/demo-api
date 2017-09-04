@@ -68,22 +68,20 @@ export function getStoryData(storyId?: number): Promise<any> {
 export function downloadFile(uri, filename): Promise<any> {
     return new Promise((resolve, reject) => {
         request.head(uri, function (err, res, body) {
-            console.log('content-type:', res.headers['content-type']);
-            console.log('content-length:', res.headers['content-length']);
             return resolve(request(uri).pipe(fs.createWriteStream(filename)));
         });
     });
 }
 
-export function deleteFile(filename, callback) {
-    // return new Promise((resolve, reject) => {
-    fs.unlink(filename, function (err) {
-        if (err) {
-            return console.log(err);
-        }
-        console.log('file deleted successfully');
+export function deleteFile(filename) {
+    return new Promise((resolve, reject) => {
+        fs.unlink(filename, function (err) {
+            if (err) {
+                return console.log(err);
+            }
+            resolve();
+        });
     });
-    // });
 }
 
 
@@ -102,6 +100,7 @@ export function getServerInstance(): any {
 }
 
 export function clearDatabase(): Promise<any> {
+    let promiseResetCodes: Promise<any> = database.resetCode.destroy({ where: {} });
     let promiseStory: Promise<any> = database.story.destroy({ where: {} });
     let promiseUser: Promise<any> = database.user.destroy({
         where: {
@@ -109,11 +108,11 @@ export function clearDatabase(): Promise<any> {
             status: { $in: ['deleted', 'active', 'inactive'] }
         }
     });
-    // return promiseResetCodes.then(() => {
-    return promiseStory.then(() => {
-        return promiseUser;
+    return promiseResetCodes.then(() => {
+        return promiseStory.then(() => {
+            return promiseUser;
+        });
     });
-    // });
 }
 
 // deletes all the existing records from the users table
@@ -133,6 +132,15 @@ export function validateStoryResponse(responseBody: any, story: any) {
     if (responseBody.cards) {
         validateCardResponse(responseBody, story);
     }
+}
+
+// gets the status of the favourite card of the user with the given email and id of the card
+export function getFavouriteCardStatus(email: string, cardId: string): Promise<any> {
+    return database.user.findOne({ where: { email: email } }).then((user) => {
+        return database.card.findOne({ where: { id: cardId } }).then((card) => {
+            return user.hasCards(card);
+        });
+    });
 }
 
 // validates the cards key when the responseBody and the initial story is passed
@@ -207,7 +215,7 @@ export function getCsvJwt(jwt: string): Promise<any> {
     });
 }
 
-// sets the card as favourite for the user with the given email and if od the card
+// sets the card as favourite for the user with the given email and id of the card
 export function markFavouriteCard(email: string, cardId: string): Promise<any> {
     return database.user.findOne({ where: { email: email } }).then((user) => {
         return database.card.findOne({ where: { id: cardId } }).then((card) => {

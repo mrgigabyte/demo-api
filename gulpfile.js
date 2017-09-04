@@ -22,7 +22,7 @@ gulp.task('clean', function () {
  */
 gulp.task('tslint', ['clean', 'compile', 'configs'], () => {
     return gulp.src(['src/**/*.ts', 
-    // 'test/**/*.ts'
+    'test/**/*.ts'
     ])
         .pipe(tslint({
             formatter: "verbose"

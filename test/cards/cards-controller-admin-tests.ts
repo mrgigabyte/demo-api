@@ -9,13 +9,11 @@ const assert: Chai.Assert = chai.assert;
 const should: Chai.Should = chai.should();
 let server: Hapi.Server;
 let jwts: any = {};
-let largeImage = "https://goo.gl/7cqp1d";
 
 describe('Tests for admin-panel cards related endpoints.', function () {
-    this.timeout(10000000);
+    this.timeout(100000);
 
     before(function () {
-        this.timeout(15000); //increases the default timeout from 2000ms to 15000ms
         server = Utils.getServerInstance();
         return Utils.clearDatabase().then(() => {
             return Utils.clearUser().then(() => {
@@ -45,146 +43,123 @@ describe('Tests for admin-panel cards related endpoints.', function () {
         });
     });
 
-    describe("Tests for uploading a new cards from the file system to Google Cloud storage ", () => {
-        it("Uploads an image of size less than 100mbs", () => {
-
-            return Utils.downloadFile("https://goo.gl/pmBDmn", "test.png").then(() => {
-                // let fileStream = fs.createReadStream('test.png');
-                let payload1 = {
-                    file: fs.readFileSync('test.png')
-                };
-                // console.log(payload)
-
+    describe("Tests for uploading a new cards from the file system(with size less than 100mbs) to Google Cloud storage ", () => {
+        it("Uploads an image", () => {
+            return Utils.downloadFile("https://goo.gl/roHYzG", "test.png").then(() => {
                 let fileStream = fs.createReadStream('test.png');
                 let form = new FormData();
-                form.append('title', 'test');
-                form.append('id', 1234);
-                form.append('myFile', fileStream);
+                form.append('file', fileStream);
                 let header = form.getHeaders();
                 header.authorization = jwts.god;
-                header.content
-                //var content_type=form.getHeaders()['content-type'].split(';').join('');
-                streamToPromise(form).then(function (payload) {
-                    console.log(payload);
+                return streamToPromise(form).then(function (payload) {
                     return server.inject({
                         method: 'POST',
                         url: '/card/mediaUpload',
-                        payload: {'file':payload},
-                        // headers: header
-                        headers: {'Content-Type':undefined,'authorization': jwts.god}
-                    })
-                }).then((res) => {
-                    console.log(res);
-                // console.log(form.getHeaders());                    
-                    Utils.deleteFile("../test.jpg", function () { })
-                    Promise.resolve();
-                });
-            });
-        });
-
-        // it("Uploads an image of size less more than 100mbs", () => {
-        //     return Utils.createStory(jwts.god).then((story: any) => {
-        //         return Utils.publishStory(story.id).then(() => {
-        //             return server.inject({
-        //                 method: 'POST',
-        //                 url: `/card/${story.cards[0].id}/favourite`,
-        //                 headers: { "authorization": jwts.romans }
-        //             }).then((res: any) => {
-        //                 let responseBody: any = JSON.parse(res.payload);
-        //                 responseBody.should.have.property('favourited');
-        //                 assert.equal(responseBody.favourited, true);
-        //                 assert.equal(200, res.statusCode);
-        //                 Promise.resolve();
-        //             });
-        //         });
-        //     });
-        // });
-
-        // it("Uploads a video of less than 100mbs", () => {
-        //     let cardId: number = 1;
-        //     return server.inject({
-        //         method: 'POST',
-        //         url: `/card/${cardId}/favourite`,
-        //         headers: { "authorization": jwts.romans }
-        //     }).then((res: any) => {
-        //         assert.equal(404, res.statusCode);
-        //         Promise.resolve();
-        //     });
-        // });
-
-        // it("Uploads a video of more than 100mbs", () => {
-        //     let cardId = "dummyId";
-        //     return server.inject({
-        //         method: 'POST',
-        //         url: `/card/${cardId}/favourite`,
-        //         headers: { "authorization": jwts.romans }
-        //     }).then((res: any) => {
-        //         assert.equal(400, res.statusCode);
-        //         Promise.resolve();
-        //     });
-        // });
-
-        // it("Uploads a file of wrong format", () => {
-        //     return Utils.createStory(jwts.god).then((story: any) => {
-        //         return Utils.publishStory(story.id).then(() => {
-        //             return server.inject({
-        //                 method: 'POST',
-        //                 url: `/card/${story.cards[0].id}/favourite`,
-        //                 headers: { "authorization": jwts.romans }
-        //             }).then((res: any) => {
-        //                 let responseBody: any = JSON.parse(res.payload);
-        //                 responseBody.should.have.property('favourited');
-        //                 assert.equal(responseBody.favourited, true);
-        //                 assert.equal(200, res.statusCode);
-        //                 Promise.resolve();
-        //             });
-        //         });
-        //     });
-        // });
-    });
-
-    describe("Tests for gettng all the cards marked as favourite by a user. ", () => {
-        it("Checks if GOD, JESUS & ROMANS can access the endpoint.", () => {
-            return Utils.checkEndpointAccess(jwts, 'GET', '/card/favourite').then((res: any) => {
-                assert.equal(res.romans, true);
-                assert.equal(res.god, true);
-                assert.equal(res.jesus, true);
-                Promise.resolve();
-            });
-        });
-
-        it("Gets all the cards marked as favourite, when the stories exist", () => {
-            return Utils.createStory(jwts.god).then((story: any) => {
-                return Utils.publishStory(story.id).then(() => {
-                    return Utils.markFavouriteCard("romans@mail.com", story.cards[0].id).then(() => {
-                        return server.inject({
-                            method: 'GET',
-                            url: '/card/favourite',
-                            headers: { "authorization": jwts.romans }
-                        }).then((res: any) => {
-                            let responseBody: any = JSON.parse(res.payload);
-                            // validates the entire response
-                            for (let i = 0; i < responseBody.cards.length; i++) {
-                                if (responseBody.cards[i].id === story.cards[i].id) {
-                                    Utils.validateCardResponse(responseBody, story);
-                                }
-                            }
-                            assert.equal(200, res.statusCode);
-                            Promise.resolve();
-                        });
+                        payload: payload,
+                        headers: header
+                    });
+                }).then((res: any) => {
+                    let responseBody: any = JSON.parse(res.payload);
+                    assert.isString(responseBody.mediaUri);
+                    assert.equal(responseBody.mediaType, "image");
+                    assert.equal(responseBody.isQueued, false);
+                    return Utils.deleteFile('test.png').then(() => {
+                        Promise.resolve();
                     });
                 });
             });
         });
 
-        it("Gets all the cards marked as favourite, when the stories dont exist", () => {
-            return server.inject({
-                method: 'GET',
-                url: `/card/favourite`,
-                headers: { "authorization": jwts.romans }
+        it("Uploads an gif", () => {
+            return Utils.downloadFile("https://goo.gl/CHstC4", "test.gif").then(() => {
+                let fileStream = fs.createReadStream('test.gif');
+                let form = new FormData();
+                form.append('file', fileStream);
+                let header = form.getHeaders();
+                header.authorization = jwts.god;
+                return streamToPromise(form).then(function (payload) {
+                    return server.inject({
+                        method: 'POST',
+                        url: '/card/mediaUpload',
+                        payload: payload,
+                        headers: header
+                    });
+                }).then((res: any) => {
+                    let responseBody: any = JSON.parse(res.payload);
+                    assert.isString(responseBody.mediaUri);
+                    assert.equal(responseBody.mediaType, "image");
+                    assert.equal(responseBody.isQueued, false);
+                    return Utils.deleteFile('test.gif').then(() => {
+                        Promise.resolve();
+                    });
+                });
+            });
+        });
+
+        it("Uploads a video", () => {
+            return Utils.downloadFile("https://goo.gl/Az7Nu6", "test.mp4").then(() => {
+                let fileStream = fs.createReadStream('test.mp4');
+                let form = new FormData();
+                form.append('file', fileStream);
+                let header = form.getHeaders();
+                header.authorization = jwts.god;
+                return streamToPromise(form).then(function (payload) {
+                    return server.inject({
+                        method: 'POST',
+                        url: '/card/mediaUpload',
+                        payload: payload,
+                        headers: header
+                    });
+                }).then((res: any) => {
+                    let responseBody: any = JSON.parse(res.payload);
+                    assert.isNumber(responseBody.jobId);
+                    assert.equal(responseBody.mediaType, "video");
+                    assert.equal(responseBody.isQueued, true);
+                    return Utils.deleteFile('test.mp4').then(() => {
+                        Promise.resolve();
+                    });
+                });
+            });
+        });
+
+        it("Uploads a video using Roman's account", () => {
+            return Utils.downloadFile("https://goo.gl/Az7Nu6", "test.mp4").then(() => {
+                let fileStream = fs.createReadStream('test.mp4');
+                let form = new FormData();
+                form.append('file', fileStream);
+                let header = form.getHeaders();
+                header.authorization = jwts.romans;
+                return streamToPromise(form).then(function (payload) {
+                    return server.inject({
+                        method: 'POST',
+                        url: '/card/mediaUpload',
+                        payload: payload,
+                        headers: header
+                    });
+                }).then((res: any) => {
+                    assert.equal(403, res.statusCode);
+                    return Utils.deleteFile('test.mp4').then(() => {
+                        Promise.resolve();
+                    });
+                });
+            });
+        });
+
+        it("Uploads a file of wrong format", () => {
+            let fileStream = fs.createReadStream('README.md');
+            let form = new FormData();
+            form.append('file', fileStream);
+            let header = form.getHeaders();
+            header.authorization = jwts.god;
+            return streamToPromise(form).then(function (payload) {
+                return server.inject({
+                    method: 'POST',
+                    url: '/card/mediaUpload',
+                    payload: payload,
+                    headers: header
+                });
             }).then((res: any) => {
-                let responseBody: any = JSON.parse(res.payload);
-                assert.equal(404, res.statusCode);
+                assert.equal(400, res.statusCode);
                 Promise.resolve();
             });
         });
