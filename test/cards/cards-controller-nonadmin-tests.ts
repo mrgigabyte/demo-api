@@ -45,7 +45,7 @@ describe('Tests for non-admin-panel cards related endpoints.', () => {
             return Utils.createStory(jwts.god).then((story: any) => {
                 return Utils.publishStory(story.id).then(() => {
                     return Utils.getFavouriteCardStatus('romans@mail.com', story.cards[0].id)
-                        .then((initialStatus) => {
+                        .then((initialStatus: Boolean) => {
                             return server.inject({
                                 method: 'POST',
                                 url: `/card/${story.cards[0].id}/favourite`,
@@ -53,7 +53,7 @@ describe('Tests for non-admin-panel cards related endpoints.', () => {
                             }).then((res: any) => {
                                 let responseBody: any = JSON.parse(res.payload);
                                 return Utils.getFavouriteCardStatus('romans@mail.com', story.cards[0].id)
-                                    .then((finalStatus) => {
+                                    .then((finalStatus: Boolean) => {
                                         responseBody.should.have.property('favourited');
                                         assert.equal(responseBody.favourited, true);
                                         assert.equal(200, res.statusCode);

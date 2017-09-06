@@ -8,6 +8,7 @@ import * as url from 'url';
 import * as moment from 'moment';
 import * as fs from 'fs';
 import * as request from 'request';
+import * as FormData from 'form-data';
 
 let database: IDb = Database.init(process.env.NODE_ENV);
 const serverConfig = Configs.getServerConfigs();
@@ -70,11 +71,20 @@ export function getStoryData(storyId?: number): Promise<any> {
 
 
 //downloads the file from the given url and saves that in a given destination 
-export function downloadFile(uri, filename): Promise<any> {
+export function downloadFile(uri: string, filename: string): Promise<any> {
     return new Promise((resolve, reject) => {
         request.head(uri, function (err, res, body) {
             return resolve(request(uri).pipe(fs.createWriteStream(filename)));
         });
+    });
+}
+
+export function convertFileToForm(filename: string): Promise<any> {
+    return new Promise((resolve, reject) => {
+        let fileStream = fs.createReadStream(filename);
+        let form = new FormData();
+        form.append('file', fileStream);
+        resolve(form);
     });
 }
 
