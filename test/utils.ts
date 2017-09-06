@@ -17,6 +17,8 @@ Server.init(serverConfig, database).then((Server: Hapi.Server) => {
     server = Server;
 });
 
+
+//returns a dummy user object with all the necessary details
 export function getUserDummy(email?: string, role?: string, password?: string, name?: string): any {
     let user = {
         email: email || "dummy123@mail.com",
@@ -32,6 +34,8 @@ export function getUserDummy(email?: string, role?: string, password?: string, n
     return user;
 }
 
+
+//returns a dummy story object with all the necessary details
 export function getStoryDummy(title?: string, author?: string,
     mediaUri?: string, mediaType?: string, externalLink?: string): any {
     let story = {
@@ -54,6 +58,7 @@ export function getStoryDummy(title?: string, author?: string,
     return story;
 }
 
+//returns matchin records found in the story table based on the storyid
 export function getStoryData(storyId?: number): Promise<any> {
     if (storyId) {
         return database.story.findOne({ where: { id: storyId } });
@@ -64,7 +69,7 @@ export function getStoryData(storyId?: number): Promise<any> {
 }
 
 
-
+//downloads the file from the given url and saves that in a given destination 
 export function downloadFile(uri, filename): Promise<any> {
     return new Promise((resolve, reject) => {
         request.head(uri, function (err, res, body) {
@@ -73,6 +78,7 @@ export function downloadFile(uri, filename): Promise<any> {
     });
 }
 
+//deletes the file from the given destination/name
 export function deleteFile(filename) {
     return new Promise((resolve, reject) => {
         fs.unlink(filename, function (err) {
@@ -84,7 +90,7 @@ export function deleteFile(filename) {
     });
 }
 
-
+//returns an object containing all the necessary details of the password
 export function getResetPasswordDetails(code: string, email?: string): any {
     let user = {
         code: code,
@@ -95,10 +101,13 @@ export function getResetPasswordDetails(code: string, email?: string): any {
     return user;
 }
 
+
+//returns the server instance which is used for injecting 
 export function getServerInstance(): any {
     return server;
 }
 
+//clears all the records, except 3 user records from the tables in the database
 export function clearDatabase(): Promise<any> {
     let promiseResetCodes: Promise<any> = database.resetCode.destroy({ where: {} });
     let promiseStory: Promise<any> = database.story.destroy({ where: {} });
@@ -115,11 +124,12 @@ export function clearDatabase(): Promise<any> {
     });
 }
 
-// deletes all the existing records from the users table
+//deletes all the existing records from the users table
 export function clearUser(): Promise<any> {
     return database.user.destroy({ where: {} });
 }
 
+//validates the responseBody for story related endpoints
 export function validateStoryResponse(responseBody: any, story: any) {
     assert.equal(responseBody.title, story.title);
     assert.isNumber(responseBody.id);
@@ -153,15 +163,23 @@ export function validateCardResponse(responseBody: any, story: any) {
     }
 }
 
-
+//adds a new user with the given role and email
 export function createUserDummy(email?: string, role?: string): Promise<any> {
     role = role || 'romans';
     return database.user.create(getUserDummy(email, role));
 }
 
 // gets the userinfo with given email id
-export function getUserInfo(email: string): Promise<any> {
-    return database.user.findOne({ where: { email: email } });
+export function getUserInfo(email: string, attributes?: Array<any>, removeScope?: Boolean): Promise<any> {
+    let userModel: any = database.user;
+    if (removeScope) {
+        userModel = userModel.scope(null);
+    }
+    if (attributes) {
+        return userModel.findOne({ where: { email: email }, attributes: attributes });
+    } else {
+        return userModel.findOne({ where: { email: email } });
+    }
 }
 
 //access the create story endpoint and returns the instance
@@ -203,10 +221,12 @@ export function getRoleBasedjwt(role: string, email?: string): Promise<string> {
     });
 }
 
+//requests for a reset code
 export function getResetCode(email: string): Promise<any> {
     return server.inject({ method: 'POST', url: '/user/requestResetPassword', payload: { email: email } });
 }
 
+//returns the jwt for CSV required for downloading the CSV
 export function getCsvJwt(jwt: string): Promise<any> {
     return server.inject({ method: 'GET', url: '/user/getCsvLink', headers: { "authorization": jwt } }).then((res: any) => {
         const jwt: any = JSON.parse(res.payload);
