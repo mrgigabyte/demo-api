@@ -9,8 +9,8 @@ let jwts: any = {};
 
 describe('Tests for app-side user related endoints.', () => {
 
-   before(function () {
-        this.timeout(15000); //increases the default timeout from 2000ms to 15000ms
+    before(function () {
+        this.timeout(5000); //increases the default timeout from 2000ms to 15000ms
         server = Utils.getServerInstance();
         return Utils.clearDatabase().then(() => {
             return Utils.clearUser().then(() => {
@@ -44,12 +44,18 @@ describe('Tests for app-side user related endoints.', () => {
 
         describe("Tests for creating an account with role ROMANS.", () => {
             it("Creates an account with valid details.", () => {
-                return server.inject({ method: 'POST', url: '/user', payload: Utils.getUserDummy() }).then((res: any) => {
-                    let responseBody: any = JSON.parse(res.payload);
-                    responseBody.should.have.property('success');
-                    assert.equal(responseBody.success, true);
-                    assert.equal(201, res.statusCode);
-                    Promise.resolve();
+                return Utils.getUserInfo(Utils.getUserDummy().email).then((inRes: any) => {
+                    return server.inject({ method: 'POST', url: '/user', payload: Utils.getUserDummy() }).then((res: any) => {
+                        let responseBody: any = JSON.parse(res.payload);
+                        return Utils.getUserInfo(Utils.getUserDummy().email).then((finRes: any) => {
+                            responseBody.should.have.property('success');
+                            assert.equal(responseBody.success, true);
+                            assert.equal(inRes, null);
+                            assert.equal(finRes.email, Utils.getUserDummy().email);
+                            assert.equal(201, res.statusCode);
+                            Promise.resolve();
+                        });
+                    });
                 });
             });
 
@@ -161,10 +167,13 @@ describe('Tests for app-side user related endoints.', () => {
                     payload: { pushNotif: "disable" }
                 }).then((res: any) => {
                     let responseBody: any = JSON.parse(res.payload);
-                    responseBody.should.have.property('success');
-                    assert.equal(responseBody.success, true);
-                    assert.equal(200, res.statusCode);
-                    Promise.resolve();
+                    return Utils.getUserInfo('romans@mail.com', ['pushNotif']).then((finRes: any) => {
+                        responseBody.should.have.property('success');
+                        assert.equal(responseBody.success, true);
+                        assert.equal(200, res.statusCode);
+                        assert.equal(finRes.pushNotif, 'disable');
+                        Promise.resolve();
+                    });
                 });
             });
         });
@@ -190,10 +199,13 @@ describe('Tests for app-side user related endoints.', () => {
                     payload: { emailNotif: false }
                 }).then((res: any) => {
                     let responseBody: any = JSON.parse(res.payload);
-                    responseBody.should.have.property('success');
-                    assert.equal(responseBody.success, true);
-                    assert.equal(200, res.statusCode);
-                    Promise.resolve();
+                    return Utils.getUserInfo('romans@mail.com', ['emailNotif']).then((finRes: any) => {
+                        responseBody.should.have.property('success');
+                        assert.equal(responseBody.success, true);
+                        assert.equal(finRes.emailNotif, false);
+                        assert.equal(200, res.statusCode);
+                        Promise.resolve();
+                    });
                 });
             });
         });
@@ -204,10 +216,13 @@ describe('Tests for app-side user related endoints.', () => {
                     let dummyJwt = jwt;
                     return server.inject({ method: 'DELETE', url: '/user/me', headers: { "authorization": dummyJwt } }).then((res: any) => {
                         let responseBody: any = JSON.parse(res.payload);
-                        responseBody.should.have.property('deleted');
-                        assert.equal(responseBody.deleted, true);
-                        assert.equal(200, res.statusCode);
-                        Promise.resolve();
+                        return Utils.getUserInfo('dummy@mail.com', ['status'], true).then((finRes: any) => {                           
+                            responseBody.should.have.property('deleted');
+                            assert.equal(finRes.status, 'deleted');
+                            assert.equal(responseBody.deleted, true);
+                            assert.equal(200, res.statusCode);
+                            Promise.resolve();
+                        });
                     });
                 });
             });
@@ -257,11 +272,14 @@ describe('Tests for app-side user related endoints.', () => {
                         headers: { "authorization": dummyJwt },
                         payload: Utils.getUserDummy('dummy123@gmail.com', undefined, '312321', 'John Doe')
                     }).then((res: any) => {
-                        let responseBody: any = JSON.parse(res.payload);
-                        responseBody.should.have.property('success');
-                        assert.equal(responseBody.success, true);
-                        assert.equal(200, res.statusCode);
-                        Promise.resolve();
+                        return Utils.getUserInfo('dummy123@gmail.com').then((finRes: any) => {
+                            let responseBody: any = JSON.parse(res.payload);
+                            responseBody.should.have.property('success');
+                            assert.equal(responseBody.success, true);
+                            assert.equal(200, res.statusCode);
+                            assert.equal(finRes.name, 'John Doe');
+                            Promise.resolve();
+                        });
                     });
                 });
             });

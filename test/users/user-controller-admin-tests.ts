@@ -12,8 +12,8 @@ let jwts: any = {};
 
 describe('Tests for admin-panel user related endpoints.', () => {
 
-   before(function () {
-        this.timeout(15000); //increases the default timeout from 2000ms to 15000ms
+    before(function () {
+        this.timeout(5000); //increases the default timeout from 2000ms to 15000ms
         server = Utils.getServerInstance();
         return Utils.clearDatabase().then(() => {
             return Utils.clearUser().then(() => {
@@ -39,10 +39,10 @@ describe('Tests for admin-panel user related endpoints.', () => {
     });
 
     afterEach(() => {
-       /*
-        * clears all the records from all the tables present in the database 
-        * except 3 records from the table
-        */
+        /*
+         * clears all the records from all the tables present in the database 
+         * except 3 records from the table
+         */
         return Utils.clearDatabase().then(() => {
             Promise.resolve();
         });
@@ -51,16 +51,22 @@ describe('Tests for admin-panel user related endpoints.', () => {
     describe("Tests for creating an account with role JESUS.", () => {
         it("Creates an account through GOD's account.", () => {
             let user: any = Utils.getUserDummy('createjesus@mail.com');
-            return server.inject({
-                method: 'POST', url: '/user/createJesus',
-                headers: { "authorization": jwts.god },
-                payload: user
-            }).then((res: any) => {
-                let responseBody: any = JSON.parse(res.payload);
-                responseBody.should.have.property('success');
-                assert.equal(responseBody.success, true);
-                assert.equal(201, res.statusCode);
-                Promise.resolve();
+            return Utils.getUserInfo('createjesus@mail.com').then((inRes: any) => {
+                return server.inject({
+                    method: 'POST', url: '/user/createJesus',
+                    headers: { "authorization": jwts.god },
+                    payload: user
+                }).then((res: any) => {
+                    let responseBody: any = JSON.parse(res.payload);
+                    return Utils.getUserInfo('createjesus@mail.com').then((finRes: any) => {
+                        responseBody.should.have.property('success');
+                        assert.equal(inRes, null);
+                        assert.equal(finRes.email, 'createjesus@mail.com');
+                        assert.equal(responseBody.success, true);
+                        assert.equal(201, res.statusCode);
+                        Promise.resolve();
+                    });
+                });
             });
         });
 

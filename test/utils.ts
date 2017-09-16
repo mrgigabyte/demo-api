@@ -8,6 +8,7 @@ import * as url from 'url';
 import * as moment from 'moment';
 import * as fs from 'fs';
 import * as request from 'request';
+import * as FormData from 'form-data';
 
 let database: IDb = Database.init(process.env.NODE_ENV);
 const serverConfig = Configs.getServerConfigs();
@@ -17,6 +18,8 @@ Server.init(serverConfig, database).then((Server: Hapi.Server) => {
     server = Server;
 });
 
+
+//returns a dummy user object with all the necessary details
 export function getUserDummy(email?: string, role?: string, password?: string, name?: string): any {
     let user = {
         email: email || "dummy123@mail.com",
@@ -32,6 +35,8 @@ export function getUserDummy(email?: string, role?: string, password?: string, n
     return user;
 }
 
+
+//returns a dummy story object with all the necessary details
 export function getStoryDummy(title?: string, author?: string,
     mediaUri?: string, mediaType?: string, externalLink?: string): any {
     let story = {
@@ -54,6 +59,7 @@ export function getStoryDummy(title?: string, author?: string,
     return story;
 }
 
+//returns matchin records found in the story table based on the storyid
 export function getStoryData(storyId?: number): Promise<any> {
     if (storyId) {
         return database.story.findOne({ where: { id: storyId } });
@@ -64,29 +70,37 @@ export function getStoryData(storyId?: number): Promise<any> {
 }
 
 
-
-export function downloadFile(uri, filename, callback) {
-    // return new Promise((resolve, reject) => {
-    request.head(uri, function (err, res, body) {
-        console.log('content-type:', res.headers['content-type']);
-        console.log('content-length:', res.headers['content-length']);
-        request(uri).pipe(fs.createWriteStream(filename)).on('close', callback);
+//downloads the file from the given url and saves that in a given destination 
+export function downloadFile(uri: string, filename: string): Promise<any> {
+    return new Promise((resolve, reject) => {
+        request.head(uri, function (err, res, body) {
+            return resolve(request(uri).pipe(fs.createWriteStream(filename)));
+        });
     });
-    // });
 }
 
-export function deleteFile(filename, callback) {
-    // return new Promise((resolve, reject) => {
-    fs.unlink(filename, function (err) {
-        if (err) {
-            return console.log(err);
-        }
-        console.log('file deleted successfully');
+export function convertFileToForm(filename: string): Promise<any> {
+    return new Promise((resolve, reject) => {
+        let fileStream = fs.createReadStream(filename);
+        let form = new FormData();
+        form.append('file', fileStream);
+        resolve(form);
     });
-    // });
 }
 
+//deletes the file from the given destination/name
+export function deleteFile(filename) {
+    return new Promise((resolve, reject) => {
+        fs.unlink(filename, function (err) {
+            if (err) {
+                return console.log(err);
+            }
+            resolve();
+        });
+    });
+}
 
+//returns an object containing all the necessary details of the password
 export function getResetPasswordDetails(code: string, email?: string): any {
     let user = {
         code: code,
@@ -97,11 +111,15 @@ export function getResetPasswordDetails(code: string, email?: string): any {
     return user;
 }
 
+
+//returns the server instance which is used for injecting 
 export function getServerInstance(): any {
     return server;
 }
 
+//clears all the records, except 3 user records from the tables in the database
 export function clearDatabase(): Promise<any> {
+    let promiseResetCodes: Promise<any> = database.resetCode.destroy({ where: {} });
     let promiseStory: Promise<any> = database.story.destroy({ where: {} });
     let promiseUser: Promise<any> = database.user.destroy({
         where: {
@@ -109,18 +127,19 @@ export function clearDatabase(): Promise<any> {
             status: { $in: ['deleted', 'active', 'inactive'] }
         }
     });
-    // return promiseResetCodes.then(() => {
-    return promiseStory.then(() => {
-        return promiseUser;
+    return promiseResetCodes.then(() => {
+        return promiseStory.then(() => {
+            return promiseUser;
+        });
     });
-    // });
 }
 
-// deletes all the existing records from the users table
+//deletes all the existing records from the users table
 export function clearUser(): Promise<any> {
     return database.user.destroy({ where: {} });
 }
 
+//validates the responseBody for story related endpoints
 export function validateStoryResponse(responseBody: any, story: any) {
     assert.equal(responseBody.title, story.title);
     assert.isNumber(responseBody.id);
@@ -135,6 +154,15 @@ export function validateStoryResponse(responseBody: any, story: any) {
     }
 }
 
+// gets the status of the favourite card of the user with the given email and id of the card
+export function getFavouriteCardStatus(email: string, cardId: string): Promise<any> {
+    return database.user.findOne({ where: { email: email } }).then((user) => {
+        return database.card.findOne({ where: { id: cardId } }).then((card) => {
+            return user.hasCards(card);
+        });
+    });
+}
+
 // validates the cards key when the responseBody and the initial story is passed
 export function validateCardResponse(responseBody: any, story: any) {
     for (let i = 0; i < responseBody.cards.length; i++) {
@@ -145,15 +173,23 @@ export function validateCardResponse(responseBody: any, story: any) {
     }
 }
 
-
+//adds a new user with the given role and email
 export function createUserDummy(email?: string, role?: string): Promise<any> {
     role = role || 'romans';
     return database.user.create(getUserDummy(email, role));
 }
 
 // gets the userinfo with given email id
-export function getUserInfo(email: string): Promise<any> {
-    return database.user.findOne({ where: { email: email } });
+export function getUserInfo(email: string, attributes?: Array<any>, removeScope?: Boolean): Promise<any> {
+    let userModel: any = database.user;
+    if (removeScope) {
+        userModel = userModel.scope(null);
+    }
+    if (attributes) {
+        return userModel.findOne({ where: { email: email }, attributes: attributes });
+    } else {
+        return userModel.findOne({ where: { email: email } });
+    }
 }
 
 //access the create story endpoint and returns the instance
@@ -195,10 +231,12 @@ export function getRoleBasedjwt(role: string, email?: string): Promise<string> {
     });
 }
 
+//requests for a reset code
 export function getResetCode(email: string): Promise<any> {
     return server.inject({ method: 'POST', url: '/user/requestResetPassword', payload: { email: email } });
 }
 
+//returns the jwt for CSV required for downloading the CSV
 export function getCsvJwt(jwt: string): Promise<any> {
     return server.inject({ method: 'GET', url: '/user/getCsvLink', headers: { "authorization": jwt } }).then((res: any) => {
         const jwt: any = JSON.parse(res.payload);
@@ -207,7 +245,7 @@ export function getCsvJwt(jwt: string): Promise<any> {
     });
 }
 
-// sets the card as favourite for the user with the given email and if od the card
+// sets the card as favourite for the user with the given email and id of the card
 export function markFavouriteCard(email: string, cardId: string): Promise<any> {
     return database.user.findOne({ where: { email: email } }).then((user) => {
         return database.card.findOne({ where: { id: cardId } }).then((card) => {

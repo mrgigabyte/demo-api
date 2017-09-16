@@ -143,7 +143,7 @@ export default function (server: Hapi.Server, serverConfigs: IServerConfiguratio
         config: {
             description: 'Checks the encoding status of the job whose id is sent in the query params',
             notes: `
-            This will return true and uri of the uploaded video on successful trnascoding otherwise it will result false.
+            This will return true and uri of the uploaded video on successful transcoding otherwise it will result false.
             GOD and JESUS can access this endpoint
             `,
             auth: 'jwt',
@@ -173,7 +173,7 @@ export default function (server: Hapi.Server, serverConfigs: IServerConfiguratio
                             'description': 'No job with the given id'
                         },
                         '417': {
-                            'description': 'Could not enocde the video.'
+                            'description': 'Could not encode the video.'
                         }
                     },
                     order: 7

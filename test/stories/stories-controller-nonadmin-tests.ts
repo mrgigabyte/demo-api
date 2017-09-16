@@ -10,7 +10,7 @@ let jwts: any = {};
 describe('Tests for non-admin-panel stories related endpoints.', () => {
 
    before(function () {
-        this.timeout(15000); //increases the default timeout from 2000ms to 15000ms
+        this.timeout(5000); //increases the default timeout from 2000ms to 15000ms
         server = Utils.getServerInstance();
         return Utils.clearDatabase().then(() => {
             return Utils.clearUser().then(() => {

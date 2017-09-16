@@ -10,7 +10,7 @@ let jwts: any = {};
 describe('Tests for non-admin-panel cards related endpoints.', () => {
 
     before(function () {
-        this.timeout(15000); //increases the default timeout from 2000ms to 15000ms
+        this.timeout(5000); //increases the default timeout from 2000ms to 15000ms
         server = Utils.getServerInstance();
         return Utils.clearDatabase().then(() => {
             return Utils.clearUser().then(() => {
@@ -44,17 +44,25 @@ describe('Tests for non-admin-panel cards related endpoints.', () => {
         it("Favourites/Unfavourites an existing card", () => {
             return Utils.createStory(jwts.god).then((story: any) => {
                 return Utils.publishStory(story.id).then(() => {
-                    return server.inject({
-                        method: 'POST',
-                        url: `/card/${story.cards[0].id}/favourite`,
-                        headers: { "authorization": jwts.romans }
-                    }).then((res: any) => {
-                        let responseBody: any = JSON.parse(res.payload);
-                        responseBody.should.have.property('favourited');
-                        assert.equal(responseBody.favourited, true);
-                        assert.equal(200, res.statusCode);
-                        Promise.resolve();
-                    });
+                    return Utils.getFavouriteCardStatus('romans@mail.com', story.cards[0].id)
+                        .then((initialStatus: Boolean) => {
+                            return server.inject({
+                                method: 'POST',
+                                url: `/card/${story.cards[0].id}/favourite`,
+                                headers: { "authorization": jwts.romans }
+                            }).then((res: any) => {
+                                let responseBody: any = JSON.parse(res.payload);
+                                return Utils.getFavouriteCardStatus('romans@mail.com', story.cards[0].id)
+                                    .then((finalStatus: Boolean) => {
+                                        responseBody.should.have.property('favourited');
+                                        assert.equal(responseBody.favourited, true);
+                                        assert.equal(200, res.statusCode);
+                                        assert.equal(finalStatus, true);
+                                        assert.equal(initialStatus, false);
+                                        Promise.resolve();
+                                    });
+                            });
+                        });
                 });
             });
         });
@@ -126,7 +134,7 @@ describe('Tests for non-admin-panel cards related endpoints.', () => {
             }).then((res: any) => {
                 let responseBody: any = JSON.parse(res.payload);
                 assert.equal(200, res.statusCode);
-                assert.equal(responseBody.cards.length,0);
+                assert.equal(responseBody.cards.length, 0);
                 Promise.resolve();
             });
         });
