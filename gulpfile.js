@@ -90,7 +90,7 @@ gulp.task('develop', function () {
  */
 gulp.task('test', ['build'], (cb) => {
     const envs = env.set({
-        NODE_ENV: 'test'
+        NODE_ENV: process.env.NODE_ENV
     });
 
     gulp.src(['build/test/**/*.js'])

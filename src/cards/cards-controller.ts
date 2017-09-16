@@ -62,7 +62,6 @@ export default class CardController {
         if (this.imageFilter(fileName)) {
             mediaType = 'image';
             this.database.card.uploadCard(fileData, this.configs.googleCloud).then((res: any) => {
-                console.log(res);
                 return reply({
                     "mediaUri": res.gcsLink,
                     "mediaType": mediaType,

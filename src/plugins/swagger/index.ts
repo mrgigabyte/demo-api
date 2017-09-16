@@ -46,7 +46,7 @@ export default (): IPlugin => {
                                 },
                             ],
                             validatorUrl: null,
-                            // schemes: ['https']
+                            schemes: ['https']
                         }
                     }
 

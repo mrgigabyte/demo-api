@@ -19,8 +19,8 @@
             "env": {
                 "NODE_ENV": "staging"
             },
-            "out_file": "/logs/abstrct-node-app.log",
-            "error_file": "/logs/abstrct-node-app-err.log"
+            "out_file": "/logs/abstrct-pushnotif.log",
+            "error_file": "/logs/abstrct-node-pushnotif-err.log"
         }
     ]
 }

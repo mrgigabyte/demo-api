@@ -3,12 +3,14 @@ Made using hapi.js and uses mysql as database.
 
 ## How to Run?
 
-* *npm install* 
+* *npm install*
+* *npm install mocha -g* 
 
 **Run**
 * *gulp build* (build ts files)
+* *gulp develop* (losks for any file changes and rebuilds the project)
 * *gulp tslint* (run tslint)
-* *gulp test* (run tests-only for dev)
+* *gulp test* (run tests and builds)
 * *gulp watch* (watch ts files)
 * *npm run start* (start the application)
 * *npm run watch* (restart the application when files change)

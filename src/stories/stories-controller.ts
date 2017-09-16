@@ -93,7 +93,13 @@ export default class StoryController {
 
     public newStory(request: Hapi.Request, reply: Hapi.Base_Reply) {
         this.database.story.createNewStory(request.payload, this.database.card).then((storyId: number) => {
-            this.getStory(storyId).then((story: any) => reply({ "story": story }).code(201)).catch((err) => reply(err));
+            this.getStory(storyId).then((story: any) => reply({ "story": story }).code(201));
+        }).catch((err) => {
+            if (err.name === 'SequelizeValidationError') {
+                return reply(Boom.badRequest('Payload data is not valid.'));
+            } else {
+                return reply(err);
+            }
         });
     }
 

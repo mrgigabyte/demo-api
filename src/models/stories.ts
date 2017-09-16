@@ -355,9 +355,14 @@ export default function (sequelize, DataTypes) {
      * returns a promise with the validSlug.
      */
     Story.prototype.getSlug = function (): Promise<string> {
-        return getValidSlug(slug(this.title), slug(this.title), 1).then((validSlug: string) => {
-            return validSlug;
-        });
+        let Slug = slug(this.title);
+        if (Slug === '' || null) {
+            return Promise.resolve('slug-' + shortid.generate());
+        } else {
+            return getValidSlug(Slug, Slug, 1).then((validSlug: string) => {
+                return validSlug;
+            });
+        }
     };
 
     Story.prototype.markRead = function (userModel: any, userId: number): Promise<any> {
