@@ -30,7 +30,6 @@ describe('Tests for admin-panel stories related endpoints.', () => {
     });
 
     after(function () {
-
         return Utils.clearUser().then(() => {
             Promise.resolve();
         });
